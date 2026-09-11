@@ -2416,7 +2416,7 @@ saveGeneralBrand=async function(){
 };
 
 // ===== v1.7: VERSIONAMENTO E MIGRAÇÕES DE DADOS =====
-const APP_VERSION='1.18.0';
+const APP_VERSION='1.19.0';
 const DATA_SCHEMA_VERSION=4;
 
 /*
@@ -4810,6 +4810,148 @@ applyTemplateV117 = function(id){
   _applyTemplateV117_v118(id);
   ensureDesignV117(); applyThemeV116();
 };
+
+
+// ===== v1.19.0: FIDELIDADE COM DESCONTO AUTOMÁTICO =====
+// O benefício é liberado DEPOIS que o cliente completa a meta (ex.: 10 pedidos)
+// e é aplicado automaticamente no pedido seguinte. Ao registrar esse pedido,
+// o contador avança e o benefício fica consumido até a próxima meta.
+window.loyaltyBenefitV119={phone:'',orderCount:0,eligible:false,percent:0,required:10,offer:null};
+let loyaltyLookupSeqV119=0;
+
+function loyaltyStateFromProfileV119(profile){
+  const offer=activeLoyaltyOfferV113();
+  const phone=normalizeCustomerPhoneV113(profile?.phone||getCachedCustomerPhoneV115()||window.checkoutState?.phone||'');
+  const count=Math.max(0,Number(profile?.order_count||0));
+  const required=Math.max(1,Number(offer?.requiredOrders||10));
+  const percent=Math.max(0,Math.min(100,Number(offer?.rewardPercent||10)));
+  const eligible=!!offer&&count>0&&(count%required===0)&&percent>0;
+  return {phone,orderCount:count,eligible,percent,required,offer};
+}
+
+function loyaltyPhoneMatchesV119(){
+  const st=window.checkoutState||{};
+  const typed=document.getElementById('coPhone')?.value||'';
+  const current=normalizeCustomerPhoneV113(typed||st.phone||getCachedCustomerPhoneV115()||'');
+  return !!current&&current===window.loyaltyBenefitV119.phone;
+}
+
+async function syncLoyaltyBenefitV119(phone){
+  const normalized=normalizeCustomerPhoneV113(phone);
+  const seq=++loyaltyLookupSeqV119;
+  if(normalized.length<10){
+    window.loyaltyBenefitV119={phone:normalized,orderCount:0,eligible:false,percent:0,required:10,offer:activeLoyaltyOfferV113()};
+    return window.loyaltyBenefitV119;
+  }
+  const profile=await getCustomerProfileV115(normalized);
+  if(seq!==loyaltyLookupSeqV119)return window.loyaltyBenefitV119;
+  const state=loyaltyStateFromProfileV119(profile||{phone:normalized,order_count:0});
+  state.phone=normalized;
+  window.loyaltyBenefitV119=state;
+  if(profile)updateLoyaltyDisplaysV115(profile);
+  return state;
+}
+
+function loyaltyDiscountV119(base){
+  const b=window.loyaltyBenefitV119||{};
+  if(!b.eligible||!loyaltyPhoneMatchesV119())return 0;
+  return Math.max(0,Number(base||0))*Math.max(0,Number(b.percent||0))/100;
+}
+
+// Totais consolidados: promoção comum + fidelidade + entrega + ajuste de pagamento + serviço.
+checkoutTotalsV111=function(){
+  const sub=cartSubtotal();
+  const promo=activeOfferDiscount();
+  const promoDiscount=Math.min(sub,Math.max(0,Number(promo?.amount||0)));
+  const afterPromo=Math.max(0,sub-promoDiscount);
+  const loyaltyDiscount=Math.min(afterPromo,loyaltyDiscountV119(afterPromo));
+  const afterDiscounts=Math.max(0,afterPromo-loyaltyDiscount);
+  const delivery=cartDeliveryFee();
+  const payAdj=paymentAdjustment(afterDiscounts+delivery);
+  const serviceBase=Math.max(0,afterDiscounts+delivery+payAdj);
+  const service=serviceFeeAmountV111(serviceBase);
+  const total=Math.max(0,afterDiscounts+delivery+payAdj+service);
+  const lb=window.loyaltyBenefitV119||{};
+  return {
+    sub,delivery,payAdj,service,total,
+    promoDiscount,promoOffer:promo?.offer||null,
+    loyaltyDiscount,
+    loyaltyPercent:Number(lb.percent||0),
+    loyaltyOffer:lb.offer||activeLoyaltyOfferV113()||null
+  };
+};
+
+function renderCheckoutTotalsV119(){
+  const box=document.querySelector('#sheet .cartTotals')||document.querySelector('.sheet .cartTotals')||document.querySelector('.cartTotals');
+  if(!box)return;
+  const t=checkoutTotalsV111();
+  const o=cfg.store.orderConfig||{};
+  box.innerHTML=`
+    <div class="row"><span>Valor dos produtos</span><b>${brl(t.sub)}</b></div>
+    ${t.promoDiscount?`<div class="row discountLine"><span>${esc(t.promoOffer?.title||'Oferta')}</span><b>− ${brl(t.promoDiscount)}</b></div>`:''}
+    ${t.loyaltyDiscount?`<div class="row discountLine loyaltyDiscountV119"><span>★ Fidelidade (${t.loyaltyPercent}%)</span><b>− ${brl(t.loyaltyDiscount)}</b></div>`:''}
+    ${t.delivery?`<div class="row"><span>Taxa de entrega</span><b>${brl(t.delivery)}</b></div>`:''}
+    ${t.payAdj?`<div class="row"><span>${t.payAdj>0?'Taxa':'Desconto'} de pagamento</span><b>${t.payAdj>0?'+ ':''}${brl(t.payAdj)}</b></div>`:''}
+    ${t.service?`<div class="row"><span>${esc(o.serviceFeeLabel||'Taxa de serviço')}</span><b>${brl(t.service)}</b></div>`:''}
+    <div class="row"><strong>Total</strong><strong>${brl(t.total)}</strong></div>`;
+
+  const loyaltyBox=document.getElementById('loyaltyCustomerStatusV113');
+  const b=window.loyaltyBenefitV119||{};
+  if(loyaltyBox&&b.eligible&&loyaltyPhoneMatchesV119()){
+    loyaltyBox.textContent=`🎉 Benefício liberado: ${b.percent}% de desconto aplicado automaticamente neste pedido.`;
+  }
+}
+
+const _showCustomerFormV119Base=showCustomerForm;
+showCustomerForm=function(){
+  _showCustomerFormV119Base();
+  const phone=document.getElementById('coPhone');
+  if(!phone)return;
+
+  let timer=null;
+  const check=async()=>{
+    window.checkoutState=window.checkoutState||{};
+    window.checkoutState.phone=phone.value;
+    await syncLoyaltyBenefitV119(phone.value);
+    if(phone.isConnected)renderCheckoutTotalsV119();
+  };
+
+  phone.addEventListener('input',()=>{
+    clearTimeout(timer);
+    timer=setTimeout(check,350);
+  });
+  if(phone.value)setTimeout(check,0);
+};
+
+// Inclui as linhas de promoção/fidelidade no texto enviado ao WhatsApp.
+const _buildOrderTextV119Base=buildOrderTextV111;
+buildOrderTextV111=function(){
+  let text=_buildOrderTextV119Base();
+  const t=checkoutTotalsV111();
+  const lines=text.split('\n');
+  const totalIdx=lines.findIndex(x=>x.startsWith('*TOTAL:'));
+  if(totalIdx>=0){
+    const extra=[];
+    if(t.promoDiscount)extra.push(`Oferta: ${t.promoOffer?.title||'Desconto'}: - ${brl(t.promoDiscount)}`);
+    if(t.loyaltyDiscount)extra.push(`★ Fidelidade (${t.loyaltyPercent}%): - ${brl(t.loyaltyDiscount)}`);
+    if(extra.length)lines.splice(totalIdx,0,...extra);
+  }
+  return lines.join('\n');
+};
+
+// Antes de registrar o pedido, confirma online se o cliente realmente tem o benefício.
+const _finishWhatsAppV119Base=finishWhatsApp;
+finishWhatsApp=async function(){
+  const phone=document.getElementById('coPhone')?.value||window.checkoutState?.phone||'';
+  if(normalizeCustomerPhoneV113(phone).length>=10){
+    try{
+      await syncLoyaltyBenefitV119(phone);
+      renderCheckoutTotalsV119();
+    }catch(e){console.warn('Não foi possível validar o benefício de fidelidade:',e)}
+  }
+  return _finishWhatsAppV119Base();
+};
+
 </script>
 
 </body></html>
