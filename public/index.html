@@ -783,6 +783,7 @@ ${moreCard('www','Link e domínio',s.hubSlug,'generalDomain()')}
 ${moreCard('♙','Colaboradores',`${s.collaborators.length} colaborador(es)`,'generalCollaborators()')}
 ${moreCard('♧','Integrações','Analytics, Ads e Meta Pixel','generalIntegrations()')}
 ${moreCard('▦','QR Code','Gerar QR Code do cardápio','generalQr()')}
+${moreCard('🏪','Sites dos clientes','Painel mestre para criar e administrar cardápios','openClientSitesMasterV120()')}
 ${moreCard('🧺','Pedidos','Configurações de pedidos','adminTab=\'orders\';adminOrdersView=\'config\';renderAdmin()')}
 </div></div>`}
 function generalBack(){adminTab='more';renderAdmin()}
@@ -2416,7 +2417,7 @@ saveGeneralBrand=async function(){
 };
 
 // ===== v1.7: VERSIONAMENTO E MIGRAÇÕES DE DADOS =====
-const APP_VERSION='1.19.0';
+const APP_VERSION='1.20.0';
 const DATA_SCHEMA_VERSION=4;
 
 /*
@@ -4952,6 +4953,129 @@ finishWhatsApp=async function(){
   return _finishWhatsAppV119Base();
 };
 
+
+
+// ===== v1.20.0: PAINEL MESTRE DE SITES DOS CLIENTES =====
+// Esta primeira etapa NÃO altera o funcionamento do Point do Açaí.
+// Os novos estabelecimentos ficam em uma tabela separada (client_sites),
+// cada um com sua própria configuração-base limpa.
+window.clientSitesV120=[];
+
+function slugifyStoreV120(v){
+  return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim()
+    .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60);
+}
+function escapeAttrV120(v){return esc(String(v??'')).replace(/"/g,'&quot;')}
+function cleanClientConfigV120(name,whatsapp){
+  // Cria uma loja nova com a mesma estrutura do app, mas sem dados do Point.
+  const base=JSON.parse(JSON.stringify(DEFAULT));
+  base.store=base.store||{};
+  Object.assign(base.store,{
+    name:name||'Novo estabelecimento',
+    legalName:'',cnpj:'',email:'',address:'',instagram:'',socialUrl:'',
+    whatsapp:String(whatsapp||'').replace(/\D/g,''),brandImage:'',
+    shareTitle:name||'Novo estabelecimento',shareDescription:'Confira nosso cardápio online.',
+    hubSlug:slugifyStoreV120(name||'novo-estabelecimento'),customDomain:'',
+    collaborators:[],analyticsId:'',googleAdsId:'',metaPixelId:''
+  });
+  // Conteúdo comercial nasce vazio, preservando apenas a mecânica/estrutura.
+  base.categories=[{id:'produtos',name:'Produtos'}];
+  base.sections=[{id:'produtos',title:'Produtos',description:'',accent:'#712489',display:'cards'}];
+  base.products=[];
+  base.groups=[];
+  base.offers=[];
+  return base;
+}
+function clientSiteStatusV120(row){
+  return row.active
+    ? '<span class="badge available">Ativo</span>'
+    : '<span class="badge hidden">Rascunho</span>';
+}
+async function fetchClientSitesV120(){
+  const {data,error}=await supabaseClient.from('client_sites').select('*').order('created_at',{ascending:false});
+  if(error)throw error;
+  window.clientSitesV120=Array.isArray(data)?data:[];
+  return window.clientSitesV120;
+}
+async function openClientSitesMasterV120(){
+  $('#adminContent').innerHTML=`<button class="backBtn" onclick="generalBack()">‹ Configurações gerais</button>
+  <div class="panel"><div class="row"><div><div class="settingsTitle">🏪 Sites dos clientes</div><div class="hint">Seu painel mestre. O Point do Açaí continua separado e funcionando normalmente.</div></div><button class="btn" onclick="newClientSiteV120()">+ Nova loja</button></div>
+  <div id="clientSitesListV120" style="margin-top:14px"><p class="hint">Carregando lojas...</p></div></div>`;
+  try{
+    const rows=await fetchClientSitesV120();
+    renderClientSitesListV120(rows);
+  }catch(e){
+    console.error(e);
+    $('#clientSitesListV120').innerHTML=`<div class="notice"><b>Não foi possível carregar os sites.</b><br><small>${esc(e.message||String(e))}</small><br><br><small>Se esta é a primeira vez, execute o SQL da v1.20 no Supabase.</small></div>`;
+  }
+}
+function renderClientSitesListV120(rows){
+  const el=$('#clientSitesListV120'); if(!el)return;
+  if(!rows.length){
+    el.innerHTML=`<div class="emptySection"><b>Nenhuma loja criada ainda.</b><br><span class="hint">Clique em “+ Nova loja” para gerar a primeira estrutura limpa a partir do seu sistema.</span></div>`;
+    return;
+  }
+  el.innerHTML=rows.map(r=>`<div class="adminItem" style="align-items:flex-start">
+    <div><b>${esc(r.name||'Loja')}</b> ${clientSiteStatusV120(r)}<br>
+    <span class="hint">/${esc(r.slug||'')} · ${esc(r.admin_email||'sem administrador')}</span><br>
+    <small class="hint">Criada em ${r.created_at?new Date(r.created_at).toLocaleDateString('pt-BR'):'-'}</small></div>
+    <div class="miniBtns"><button class="ghost" onclick="editClientSiteV120('${r.id}')">Gerenciar</button></div>
+  </div>`).join('');
+}
+function newClientSiteV120(){
+  showModal(`<div class="row"><div><h2 style="margin:0">Nova loja</h2><div class="hint">Será criada uma estrutura limpa, sem produtos nem informações do Point.</div></div><button class="ghost" onclick="closeModal()">✕</button></div>
+  <label>Nome do estabelecimento</label><input id="csNameV120" class="field" placeholder="Ex.: Pizzaria Central" oninput="document.getElementById('csSlugV120').value=slugifyStoreV120(this.value)">
+  <label>Endereço do site (slug)</label><input id="csSlugV120" class="field" placeholder="pizzaria-central"><div class="hint">Usaremos este nome no endereço do cardápio.</div>
+  <label>WhatsApp da loja</label><input id="csWaV120" class="field" inputmode="tel" placeholder="5524999999999">
+  <label>E-mail do administrador da loja</label><input id="csEmailV120" class="field" type="email" placeholder="dono@empresa.com"><div class="hint">Esse será o login autorizado a administrar somente esta loja.</div>
+  <button id="csCreateBtnV120" class="btn full" onclick="createClientSiteV120()">Criar estrutura da loja</button>`);
+}
+async function createClientSiteV120(){
+  const name=$('#csNameV120').value.trim(),slug=slugifyStoreV120($('#csSlugV120').value||name),wa=$('#csWaV120').value.replace(/\D/g,''),email=$('#csEmailV120').value.trim().toLowerCase();
+  if(!name||!slug||!email){alert('Preencha nome, endereço do site e e-mail do administrador.');return}
+  const btn=$('#csCreateBtnV120');if(btn){btn.disabled=true;btn.textContent='Criando...'}
+  try{
+    const config=cleanClientConfigV120(name,wa);
+    config.store.hubSlug=slug;
+    const {data,error}=await supabaseClient.from('client_sites').insert({name,slug,admin_email:email,whatsapp:wa,active:false,config}).select().single();
+    if(error)throw error;
+    closeModal();
+    await openClientSitesMasterV120();
+    setTimeout(()=>editClientSiteV120(data.id),120);
+  }catch(e){
+    console.error(e);alert('Não foi possível criar a loja: '+(e.message||e));
+    if(btn){btn.disabled=false;btn.textContent='Criar estrutura da loja'}
+  }
+}
+function editClientSiteV120(id){
+  const r=window.clientSitesV120.find(x=>String(x.id)===String(id));if(!r)return;
+  showModal(`<div class="row"><div><h2 style="margin:0">${esc(r.name)}</h2><div class="hint">Estrutura independente do Point do Açaí</div></div><button class="ghost" onclick="closeModal()">✕</button></div>
+  <label>Nome</label><input id="cseNameV120" class="field" value="${escapeAttrV120(r.name)}">
+  <label>Slug</label><input id="cseSlugV120" class="field" value="${escapeAttrV120(r.slug)}">
+  <label>WhatsApp</label><input id="cseWaV120" class="field" value="${escapeAttrV120(r.whatsapp||'')}">
+  <label>Administrador</label><input id="cseEmailV120" type="email" class="field" value="${escapeAttrV120(r.admin_email||'')}">
+  <label class="switchrow"><span><b>Loja ativa</b><small class="hint">Ative somente quando o cardápio estiver pronto para o cliente.</small></span><input id="cseActiveV120" type="checkbox" ${r.active?'checked':''}></label>
+  <div class="notice" style="margin:12px 0"><b>Etapa atual:</b> estrutura-base criada e isolada.<br><small>Na próxima etapa, vamos ligar este cadastro à página pública e ao painel de edição exclusivo do cliente.</small></div>
+  <button id="cseSaveBtnV120" class="btn full" onclick="saveClientSiteV120('${r.id}')">Salvar</button>
+  <button class="dangerBtn full" style="margin-top:8px" onclick="deleteClientSiteV120('${r.id}')">Excluir esta loja</button>`);
+}
+async function saveClientSiteV120(id){
+  const row=window.clientSitesV120.find(x=>String(x.id)===String(id));if(!row)return;
+  const name=$('#cseNameV120').value.trim(),slug=slugifyStoreV120($('#cseSlugV120').value),wa=$('#cseWaV120').value.replace(/\D/g,''),email=$('#cseEmailV120').value.trim().toLowerCase(),active=$('#cseActiveV120').checked;
+  if(!name||!slug||!email){alert('Nome, slug e e-mail são obrigatórios.');return}
+  const config=JSON.parse(JSON.stringify(row.config||cleanClientConfigV120(name,wa)));
+  config.store=config.store||{};config.store.name=name;config.store.whatsapp=wa;config.store.hubSlug=slug;
+  const {error}=await supabaseClient.from('client_sites').update({name,slug,whatsapp:wa,admin_email:email,active,config,updated_at:new Date().toISOString()}).eq('id',id);
+  if(error){alert('Erro ao salvar: '+error.message);return}
+  closeModal();await openClientSitesMasterV120();
+}
+async function deleteClientSiteV120(id){
+  const row=window.clientSitesV120.find(x=>String(x.id)===String(id));if(!row)return;
+  if(!confirm(`Excluir a loja “${row.name}”?\n\nIsso não afeta o Point do Açaí.`))return;
+  const {error}=await supabaseClient.from('client_sites').delete().eq('id',id);
+  if(error){alert('Erro ao excluir: '+error.message);return}
+  closeModal();await openClientSitesMasterV120();
+}
 </script>
 
 </body></html>
