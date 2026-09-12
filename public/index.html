@@ -7980,461 +7980,206 @@ setTimeout(()=>{
 
 
 <script>
-// ===== v1.31.8: DINHEIRO, VALOR PAGO E TROCO =====
+// ===== v1.31.11: PAGAMENTO EM DINHEIRO SEM OBSERVERS / FOCO ESTÁVEL =====
 (function(){
 
-  function moneyNumberV1318(v){
-    if(typeof v==='number') return isFinite(v)?v:0;
-    let s=String(v??'').trim().replace(/[R$\s]/g,'');
-    if(s.includes(',')) s=s.replace(/\./g,'').replace(',','.');
-    const n=Number(s);
-    return isFinite(n)?n:0;
-  }
-
-  function isCashV1318(){
+  function isCashV13111(){
     const p=String(window.checkoutState?.payment||'').toLowerCase();
     return p==='cash' || p==='dinheiro';
   }
 
-  function cashChangeV1318(){
-    const total=Number(checkoutTotalsV111()?.total||0);
-    const paid=moneyNumberV1318(window.checkoutState?.cashPaid||0);
+  function parseMoneyV13111(v){
+    let s=String(v??'').trim().replace(/[R$\s]/g,'');
+    if(!s)return 0;
+    if(s.includes(','))s=s.replace(/\./g,'').replace(',','.');
+    const n=Number(s);
+    return Number.isFinite(n)?n:0;
+  }
+
+  function cashNumbersV13111(){
+    const total=Math.max(0,Number(checkoutTotalsV111()?.total||0));
+    const paid=Math.max(0,parseMoneyV13111(window.checkoutState?.cashPaid||''));
     return {total,paid,change:Math.max(0,paid-total)};
   }
 
-  window.updateCashChangeV1318=function(){
-    const input=document.getElementById('cashPaidV1318');
-    const out=document.getElementById('cashChangeV1318');
-    const warn=document.getElementById('cashWarnV1318');
-    if(!input||!out)return;
+  function renderCashResultV13111(){
+    const input=document.getElementById('cashPaidV13111');
+    const result=document.getElementById('cashChangeV13111');
+    const warning=document.getElementById('cashWarnV13111');
+    if(!input||!result)return;
 
     window.checkoutState=window.checkoutState||{};
     window.checkoutState.cashPaid=input.value;
 
-    const x=cashChangeV1318();
-    if(!input.value.trim()){
-      out.textContent='Informe com quanto você vai pagar';
-      if(warn)warn.style.display='none';
+    const x=cashNumbersV13111();
+    const empty=!String(input.value||'').trim();
+
+    if(empty){
+      result.textContent='Informe com quanto você vai pagar';
+      if(warning)warning.hidden=true;
       return;
     }
 
     if(x.paid<x.total){
-      out.textContent='Valor informado: '+brl(x.paid);
-      if(warn){
-        warn.style.display='block';
-        warn.textContent='O valor para pagamento precisa ser igual ou maior que o total do pedido.';
+      result.textContent='Valor informado: '+brl(x.paid);
+      if(warning){
+        warning.hidden=false;
+        warning.textContent='O valor informado precisa ser igual ou maior que o total do pedido.';
       }
-    }else{
-      out.textContent=x.change>0
-        ? 'Troco: '+brl(x.change)
-        : 'Não precisa de troco';
-      if(warn)warn.style.display='none';
-    }
-  };
-
-  function injectCashBoxV1318(){
-    const sheet=document.getElementById('sheet');
-    if(!sheet)return;
-
-    const old=document.getElementById('cashPaymentBoxV1318');
-    if(!isCashV1318()){
-      old?.remove();
       return;
     }
 
-    // Procura a área imediatamente depois da forma de pagamento.
-    const labels=[...sheet.querySelectorAll('label,div,h3,h4')];
-    let anchor=labels.find(el=>/forma de pagamento/i.test(el.textContent||''));
-    if(!anchor)return;
-
-    // sobe até um bloco razoável da forma de pagamento
-    let block=anchor;
-    for(let i=0;i<4 && block.parentElement && block.parentElement!==sheet;i++){
-      if(block.querySelector?.('button') && /dinheiro/i.test(block.textContent||'')) break;
-      block=block.parentElement;
-    }
-
-    let box=old;
-    if(!box){
-      box=document.createElement('div');
-      box.id='cashPaymentBoxV1318';
-      box.className='notice';
-      box.style.cssText='margin:12px 0 18px;padding:14px;border-radius:16px;';
-      block.insertAdjacentElement('afterend',box);
-    }
-
-    const x=cashChangeV1318();
-    const value=window.checkoutState?.cashPaid||'';
-    box.innerHTML=`
-      <div style="font-weight:900;margin-bottom:8px">💵 Pagamento em dinheiro</div>
-      <label for="cashPaidV1318" style="display:block;margin-bottom:6px">Vai pagar com quanto?</label>
-      <input id="cashPaidV1318" class="field" inputmode="decimal"
-             placeholder="Ex.: 50,00" value="${esc(String(value))}"
-             oninput="updateCashChangeV1318()">
-      <div id="cashChangeV1318" style="font-weight:900;margin-top:8px">
-        ${value ? (x.paid>=x.total ? (x.change>0?'Troco: '+brl(x.change):'Não precisa de troco') : 'Valor informado: '+brl(x.paid)) : 'Informe com quanto você vai pagar'}
-      </div>
-      <div id="cashWarnV1318" class="hint" style="display:${value&&x.paid<x.total?'block':'none'};color:#b8323f;margin-top:5px">
-        O valor para pagamento precisa ser igual ou maior que o total do pedido.
-      </div>
-    `;
+    if(warning)warning.hidden=true;
+    result.textContent=x.change>0 ? 'Troco: '+brl(x.change) : 'Não precisa de troco';
   }
 
-  // Injeta o campo sempre que o checkout for redesenhado/trocada a forma de pagamento.
-  const obsV1318=new MutationObserver(()=>{
-    clearTimeout(window._cashInjectTimerV1318);
-    window._cashInjectTimerV1318=setTimeout(injectCashBoxV1318,30);
-  });
-  document.addEventListener('DOMContentLoaded',()=>{
+  function addCashBoxV13111(){
+    if(!isCashV13111())return;
     const sheet=document.getElementById('sheet');
-    if(sheet)obsV1318.observe(sheet,{childList:true,subtree:true});
-  });
-  setTimeout(()=>{
-    const sheet=document.getElementById('sheet');
-    if(sheet && !window._cashObsStartedV1318){
-      try{obsV1318.observe(sheet,{childList:true,subtree:true});window._cashObsStartedV1318=true}catch(e){}
-    }
-    injectCashBoxV1318();
-  },700);
+    if(!sheet || document.getElementById('cashPaymentBoxV13111'))return;
 
-  // Validação final: dinheiro não pode seguir sem valor suficiente.
-  const finishBaseV1318=window.finishCheckoutV111;
-  if(typeof finishBaseV1318==='function'){
-    window.finishCheckoutV111=async function(){
-      if(isCashV1318()){
-        const input=document.getElementById('cashPaidV1318');
-        if(input)window.checkoutState.cashPaid=input.value;
-        const x=cashChangeV1318();
+    // O bloco é inserido UMA ÚNICA VEZ após o botão da forma de pagamento.
+    const paymentButton=[...sheet.querySelectorAll('button.choiceTile')]
+      .find(b=>/dinheiro/i.test(b.textContent||''));
+    if(!paymentButton)return;
 
-        if(!String(window.checkoutState?.cashPaid||'').trim()){
-          pedeviaToastV1315?.('Informe com quanto vai pagar em dinheiro.','error');
-          input?.focus();
-          return;
-        }
-        if(x.paid<x.total){
-          pedeviaToastV1315?.('O valor em dinheiro é menor que o total do pedido.','error');
-          input?.focus();
-          return;
-        }
-      }
-      return finishBaseV1318.apply(this,arguments);
+    const box=document.createElement('div');
+    box.id='cashPaymentBoxV13111';
+    box.className='cashBoxV13111';
+    box.innerHTML=`
+      <div class="cashTitleV13111">💵 Pagamento em dinheiro</div>
+      <label for="cashPaidV13111">Vai pagar com quanto?</label>
+      <input
+        id="cashPaidV13111"
+        class="field"
+        type="text"
+        inputmode="decimal"
+        enterkeyhint="done"
+        autocomplete="off"
+        placeholder="Ex.: 50,00"
+        value="${esc(String(window.checkoutState?.cashPaid||''))}">
+      <div id="cashChangeV13111" class="cashResultV13111">Informe com quanto você vai pagar</div>
+      <div id="cashWarnV13111" class="cashWarnV13111" hidden></div>
+    `;
+
+    paymentButton.insertAdjacentElement('afterend',box);
+
+    // Listener direto no campo. Sem MutationObserver, sem reconstruir checkout,
+    // sem trocar o elemento que está focado.
+    const input=box.querySelector('#cashPaidV13111');
+    input.addEventListener('input',renderCashResultV13111);
+    input.addEventListener('change',renderCashResultV13111);
+
+    renderCashResultV13111();
+  }
+
+  // Mantém TODAS as camadas atuais do checkout/fidelidade e apenas acrescenta
+  // o campo de dinheiro depois que elas terminarem de montar a tela.
+  const showCustomerBaseV13111=showCustomerForm;
+  showCustomerForm=function(){
+    const r=showCustomerBaseV13111.apply(this,arguments);
+    addCashBoxV13111();
+    return r;
+  };
+
+  // Se a fidelidade alterar o total depois da consulta do telefone,
+  // atualiza só o texto do troco. O input permanece exatamente o mesmo.
+  if(typeof renderCheckoutTotalsV119==='function'){
+    const totalsBaseV13111=renderCheckoutTotalsV119;
+    renderCheckoutTotalsV119=function(){
+      const r=totalsBaseV13111.apply(this,arguments);
+      if(document.getElementById('cashPaidV13111'))renderCashResultV13111();
+      return r;
     };
   }
 
-  // Formato profissional do WhatsApp + informação de dinheiro/troco.
+  // Validação final antes de registrar/enviar.
+  const finishBaseV13111=finishWhatsApp;
+  finishWhatsApp=async function(){
+    if(isCashV13111()){
+      const input=document.getElementById('cashPaidV13111');
+      if(input){
+        window.checkoutState=window.checkoutState||{};
+        window.checkoutState.cashPaid=input.value;
+      }
+      const raw=String(window.checkoutState?.cashPaid||'').trim();
+      const x=cashNumbersV13111();
+
+      if(!raw){
+        alert('Informe com quanto você vai pagar em dinheiro.');
+        input?.focus();
+        return;
+      }
+      if(x.paid<x.total){
+        alert(`O valor informado (${brl(x.paid)}) é menor que o total do pedido (${brl(x.total)}).`);
+        input?.focus();
+        return;
+      }
+    }
+    return await finishBaseV13111.apply(this,arguments);
+  };
+
+  // Acrescenta "vai pagar com" e "troco" à comanda do WhatsApp,
+  // preservando a formatação profissional já existente.
+  const buildTextBaseV13111=buildOrderTextV111;
   buildOrderTextV111=function(){
-    normalizeOrderExtrasV111();
-    const st=window.checkoutState||{};
-    const o=cfg.store.orderConfig||{};
-    const t=checkoutTotalsV111();
-    const storeName=String(cfg.store.name||'Estabelecimento').trim();
-    const L=[`🛍️ *Novo pedido via ${storeName}:*`,''];
+    let text=buildTextBaseV13111.apply(this,arguments);
+    if(!isCashV13111())return text;
 
-    cart.forEach(i=>{
-      const p=cfg.products.find(x=>x.id===i.pid)||{};
-      let base=Number(p.price||0);
-      if(i.variantId && Array.isArray(p.variants)){
-        const v=p.variants.find(x=>x.id===i.variantId);
-        if(v)base=Number(v.price||0);
-      }
-      const qty=Math.max(1,Number(i.qty||1));
-      const productName=`${p.name||'Produto'}${i.variantName?' · '+i.variantName:''}`;
-      L.push(`*${qty}x ${productName} (${brl(base*qty)})*`);
-      (i.groups||[]).forEach(g=>(g.items||[]).forEach(x=>{
-        const q=Math.max(1,Number(x?.qty||1));
-        const price=Math.max(0,Number(x?.price||0));
-        L.push(`   ↳ ${q}x ${String(x?.name||'Complemento')}${price?` (+${brl(price*q)})`:''}`);
-      }));
-      if(i.obs)L.push(`   ↳ Obs.: ${i.obs}`);
-      L.push('');
-    });
+    const x=cashNumbersV13111();
+    const payment=paymentKeyLabel(window.checkoutState?.payment);
+    const needle=`*Forma de pagamento*\n${payment}`;
 
-    L.push('*Valor*','Produtos: '+brl(t.sub));
-    if(t.promoDiscount)L.push(`${t.promoOffer?.title||'Oferta'}: - ${brl(t.promoDiscount)}`);
-    if(t.loyaltyDiscount)L.push(`Fidelidade (${t.loyaltyPercent}%): - ${brl(t.loyaltyDiscount)}`);
-    if(t.delivery)L.push('Taxa de entrega: '+brl(t.delivery));
-    if(t.payAdj)L.push((t.payAdj>0?'Taxa':'Desconto')+' de pagamento: '+brl(Math.abs(t.payAdj)));
-    if(t.service)L.push((o.serviceFeeLabel||'Taxa de serviço')+': '+brl(t.service));
-    L.push('*Total: '+brl(t.total)+'*','');
+    const extra=`${needle}\nVai pagar com: ${brl(x.paid)}\nTroco: ${brl(x.change)}`;
+    if(text.includes(needle))return text.replace(needle,extra);
 
-    L.push('*Forma de pagamento*',paymentKeyLabel(st.payment));
-    if(isCashV1318()){
-      const x=cashChangeV1318();
-      L.push('Vai pagar com: '+brl(x.paid));
-      L.push('Troco: '+brl(x.change));
-    }
-    L.push('');
-
-    if(st.mode==='delivery'){
-      let addr=String(st.address||'').trim(), ref=String(st.reference||'').trim();
-      if(ref && addr.endsWith(' · '+ref))addr=addr.slice(0,-(' · '+ref).length).trim();
-      L.push('*Entrega*');
-      if(st.neighborhood)L.push(st.neighborhood);
-      if(addr)L.push(addr);
-      if(ref)L.push(ref);
-      L.push('');
-    }else if(st.mode==='pickup'){
-      L.push('*Retirada*');
-      if(cfg.store.address)L.push(cfg.store.address);
-      L.push('');
-    }else{
-      L.push('*Consumo no local*');
-      if(st.table)L.push('Mesa: '+st.table);
-      L.push('');
-    }
-
-    if(st.note)L.push('*Observações*',st.note,'');
-    if(st.payment==='pix'&&o.pixKey){
-      L.push('*Pix para pagamento*',o.pixKey);
-      if(o.pixHolder)L.push(o.pixHolder);
-      L.push('');
-    }
-    L.push('*Cliente*',`${st.customer||'-'}${st.phone?' - '+st.phone:''}`);
-    return L.filter(x=>x!==null&&x!==undefined).join('\n');
+    return text+`\n\n*Pagamento em dinheiro*\nVai pagar com: ${brl(x.paid)}\nTroco: ${brl(x.change)}`;
   };
 
+  // Estilo do bloco sem interferir no comportamento do teclado.
+  const style=document.createElement('style');
+  style.id='cashStyleV13111';
+  style.textContent=`
+    .cashBoxV13111{
+      margin:12px 0 18px;
+      padding:15px;
+      border-radius:18px;
+      background:#fff1c7;
+    }
+    .cashTitleV13111{
+      font-size:17px;
+      font-weight:900;
+      margin-bottom:10px;
+    }
+    .cashBoxV13111 label{
+      display:block;
+      margin-bottom:7px;
+      font-weight:700;
+    }
+    .cashResultV13111{
+      margin-top:9px;
+      font-weight:900;
+      font-size:16px;
+    }
+    .cashWarnV13111{
+      margin-top:6px;
+      color:#b8323f;
+      font-size:13px;
+      font-weight:700;
+    }
+  `;
+  document.head.appendChild(style);
+
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.31.8');
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.31.11');
       }
     });
   },1200);
 
 })();
 </script>
-<!-- v1.31.8: dinheiro com valor pago, cálculo de troco e envio dessas informações ao WhatsApp. -->
-
-
-
-<script>
-// ===== v1.31.9: CORREÇÃO DO TECLADO NO CAMPO "VAI PAGAR COM QUANTO?" =====
-(function(){
-  // O MutationObserver da v1.31.8 podia reconstruir o bloco enquanto o usuário
-  // digitava, fazendo o input perder foco e o teclado abrir/fechar repetidamente.
-  try{ obsV1318.disconnect(); }catch(e){}
-
-  let cashLastPaymentV1319 = null;
-
-  function syncCashBoxV1319(){
-    const sheet=document.getElementById('sheet');
-    if(!sheet)return;
-
-    const cash=isCashV1318();
-    const box=document.getElementById('cashPaymentBoxV1318');
-
-    if(!cash){
-      if(box)box.remove();
-      cashLastPaymentV1319=false;
-      return;
-    }
-
-    // Se já existe, NÃO recria nem altera o input enquanto ele está em foco.
-    if(box){
-      cashLastPaymentV1319=true;
-      return;
-    }
-
-    injectCashBoxV1318();
-    cashLastPaymentV1319=true;
-  }
-
-  // Observa apenas mudanças relevantes e nunca reage à digitação/alteração
-  // dentro do próprio bloco de dinheiro.
-  const stableObserverV1319=new MutationObserver((mutations)=>{
-    if(mutations.every(m=>{
-      const t=m.target?.nodeType===1?m.target:m.target?.parentElement;
-      return t?.closest?.('#cashPaymentBoxV1318');
-    })) return;
-
-    clearTimeout(window._cashStableTimerV1319);
-    window._cashStableTimerV1319=setTimeout(syncCashBoxV1319,100);
-  });
-
-  function startStableObserverV1319(){
-    const sheet=document.getElementById('sheet');
-    if(!sheet)return;
-    try{stableObserverV1319.observe(sheet,{childList:true,subtree:true})}catch(e){}
-    syncCashBoxV1319();
-  }
-
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',startStableObserverV1319,{once:true});
-  }else{
-    startStableObserverV1319();
-  }
-  setTimeout(startStableObserverV1319,700);
-
-  // Digitação estável: apenas calcula o troco; não redesenha o checkout.
-  document.addEventListener('input',function(ev){
-    if(ev.target?.id!=='cashPaidV1318')return;
-    window.checkoutState=window.checkoutState||{};
-    window.checkoutState.cashPaid=ev.target.value;
-    updateCashChangeV1318();
-  },true);
-
-  // Evita que handlers globais de clique do checkout reconstruam a tela
-  // quando o usuário apenas toca no campo de dinheiro.
-  document.addEventListener('click',function(ev){
-    if(ev.target?.closest?.('#cashPaymentBoxV1318')){
-      ev.stopPropagation();
-    }
-  },true);
-
-  // Ajuda navegadores móveis a manter o foco/teclado.
-  document.addEventListener('focusin',function(ev){
-    if(ev.target?.id==='cashPaidV1318'){
-      ev.target.setAttribute('inputmode','decimal');
-      ev.target.setAttribute('autocomplete','off');
-      ev.target.setAttribute('enterkeyhint','done');
-    }
-  },true);
-
-  setTimeout(()=>{
-    document.querySelectorAll('.adminHead .hint').forEach(el=>{
-      if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.31.9');
-      }
-    });
-  },1200);
-})();
-</script>
-<!-- v1.31.9: campo de dinheiro não é mais reconstruído durante a digitação; teclado móvel permanece aberto. -->
-
-
-
-<script>
-// ===== v1.31.10: CORREÇÃO REAL DO FOCO/TECLADO NO PAGAMENTO EM DINHEIRO =====
-(function(){
-
-  // A causa restante era o observer antigo da v1.31.8:
-  // ao alterar textContent do resultado do troco, ele detectava childList,
-  // reconstruía o bloco inteiro e destruía o input focado.
-  //
-  // Esta versão atualiza SOMENTE o nó de texto existente (characterData),
-  // que não dispara aquele observer.
-
-  function setTextWithoutChildListV13110(el,text){
-    if(!el)return;
-    const value=String(text??'');
-    if(el.firstChild && el.firstChild.nodeType===Node.TEXT_NODE){
-      el.firstChild.nodeValue=value;
-      // remove nós extras sem tocar no primeiro
-      while(el.childNodes.length>1)el.removeChild(el.lastChild);
-    }else{
-      // só acontece na primeira vez; depois fica estável
-      el.appendChild(document.createTextNode(value));
-    }
-  }
-
-  window.updateCashChangeV1318=function(){
-    const input=document.getElementById('cashPaidV1318');
-    const out=document.getElementById('cashChangeV1318');
-    const warn=document.getElementById('cashWarnV1318');
-    if(!input||!out)return;
-
-    window.checkoutState=window.checkoutState||{};
-    window.checkoutState.cashPaid=input.value;
-
-    const total=Number(checkoutTotalsV111()?.total||0);
-    const raw=String(input.value||'').trim().replace(/[R$\s]/g,'');
-    let normalized=raw;
-    if(normalized.includes(','))normalized=normalized.replace(/\./g,'').replace(',','.');
-    const paid=Number(normalized)||0;
-    const change=Math.max(0,paid-total);
-
-    if(!input.value.trim()){
-      setTextWithoutChildListV13110(out,'Informe com quanto você vai pagar');
-      if(warn)warn.style.display='none';
-      return;
-    }
-
-    if(paid<total){
-      setTextWithoutChildListV13110(out,'Valor informado: '+brl(paid));
-      if(warn){
-        warn.style.display='block';
-        // NÃO usa textContent aqui.
-        if(warn.firstChild && warn.firstChild.nodeType===Node.TEXT_NODE){
-          warn.firstChild.nodeValue='O valor para pagamento precisa ser igual ou maior que o total do pedido.';
-        }
-      }
-    }else{
-      setTextWithoutChildListV13110(
-        out,
-        change>0 ? 'Troco: '+brl(change) : 'Não precisa de troco'
-      );
-      if(warn)warn.style.display='none';
-    }
-  };
-
-  // Evita qualquer reconstrução do bloco enquanto o campo estiver focado.
-  // Se alguma camada antiga tentar substituir o bloco, restauramos o mesmo input.
-  let cashFocusGuardV13110=false;
-
-  document.addEventListener('focusin',function(ev){
-    if(ev.target?.id==='cashPaidV1318'){
-      cashFocusGuardV13110=true;
-    }
-  },true);
-
-  document.addEventListener('focusout',function(ev){
-    if(ev.target?.id==='cashPaidV1318'){
-      setTimeout(()=>{cashFocusGuardV13110=false},180);
-    }
-  },true);
-
-  // Remove o oninput inline para termos um único fluxo de atualização.
-  document.addEventListener('focusin',function(ev){
-    if(ev.target?.id!=='cashPaidV1318')return;
-    ev.target.removeAttribute('oninput');
-  },true);
-
-  // Um único listener para digitação.
-  document.addEventListener('input',function(ev){
-    if(ev.target?.id!=='cashPaidV1318')return;
-    updateCashChangeV1318();
-  },true);
-
-  // Mantém o input estável mesmo se houver tentativa de atualização do checkout.
-  const guardObserverV13110=new MutationObserver((mutations)=>{
-    if(!cashFocusGuardV13110)return;
-    const active=document.activeElement;
-    if(active?.id==='cashPaidV1318')return;
-
-    // Se o campo foi recriado enquanto estava digitando, recupera foco e cursor.
-    const input=document.getElementById('cashPaidV1318');
-    if(input){
-      const len=input.value.length;
-      requestAnimationFrame(()=>{
-        try{
-          input.focus({preventScroll:true});
-          input.setSelectionRange(len,len);
-        }catch(e){}
-      });
-    }
-  });
-
-  function startGuardV13110(){
-    const sheet=document.getElementById('sheet');
-    if(sheet){
-      try{guardObserverV13110.observe(sheet,{childList:true,subtree:true})}catch(e){}
-    }
-  }
-  if(document.readyState==='loading'){
-    document.addEventListener('DOMContentLoaded',startGuardV13110,{once:true});
-  }else startGuardV13110();
-  setTimeout(startGuardV13110,700);
-
-  setTimeout(()=>{
-    document.querySelectorAll('.adminHead .hint').forEach(el=>{
-      if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.31.10');
-      }
-    });
-  },1200);
-
-})();
-</script>
-<!-- v1.31.10: cálculo de troco sem reconstruir o input; foco e teclado permanecem estáveis. -->
+<!-- v1.31.11: dinheiro integrado diretamente ao checkout; nenhum MutationObserver usado. -->
 
 </body></html>
