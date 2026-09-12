@@ -5237,7 +5237,7 @@ async function loadTenantRowV121(slug){
   try{
     const {data:sessionData}=await supabaseClient.auth.getSession();
     if(sessionData?.session){
-      const {data,error}=await supabaseClient.from('client_sites').select('id,name,slug,whatsapp,active,config,admin_email').eq('slug',slug).maybeSingle();
+      const {data,error}=await supabaseClient.from('client_sites').select('id,name,slug,whatsapp,active,config,admin_email,service_status,billing_due_date,monthly_fee,suspension_reason').eq('slug',slug).maybeSingle();
       if(!error && data)return data;
     }
   }catch(e){console.warn('Prévia autenticada indisponível:',e)}
@@ -7015,14 +7015,14 @@ adminMore=function(){_adminMoreV130MediaBase();const list=document.querySelector
       <div class="v126Stat"><b>${suspended}</b><small>Suspensos</small></div>
       <div class="v126Stat"><b>${overdue}</b><small>Vencidos</small></div>
     </div>`+rows.map(r=>{
-      const url=tenantPublicUrlV121(r.slug||''),s=serviceStatusV131(r),due=r.billing_due_date?`Vencimento: ${brDateV131(r.billing_due_date)}`:'Vencimento não definido';
+      const url=tenantPublicUrlV121(r.slug||''),s=serviceStatusV131(r),due=r.billing_due_date?`Vencimento: ${brDateV131(r.billing_due_date)}`:'Vencimento não definido',fee=Number(r.monthly_fee||0)>0?`Mensalidade: ${Number(r.monthly_fee).toLocaleString('pt-BR',{style:'currency',currency:'BRL'})}`:'Mensalidade não definida';
       const quick=s==='suspended'||s==='cancelled'||s==='draft'
         ?`<button class="ghost" onclick="setClientServiceStatusV131('${r.id}','active')">Reativar</button>`
         :`<button class="ghost" onclick="setClientServiceStatusV131('${r.id}','suspended')">Suspender</button>`;
       return `<div class="adminItem" style="align-items:flex-start">
         <div style="min-width:0"><b>${esc(r.name||'Loja')}</b> ${clientSiteStatusV120(r)}<br>
         <span class="hint">/${esc(r.slug||'')} · ${esc(r.admin_email||'sem administrador')}</span><br>
-        <small class="hint">${esc(due)}${isOverdueV131(r)?' · <b style="color:#b91c1c">VENCIDO</b>':''}</small><br>
+        <small class="hint">${esc(fee)} · ${esc(due)}${isOverdueV131(r)?' · <b style="color:#b91c1c">VENCIDO</b>':''}</small><br>
         <small class="hint">${esc(url)}</small></div>
         <div class="miniBtns" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
           <button class="ghost" onclick="openClientSiteV121('${r.id}')">Abrir site</button>
@@ -7044,7 +7044,7 @@ adminMore=function(){_adminMoreV130MediaBase();const list=document.querySelector
     showModal(`<div class="row"><div><h2 style="margin:0">${esc(r.name)}</h2><div class="hint">Gestão do estabelecimento na Pedevia</div></div><button class="ghost" onclick="closeModal()">✕</button></div>
       <div class="panel" style="padding:13px;margin:12px 0">
         <div class="row"><div><b>Situação do serviço</b><div class="hint">Controle comercial visível somente para a administração da Pedevia.</div></div>${statusBadgeV131(r)}</div>
-        <label>Vencimento da mensalidade</label><input id="cseDueV131" type="date" class="field" value="${escapeAttrV120(r.billing_due_date?String(r.billing_due_date).slice(0,10):'')}">
+        <div class="two"><div><label>Valor da mensalidade (R$)</label><input id="cseFeeV1311" type="number" min="0" step="0.01" class="field" value="${escapeAttrV120(r.monthly_fee??'')}" placeholder="Ex.: 49.90"></div><div><label>Vencimento da mensalidade</label><input id="cseDueV131" type="date" class="field" value="${escapeAttrV120(r.billing_due_date?String(r.billing_due_date).slice(0,10):'')}"></div></div>
         <label>Observação interna / motivo da suspensão</label><textarea id="cseReasonV131" class="field" rows="3" placeholder="Ex.: mensalidade de setembro pendente">${esc(r.suspension_reason||'')}</textarea>
         <div class="miniBtns" style="margin-top:10px;display:flex;gap:7px;flex-wrap:wrap">
           ${status!=='active'?`<button class="btn" onclick="setClientServiceStatusV131('${r.id}','active')">🟢 Reativar estabelecimento</button>`:''}
@@ -7073,9 +7073,9 @@ adminMore=function(){_adminMoreV130MediaBase();const list=document.querySelector
     config.store.name=name;config.store.whatsapp=wa;config.store.hubSlug=slug;
     if(window.clientLogoDraftV1211!==undefined)config.store.brandImage=window.clientLogoDraftV1211||'';
     config.store.heroTitle=(document.getElementById('cseHeroTitleV1211')?.value||'').trim()||'Texto inicial do site';config.store.heroEmoji='';config.store.heroText=(document.getElementById('cseHeroTextV1211')?.value||'').trim();
-    const due=document.getElementById('cseDueV131')?.value||null,reason=(document.getElementById('cseReasonV131')?.value||'').trim();
+    const due=document.getElementById('cseDueV131')?.value||null,feeRaw=document.getElementById('cseFeeV1311')?.value,monthlyFee=feeRaw===''||feeRaw==null?null:Math.max(0,Number(feeRaw)||0),reason=(document.getElementById('cseReasonV131')?.value||'').trim();
     const btn=document.getElementById('cseSaveBtnV120');if(btn){btn.disabled=true;btn.textContent='Salvando...'}
-    const {error}=await supabaseClient.from('client_sites').update({name,slug,whatsapp:wa,admin_email:email,billing_due_date:due||null,suspension_reason:reason||null,config,updated_at:new Date().toISOString()}).eq('id',id);
+    const {error}=await supabaseClient.from('client_sites').update({name,slug,whatsapp:wa,admin_email:email,billing_due_date:due||null,monthly_fee:monthlyFee,suspension_reason:reason||null,config,updated_at:new Date().toISOString()}).eq('id',id);
     if(error){alert('Erro ao salvar: '+error.message);if(btn){btn.disabled=false;btn.textContent='Salvar alterações'}return}
     closeModal();await openClientSitesMasterV120();
   };
@@ -7126,6 +7126,47 @@ adminMore=function(){_adminMoreV130MediaBase();const list=document.querySelector
 })();
 
 
+// ===== v1.31.1: ASSINATURA VISÍVEL PARA O PROPRIETÁRIO =====
+(function(){
+  function moneyV1311(v){
+    const n=Number(v||0);return n>0?n.toLocaleString('pt-BR',{style:'currency',currency:'BRL'}):'Não definida';
+  }
+  function brDateOwnerV1311(v){
+    if(!v)return 'Não definido';
+    const d=new Date(String(v).slice(0,10)+'T12:00:00');
+    return Number.isFinite(d.getTime())?d.toLocaleDateString('pt-BR'):'Não definido';
+  }
+  function daysUntilV1311(v){
+    if(!v)return null;
+    const d=new Date(String(v).slice(0,10)+'T23:59:59'),now=new Date();
+    if(!Number.isFinite(d.getTime()))return null;
+    return Math.ceil((d-now)/86400000);
+  }
+  function ownerBillingCardV1311(){
+    const row=window.pedeviaTenantV121;
+    if(!row?.id||!document.getElementById('adminContent'))return;
+    const target=document.getElementById('adminContent');
+    document.getElementById('ownerBillingV1311')?.remove();
+    const status=String(row.service_status||'active').toLowerCase();
+    const days=daysUntilV1311(row.billing_due_date);
+    let state='🟢 Plano ativo',note='Sua assinatura Pedevia está ativa.';
+    if(status==='suspended'){state='🔴 Serviço suspenso';note='Entre em contato com a Pedevia para regularizar e reativar o cardápio.'}
+    else if(status==='cancelled'){state='🔴 Serviço cancelado';note='Entre em contato com a Pedevia para consultar a reativação.'}
+    else if(status==='draft'){state='⚪ Loja em preparação';note='A ativação comercial desta loja ainda está pendente.'}
+    else if(days!==null&&days<0){state='🔴 Mensalidade vencida';note=`O vencimento ocorreu em ${brDateOwnerV1311(row.billing_due_date)}. Regularize para evitar a suspensão do cardápio.`}
+    else if(days!==null&&days<=3){state='🟡 Vencimento próximo';note=days===0?'A mensalidade vence hoje.':`A mensalidade vence em ${days} dia${days===1?'':'s'}.`}
+    const card=document.createElement('div');card.id='ownerBillingV1311';card.className='panel';card.style.cssText='margin:0 0 14px;padding:14px';
+    card.innerHTML=`<div class="row" style="align-items:flex-start"><div><b style="font-size:16px">Assinatura Pedevia</b><div class="hint" style="margin-top:3px">Informações da mensalidade deste estabelecimento</div></div><b>${state}</b></div><div class="two" style="margin-top:10px"><div class="summary"><small>Mensalidade</small><br><b>${moneyV1311(row.monthly_fee)}</b></div><div class="summary"><small>Próximo vencimento</small><br><b>${brDateOwnerV1311(row.billing_due_date)}</b></div></div><div class="hint" style="margin-top:9px">${note}</div>`;
+    target.prepend(card);
+  }
+  window.ownerBillingCardV1311=ownerBillingCardV1311;
+  const baseRender=renderAdmin;
+  renderAdmin=function(){baseRender();if(window.pedeviaTenantV121)setTimeout(ownerBillingCardV1311,20)};
+  const baseEnter=enterTenantAdminV122;
+  enterTenantAdminV122=async function(){const ok=await baseEnter();setTimeout(ownerBillingCardV1311,30);return ok};
+  setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.31.1')})},1000);
+})();
+
 // Inicializa somente depois de todas as camadas de compatibilidade do arquivo terem sido carregadas.
 initializeOnlineStateV13();
 </script>
@@ -7136,3 +7177,4 @@ initializeOnlineStateV13();
 <!-- v1.27.0: auditoria geral, isolamento por loja, realtime, horários avançados e operação profissional. -->
 <!-- v1.30.3: ajustes de WhatsApp e ordenação silenciosa. -->
 <!-- v1.31.0: gestão comercial, vencimento, suspensão e cancelamento de estabelecimentos. -->
+<!-- v1.31.1: mensalidade individual editável e assinatura visível no painel do proprietário. -->
