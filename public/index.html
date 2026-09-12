@@ -6102,9 +6102,353 @@ setTimeout(()=>{
   document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9]/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.24.3')});
 },0);
 
+
+// ===== v1.25.0: HORÁRIO BLOQUEIA CARRINHO + PAINEL ONLINE DE PEDIDOS =====
+// Regra global da Pedevia: vale para o Point e para todos os estabelecimentos atuais e futuros.
+
+function currentStoreKeyV125(){
+  const slug=String(window.pedeviaTenantV121?.slug||tenantSlugFromLocationV121()||'').trim();
+  return slug||'point-frontin';
+}
+function currentStoreNameV125(){
+  return String(window.pedeviaTenantV121?.name||cfg?.store?.name||'Estabelecimento').trim()||'Estabelecimento';
+}
+function storeAcceptingOrdersV125(){
+  const st=openState();
+  return !!st.open;
+}
+function closedOrderMessageV125(){
+  const st=openState();
+  return `O estabelecimento não está recebendo pedidos agora. ${st.text||''}`.trim();
+}
+
+// Mantém o cardápio totalmente navegável quando fechado, mas impede qualquer item novo no carrinho.
+const _addCartV125Base=addCart;
+addCart=function(pid){
+  if(!storeAcceptingOrdersV125()){
+    alert(closedOrderMessageV125()+' Você pode consultar o cardápio e montar as opções, mas só poderá adicionar ao carrinho durante o horário de funcionamento.');
+    return;
+  }
+  return _addCartV125Base(pid);
+};
+
+// Segurança adicional: se o horário virar enquanto o cliente está com o carrinho aberto,
+// ele não consegue iniciar/finalizar um pedido fora do expediente.
+const _beginCheckoutV125Base=beginCheckout;
+beginCheckout=function(){
+  if(!storeAcceptingOrdersV125()){
+    alert(closedOrderMessageV125()+' O carrinho foi preservado para você continuar quando a loja abrir.');
+    return;
+  }
+  return _beginCheckoutV125Base();
+};
+
+// Corrige a mensagem pública de loja fechada em todas as lojas.
+const _renderShopV125Base=renderShop;
+renderShop=function(){
+  _renderShopV125Base();
+  const st=openState();
+  const notice=document.getElementById('closedNotice');
+  if(notice && !st.open){
+    notice.innerHTML=`<div class="notice bad"><b>Pedidos fechados no momento.</b><br>Você pode consultar o cardápio e selecionar opções, mas só poderá adicionar produtos ao carrinho durante o horário de funcionamento.</div>`;
+  }
+};
+
+function orderStatusLabelV125(status){
+  return ({new:'Novo',accepted:'Aceito',preparing:'Preparando',ready:'Pronto',completed:'Concluído',cancelled:'Cancelado'})[status]||status||'Novo';
+}
+function orderStatusClassV125(status){
+  return ['completed','ready'].includes(status)?'available':status==='cancelled'?'unavailable':'hidden';
+}
+function orderModeLabelV125(mode){return mode==='delivery'?'Entrega':mode==='pickup'?'Retirada':mode==='dinein'?'Consumo no local':mode||'-'}
+function orderDateV125(v){
+  try{return new Date(v).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}catch(_e){return ''}
+}
+function orderNumberV125(o){return '#'+String(o.order_number||o.id||'').replace(/[^0-9A-Za-z-]/g,'').slice(-10)}
+
+async function createOnlineOrderV125(){
+  if(!storeAcceptingOrdersV125())throw new Error('O estabelecimento fechou antes da finalização. Tente novamente no próximo horário de funcionamento.');
+  const st=window.checkoutState||{};
+  const t=typeof checkoutTotalsV111==='function'?checkoutTotalsV111():{sub:sum(),total:sum()};
+  const text=typeof buildOrderTextV111==='function'?buildOrderTextV111():'';
+  const items=(cart||[]).map(i=>{
+    const p=(cfg.products||[]).find(x=>x.id===i.pid);
+    return {product_id:i.pid,name:p?.name||'Produto',variant:i.variantName||'',quantity:+i.qty||1,unit_price:+i.unit||0,groups:i.groups||[],note:i.obs||''};
+  });
+  const payload={
+    store_key:currentStoreKeyV125(),
+    store_name:currentStoreNameV125(),
+    customer_name:String(st.customer||document.getElementById('coName')?.value||'').trim(),
+    customer_phone:String(st.phone||document.getElementById('coPhone')?.value||'').trim(),
+    order_mode:String(st.mode||''),
+    address:String(st.address||''),
+    neighborhood:String(st.neighborhood||''),
+    table_number:String(st.table||''),
+    payment_method:String(st.payment||''),
+    note:String(st.note||document.getElementById('coObs')?.value||'').trim(),
+    items,
+    subtotal:Number(t.sub||0),
+    discount:Number((t.promoDiscount||0)+(t.loyaltyDiscount||0)),
+    delivery_fee:Number(t.delivery||0),
+    payment_adjustment:Number(t.payAdj||0),
+    service_fee:Number(t.service||0),
+    total:Number(t.total||0),
+    status:'new',
+    whatsapp_text:text
+  };
+  const {data,error}=await supabaseClient.from('pedevia_orders').insert(payload).select('*').single();
+  if(error)throw error;
+  return data;
+}
+
+async function fetchOrdersV125(){
+  const key=currentStoreKeyV125();
+  const {data,error}=await supabaseClient.from('pedevia_orders').select('*').eq('store_key',key).order('created_at',{ascending:false}).limit(200);
+  if(error)throw error;
+  return Array.isArray(data)?data:[];
+}
+
+function orderCopyTextV125(o){
+  if(o.whatsapp_text)return o.whatsapp_text;
+  const lines=[`*PEDIDO ${orderNumberV125(o)} · ${o.store_name||currentStoreNameV125()}*`,''];
+  (o.items||[]).forEach(i=>lines.push(`*${i.quantity||1}x ${i.name||'Produto'}* — ${brl((+i.unit_price||0)*(+i.quantity||1))}`));
+  lines.push('',`Cliente: ${o.customer_name||'-'}`,`Celular: ${o.customer_phone||'-'}`,`Tipo: ${orderModeLabelV125(o.order_mode)}`,`Pagamento: ${paymentKeyLabel(o.payment_method)}`,`*TOTAL: ${brl(+o.total||0)}*`);
+  return lines.join('\n');
+}
+async function copyOrderV125(id){
+  const o=(window.pedeviaOrdersV125||[]).find(x=>String(x.id)===String(id));if(!o)return;
+  try{await navigator.clipboard.writeText(orderCopyTextV125(o));alert('Pedido copiado. Agora é só colar no WhatsApp do cliente.')}catch(_e){prompt('Copie o pedido:',orderCopyTextV125(o))}
+}
+function viewOrderV125(id){
+  const o=(window.pedeviaOrdersV125||[]).find(x=>String(x.id)===String(id));if(!o)return;
+  const items=(o.items||[]).map(i=>`<div class="summary"><div class="row"><b>${i.quantity||1}x ${esc(i.name||'Produto')}${i.variant?' · '+esc(i.variant):''}</b><b>${brl((+i.unit_price||0)*(+i.quantity||1))}</b></div>${(i.groups||[]).map(g=>`<small><b>${esc(g.name||'Complementos')}:</b> ${(g.items||[]).map(x=>esc(x.name||x)).join(', ')}</small>`).join('')}${i.note?`<small>Obs.: ${esc(i.note)}</small>`:''}</div>`).join('');
+  showModal(`<div class="row"><div><h2 style="margin:0">Pedido ${orderNumberV125(o)}</h2><div class="hint">${orderDateV125(o.created_at)}</div></div><button class="ghost" onclick="closeModal()">✕</button></div>${items}<div class="summary"><div><b>${esc(o.customer_name||'-')}</b> · ${esc(o.customer_phone||'-')}</div><small>${orderModeLabelV125(o.order_mode)}${o.neighborhood?' · '+esc(o.neighborhood):''}${o.address?' · '+esc(o.address):''}${o.table_number?' · Mesa '+esc(o.table_number):''}</small><small>Pagamento: ${esc(paymentKeyLabel(o.payment_method))}</small>${o.note?`<small>Obs.: ${esc(o.note)}</small>`:''}<div class="row" style="margin-top:8px"><strong>Total</strong><strong>${brl(+o.total||0)}</strong></div></div><label>Status</label><select id="orderStatusV125" class="field"><option value="new">Novo</option><option value="accepted">Aceito</option><option value="preparing">Preparando</option><option value="ready">Pronto</option><option value="completed">Concluído</option><option value="cancelled">Cancelado</option></select><button class="btn full" onclick="updateOrderStatusV125('${o.id}')">Salvar status</button><button class="ghost full" style="margin-top:8px" onclick="copyOrderV125('${o.id}')">Copiar pedido</button>`);
+  setTimeout(()=>{const s=document.getElementById('orderStatusV125');if(s)s.value=o.status||'new'},0);
+}
+async function updateOrderStatusV125(id){
+  const status=document.getElementById('orderStatusV125')?.value||'new';
+  const {error}=await supabaseClient.from('pedevia_orders').update({status,updated_at:new Date().toISOString()}).eq('id',id);
+  if(error){alert('Não foi possível atualizar o pedido: '+error.message);return}
+  closeModal();await loadOrdersPanelV125();
+}
+
+async function loadOrdersPanelV125(){
+  if(adminTab!=='orders'||adminOrdersView==='config')return;
+  const host=document.getElementById('ordersListV125');if(!host)return;
+  host.innerHTML='<div class="panel"><p class="hint">Atualizando pedidos...</p></div>';
+  try{
+    const rows=await fetchOrdersV125();window.pedeviaOrdersV125=rows;
+    const newCount=rows.filter(o=>o.status==='new').length;
+    const body=rows.length?rows.map(o=>`<div class="panel" style="padding:13px"><div class="row"><div><b style="font-size:17px">${orderNumberV125(o)}</b> <span class="badge ${orderStatusClassV125(o.status)}">${orderStatusLabelV125(o.status)}</span><div class="hint">${orderDateV125(o.created_at)} · ${esc(o.customer_name||'Cliente')} · ${orderModeLabelV125(o.order_mode)}</div></div><b>${brl(+o.total||0)}</b></div><div class="miniBtns" style="margin-top:10px"><button class="ghost" onclick="viewOrderV125('${o.id}')">Ver pedido</button><button class="ghost" onclick="copyOrderV125('${o.id}')">Copiar</button></div></div>`).join(''):'<div class="panel"><h3>Nenhum pedido ainda</h3><p class="hint">Assim que um cliente finalizar um pedido, ele aparecerá aqui automaticamente.</p></div>';
+    host.innerHTML=`${newCount?`<div class="notice"><b>${newCount} pedido(s) novo(s)</b> aguardando atendimento.</div>`:''}${body}`;
+  }catch(e){
+    console.error('Falha ao carregar painel de pedidos:',e);
+    host.innerHTML='<div class="notice bad"><b>Painel de pedidos ainda não conectado.</b><br>Execute a configuração SQL da versão 1.25.0 no Supabase e atualize esta página.</div>';
+  }
+}
+
+// Substitui a antiga tela "Pedidos por WhatsApp" por um painel operacional real.
+adminOrders=function(){
+  if(adminOrdersView==='config'){adminOrderSettings();return}
+  const st=openState(),paused=cfg.store.paused;
+  document.getElementById('adminContent').innerHTML=`<div class="orderHero"><div class="row"><div><h2 style="margin:0">Pedidos</h2><div class="hint">Todos os pedidos feitos pelo cardápio aparecem aqui.</div></div><button class="ghost" onclick="adminOrdersView='config';adminOrders()">⚙ Configurar</button></div><div class="storeState ${paused?'paused':''}"><div><span class="stateDot"></span><b>${paused?'Recebimento pausado':st.open?'Estabelecimento aberto':'Estabelecimento fechado'}</b><div style="font-size:12px;opacity:.8">${paused?'Pedidos online temporariamente pausados':st.text}</div></div><button onclick="toggleOrdersPaused()">${paused?'Retomar':'Pausar'} ▾</button></div></div><div id="ordersListV125"></div>`;
+  loadOrdersPanelV125();
+};
+
+// Atualização automática enquanto o painel de Pedidos estiver aberto.
+setInterval(()=>{if(mode==='admin'&&logged&&adminTab==='orders'&&adminOrdersView!=='config')loadOrdersPanelV125()},15000);
+
+// Registra no painel antes de abrir o WhatsApp. Se o banco ainda não estiver configurado,
+// o pedido continua podendo seguir para o WhatsApp para não interromper a operação.
+const _finishWhatsAppV125Base=finishWhatsApp;
+finishWhatsApp=async function(){
+  if(!storeAcceptingOrdersV125()){
+    alert(closedOrderMessageV125()+' O pedido não foi enviado.');return;
+  }
+  const btn=document.querySelector('#sheet .checkoutSticky .btn.green, .sheet .checkoutSticky .btn.green');
+  if(btn){btn.disabled=true;btn.textContent='Registrando pedido...'}
+  try{
+    window.checkoutState=window.checkoutState||{};
+    const n=document.getElementById('coName'),p=document.getElementById('coPhone'),o=document.getElementById('coObs');
+    if(n)window.checkoutState.customer=n.value.trim();if(p)window.checkoutState.phone=p.value.trim();if(o)window.checkoutState.note=o.value.trim();
+    if(!window.checkoutState.customer||!window.checkoutState.phone){alert('Informe seu nome e celular.');return}
+    let created=null;
+    try{created=await createOnlineOrderV125()}catch(e){console.warn('Pedido não foi salvo no painel:',e)}
+    if(created){
+      const num=orderNumberV125(created);
+      window.pedeviaCurrentOrderNumberV125=num;
+      const oldBuild=buildOrderTextV111;
+      buildOrderTextV111=function(){
+        const txt=oldBuild();
+        return `🧾 *PEDIDO ${num}*\n`+txt.replace(/POINT DO AÇAÍ FRONTIN/gi,currentStoreNameV125());
+      };
+      try{return await _finishWhatsAppV125Base()}finally{buildOrderTextV111=oldBuild}
+    }
+    return await _finishWhatsAppV125Base();
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='☏ Enviar pelo WhatsApp'}
+  }
+};
+
+// Mostra a versão nova no cabeçalho administrativo.
+setTimeout(()=>{
+  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.25.0')});
+},0);
+
+
+// ===== Pedevia v1.26.0: HISTÓRICO, LIMPEZA E ESTATÍSTICAS =====
+(function injectV126Styles(){
+  if(document.getElementById('pedeviaV126Styles'))return;
+  const st=document.createElement('style');st.id='pedeviaV126Styles';st.textContent=`
+  .v126Toolbar{display:flex;gap:8px;overflow:auto;margin:0 0 12px;scrollbar-width:none}.v126Toolbar button{white-space:nowrap}
+  .v126StatsGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0 14px}.v126Stat{background:var(--card,#fff);border:1px solid var(--line,#e8e1ea);border-radius:17px;padding:14px}.v126Stat b{display:block;font-size:22px;color:var(--p,#712489)}.v126Stat small{display:block;color:var(--muted,#7c7480);margin-top:4px}
+  .v126Rank{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line,#e8e1ea)}.v126Rank:last-child{border-bottom:0}.v126RankNum{width:30px;height:30px;border-radius:10px;background:#f0ebf2;display:grid;place-items:center;font-weight:900}.v126Right{text-align:right}.v126Right small{display:block;color:var(--muted,#7c7480)}
+  .v126Filters{display:flex;gap:7px;overflow:auto;margin:0 0 12px;scrollbar-width:none}.v126Filters button{white-space:nowrap;border:1px solid var(--line,#e8e1ea);background:var(--card,#fff);color:var(--ink,#28232b);border-radius:999px;padding:9px 12px;font-weight:800}.v126Filters button.on{background:var(--p,#712489);color:#fff;border-color:var(--p,#712489)}
+  .v126Danger{background:#fde3e6!important;color:#922a34!important}.v126Muted{opacity:.72}.v126SectionTitle{display:flex;justify-content:space-between;gap:10px;align-items:end;margin:18px 0 8px}.v126SectionTitle h3{margin:0}.v126OrderActions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+  @media(min-width:720px){.v126StatsGrid{grid-template-columns:repeat(4,minmax(0,1fr))}}
+  `;document.head.appendChild(st);
+})();
+
+window.ordersTabV126=window.ordersTabV126||'active';
+window.statsRangeV126=window.statsRangeV126||'30';
+
+function activeOrderV126(o){return ['new','accepted','preparing','ready'].includes(o.status)}
+function archivedOrderV126(o){return ['completed','cancelled'].includes(o.status)}
+function normalizePhoneV126(v){return String(v||'').replace(/\D/g,'')}
+function statusRevenueV126(o){return o.status==='completed'}
+function safeDateV126(v){const d=new Date(v);return Number.isNaN(+d)?null:d}
+
+async function fetchStoreOrdersV126(limit=1000){
+  const key=currentStoreKeyV125();
+  const {data,error}=await supabaseClient.from('pedevia_orders').select('*').eq('store_key',key).order('created_at',{ascending:false}).limit(limit);
+  if(error)throw error;return Array.isArray(data)?data:[];
+}
+
+async function fetchAllStoreOrdersV126(){
+  const key=currentStoreKeyV125(),all=[],page=1000,maxPages=20;
+  for(let p=0;p<maxPages;p++){
+    const from=p*page,to=from+page-1;
+    const {data,error}=await supabaseClient.from('pedevia_orders').select('*').eq('store_key',key).order('created_at',{ascending:false}).range(from,to);
+    if(error)throw error;
+    const rows=Array.isArray(data)?data:[];all.push(...rows);if(rows.length<page)break;
+  }
+  return all;
+}
+
+async function deleteOrderV126(id){
+  const o=(window.pedeviaOrdersV125||[]).find(x=>String(x.id)===String(id));
+  if(!confirm(`Excluir definitivamente o pedido ${o?orderNumberV125(o):''}?\n\nEssa ação não pode ser desfeita e o pedido deixará de aparecer no histórico e nas estatísticas.`))return;
+  const {error}=await supabaseClient.from('pedevia_orders').delete().eq('id',id).eq('store_key',currentStoreKeyV125());
+  if(error){alert('Não foi possível excluir o pedido: '+error.message);return}
+  closeModal();await loadOrdersPanelV126();
+}
+
+async function finishTodayOrdersV126(){
+  if(!confirm('Encerrar todos os pedidos ativos de hoje?\n\nEles serão marcados como Concluídos e sairão da lista de pedidos ativos, mas continuarão salvos no Histórico e nas Estatísticas.'))return;
+  const now=new Date(),start=new Date(now.getFullYear(),now.getMonth(),now.getDate()),end=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1);
+  const iso=new Date().toISOString();
+  const {error}=await supabaseClient.from('pedevia_orders').update({status:'completed',completed_at:iso,updated_at:iso}).eq('store_key',currentStoreKeyV125()).in('status',['new','accepted','preparing','ready']).gte('created_at',start.toISOString()).lt('created_at',end.toISOString());
+  if(error){alert('Não foi possível encerrar os pedidos: '+error.message);return}
+  await loadOrdersPanelV126();
+}
+
+async function updateOrderStatusV126(id){
+  const status=document.getElementById('orderStatusV125')?.value||'new',now=new Date().toISOString();
+  const patch={status,updated_at:now,completed_at:null,cancelled_at:null};
+  if(status==='completed')patch.completed_at=now;if(status==='cancelled')patch.cancelled_at=now;
+  const {error}=await supabaseClient.from('pedevia_orders').update(patch).eq('id',id).eq('store_key',currentStoreKeyV125());
+  if(error){alert('Não foi possível atualizar o pedido: '+error.message);return}
+  closeModal();await loadOrdersPanelV126();
+}
+updateOrderStatusV125=updateOrderStatusV126;
+
+viewOrderV125=function(id){
+  const o=(window.pedeviaOrdersV125||[]).find(x=>String(x.id)===String(id));if(!o)return;
+  const items=(o.items||[]).map(i=>`<div class="summary"><div class="row"><b>${i.quantity||1}x ${esc(i.name||'Produto')}${i.variant?' · '+esc(i.variant):''}</b><b>${brl((+i.unit_price||0)*(+i.quantity||1))}</b></div>${(i.groups||[]).map(g=>`<small><b>${esc(g.name||'Complementos')}:</b> ${(g.items||[]).map(x=>esc(x.name||x)).join(', ')}</small>`).join('')}${i.note?`<small>Obs.: ${esc(i.note)}</small>`:''}</div>`).join('');
+  showModal(`<div class="row"><div><h2 style="margin:0">Pedido ${orderNumberV125(o)}</h2><div class="hint">${orderDateV125(o.created_at)}</div></div><button class="ghost" onclick="closeModal()">✕</button></div>${items}<div class="summary"><div><b>${esc(o.customer_name||'-')}</b> · ${esc(o.customer_phone||'-')}</div><small>${orderModeLabelV125(o.order_mode)}${o.neighborhood?' · '+esc(o.neighborhood):''}${o.address?' · '+esc(o.address):''}${o.table_number?' · Mesa '+esc(o.table_number):''}</small><small>Pagamento: ${esc(paymentKeyLabel(o.payment_method))}</small>${o.note?`<small>Obs.: ${esc(o.note)}</small>`:''}<div class="row" style="margin-top:8px"><strong>Total</strong><strong>${brl(+o.total||0)}</strong></div></div><label>Status</label><select id="orderStatusV125" class="field"><option value="new">Novo</option><option value="accepted">Aceito</option><option value="preparing">Preparando</option><option value="ready">Pronto</option><option value="completed">Concluído</option><option value="cancelled">Cancelado</option></select><button class="btn full" onclick="updateOrderStatusV126('${o.id}')">Salvar status</button><button class="ghost full" style="margin-top:8px" onclick="copyOrderV125('${o.id}')">Copiar pedido</button><button class="dangerBtn full" style="width:100%;margin-top:8px" onclick="deleteOrderV126('${o.id}')">Excluir pedido definitivamente</button>`);
+  setTimeout(()=>{const s=document.getElementById('orderStatusV125');if(s)s.value=o.status||'new'},0);
+};
+
+function renderOrderCardV126(o){
+  return `<div class="panel" style="padding:13px"><div class="row"><div><b style="font-size:17px">${orderNumberV125(o)}</b> <span class="badge ${orderStatusClassV125(o.status)}">${orderStatusLabelV125(o.status)}</span><div class="hint">${orderDateV125(o.created_at)} · ${esc(o.customer_name||'Cliente')} · ${orderModeLabelV125(o.order_mode)}</div></div><b>${brl(+o.total||0)}</b></div><div class="v126OrderActions"><button class="ghost" onclick="viewOrderV125('${o.id}')">Ver pedido</button><button class="ghost" onclick="copyOrderV125('${o.id}')">Copiar</button>${archivedOrderV126(o)?`<button class="ghost v126Danger" onclick="deleteOrderV126('${o.id}')">Excluir</button>`:''}</div></div>`;
+}
+
+async function loadOrdersPanelV126(){
+  if(adminTab!=='orders'||adminOrdersView==='config'||adminOrdersView==='stats')return;
+  const host=document.getElementById('ordersListV125');if(!host)return;
+  host.innerHTML='<div class="panel"><p class="hint">Atualizando pedidos...</p></div>';
+  try{
+    const rows=await fetchStoreOrdersV126(1000);window.pedeviaOrdersV125=rows;
+    const active=rows.filter(activeOrderV126),history=rows.filter(archivedOrderV126),show=ordersTabV126==='history'?history:active;
+    const newCount=active.filter(o=>o.status==='new').length;
+    const tabs=`<div class="v126Filters"><button class="${ordersTabV126==='active'?'on':''}" onclick="ordersTabV126='active';loadOrdersPanelV126()">Ativos (${active.length})</button><button class="${ordersTabV126==='history'?'on':''}" onclick="ordersTabV126='history';loadOrdersPanelV126()">Histórico (${history.length})</button></div>`;
+    const actions=ordersTabV126==='active'?`<div class="v126Toolbar"><button class="ghost" onclick="finishTodayOrdersV126()">✓ Encerrar pedidos de hoje</button><button class="ghost" onclick="adminOrdersView='stats';adminOrders()">📊 Estatísticas</button></div>`:`<div class="v126Toolbar"><button class="ghost" onclick="adminOrdersView='stats';adminOrders()">📊 Estatísticas</button></div>`;
+    const empty=ordersTabV126==='active'?'<div class="panel"><h3>Nenhum pedido ativo</h3><p class="hint">Os pedidos concluídos e cancelados ficam guardados na aba Histórico.</p></div>':'<div class="panel"><h3>Histórico vazio</h3><p class="hint">Pedidos concluídos ou cancelados aparecerão aqui.</p></div>';
+    host.innerHTML=`${newCount&&ordersTabV126==='active'?`<div class="notice"><b>${newCount} pedido(s) novo(s)</b> aguardando atendimento.</div>`:''}${tabs}${actions}${show.length?show.map(renderOrderCardV126).join(''):empty}`;
+  }catch(e){console.error('Falha ao carregar painel de pedidos:',e);host.innerHTML='<div class="notice bad"><b>Painel de pedidos não conectado.</b><br>Execute o SQL da versão 1.26.0 no Supabase e recarregue esta página.</div>'}
+}
+loadOrdersPanelV125=loadOrdersPanelV126;
+
+function statsCutoffV126(){
+  if(statsRangeV126==='all')return null;const n=+statsRangeV126||30,d=new Date();d.setDate(d.getDate()-n);return d;
+}
+function aggregateCustomersV126(rows){
+  const m=new Map();
+  rows.forEach(o=>{const phone=normalizePhoneV126(o.customer_phone),key=phone||('nome:'+String(o.customer_name||'').toLowerCase());if(!key)return;let c=m.get(key);if(!c)c={key,phone,name:o.customer_name||'Cliente',orders:0,completed:0,spent:0,last:o.created_at,all:[]};c.orders++;c.all.push(o);if(statusRevenueV126(o)){c.completed++;c.spent+=+o.total||0}if(new Date(o.created_at)>new Date(c.last))c.last=o.created_at;m.set(key,c)});
+  return [...m.values()];
+}
+function aggregateProductsV126(rows){
+  const m=new Map();rows.filter(statusRevenueV126).forEach(o=>(o.items||[]).forEach(i=>{const key=String(i.product_id||i.name||'Produto');let p=m.get(key);if(!p)p={name:i.name||'Produto',qty:0,revenue:0};const q=+i.quantity||1;p.qty+=q;p.revenue+=(+i.unit_price||0)*q;m.set(key,p)}));return [...m.values()].sort((a,b)=>b.qty-a.qty);
+}
+function customerHistoryV126(key){
+  const customers=aggregateCustomersV126(window.statsOrdersV126||[]),c=customers.find(x=>x.key===key);if(!c)return;
+  const rows=[...c.all].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+  showModal(`<div class="row"><div><h2 style="margin:0">${esc(c.name)}</h2><div class="hint">${esc(c.phone||'Sem telefone')}</div></div><button class="ghost" onclick="closeModal()">✕</button></div><div class="v126StatsGrid"><div class="v126Stat"><b>${c.orders}</b><small>Pedidos registrados</small></div><div class="v126Stat"><b>${c.completed}</b><small>Pedidos concluídos</small></div><div class="v126Stat"><b>${brl(c.spent)}</b><small>Total faturado</small></div></div><h3>Histórico de pedidos</h3>${rows.map(o=>`<div class="summary"><div class="row"><b>${orderNumberV125(o)}</b><b>${brl(+o.total||0)}</b></div><small>${orderDateV125(o.created_at)} · ${orderStatusLabelV125(o.status)} · ${orderModeLabelV125(o.order_mode)}</small></div>`).join('')||'<p class="hint">Sem pedidos.</p>'}`);
+}
+
+async function loadStatisticsV126(){
+  const host=document.getElementById('statsHostV126');if(!host)return;host.innerHTML='<div class="panel"><p class="hint">Calculando estatísticas...</p></div>';
+  try{
+    const all=await fetchAllStoreOrdersV126();window.statsOrdersV126=all;
+    const cutoff=statsCutoffV126(),period=cutoff?all.filter(o=>{const d=safeDateV126(o.created_at);return d&&d>=cutoff}):all;
+    const completed=period.filter(statusRevenueV126),lifeCompleted=all.filter(statusRevenueV126),cancelled=period.filter(o=>o.status==='cancelled'),active=all.filter(activeOrderV126);
+    const revenue=completed.reduce((s,o)=>s+(+o.total||0),0),lifeRevenue=lifeCompleted.reduce((s,o)=>s+(+o.total||0),0),ticket=completed.length?revenue/completed.length:0;
+    const customers=aggregateCustomersV126(period).sort((a,b)=>b.completed-a.completed||b.spent-a.spent),products=aggregateProductsV126(period).slice(0,10);
+    const ranges=[['7','7 dias'],['30','30 dias'],['90','90 dias'],['all','Todo período']].map(([v,n])=>`<button class="${statsRangeV126===v?'on':''}" onclick="statsRangeV126='${v}';loadStatisticsV126()">${n}</button>`).join('');
+    const topCustomers=customers.filter(c=>c.completed>0).slice(0,10).map((c,i)=>`<div class="v126Rank"><div class="v126RankNum">${i+1}</div><div><b>${esc(c.name)}</b><small>${esc(c.phone||'Sem telefone')} · ${c.completed} concluído(s)</small></div><div class="v126Right"><b>${brl(c.spent)}</b><button class="ghost" style="padding:5px 8px;margin-top:4px" onclick="customerHistoryV126('${c.key.replace(/'/g,"\\'")}')">Histórico</button></div></div>`).join('')||'<p class="hint">Ainda não há clientes com pedidos concluídos neste período.</p>';
+    const allCustomers=customers.slice(0,30).map(c=>`<div class="adminItem"><div><b>${esc(c.name)}</b><small>${esc(c.phone||'Sem telefone')} · último pedido ${orderDateV125(c.last)}</small></div><button class="ghost" onclick="customerHistoryV126('${c.key.replace(/'/g,"\\'")}')">Ver histórico</button></div>`).join('')||'<p class="hint">Nenhum cliente registrado.</p>';
+    const topProducts=products.map((p,i)=>`<div class="v126Rank"><div class="v126RankNum">${i+1}</div><div><b>${esc(p.name)}</b><small>${p.qty} unidade(s) vendida(s)</small></div><div class="v126Right"><b>${brl(p.revenue)}</b></div></div>`).join('')||'<p class="hint">Ainda não há produtos vendidos neste período.</p>';
+    host.innerHTML=`<div class="v126Filters">${ranges}</div><div class="v126StatsGrid"><div class="v126Stat"><b>${brl(revenue)}</b><small>Faturamento no período</small></div><div class="v126Stat"><b>${completed.length}</b><small>Vendas concluídas</small></div><div class="v126Stat"><b>${brl(ticket)}</b><small>Ticket médio</small></div><div class="v126Stat"><b>${brl(lifeRevenue)}</b><small>Faturamento geral</small></div></div><div class="panel"><div class="row"><h3 style="margin:0">Situação dos pedidos</h3><span class="hint">${active.length} ativos · ${cancelled.length} cancelados no período</span></div></div><div class="panel"><h3>Clientes que mais pedem</h3>${topCustomers}</div><div class="panel"><h3>Produtos mais vendidos</h3>${topProducts}</div><div class="panel"><h3>Histórico dos clientes</h3><p class="hint">Veja todos os pedidos registrados para cada cliente, inclusive cancelados.</p>${allCustomers}</div>`;
+  }catch(e){console.error(e);host.innerHTML='<div class="notice bad"><b>Não foi possível carregar as estatísticas.</b><br>Confirme se o SQL da versão 1.26.0 foi executado.</div>'}
+}
+
+function adminStatisticsV126(){
+  document.getElementById('adminContent').innerHTML=`<button class="backBtn" onclick="adminOrdersView='main';adminOrders()">‹ Voltar para Pedidos</button><div class="panel"><div class="row"><div><div class="settingsTitle" style="margin-bottom:2px">Estatísticas de vendas</div><div class="hint">Faturamento considera somente pedidos marcados como Concluídos.</div></div></div></div><div id="statsHostV126"></div>`;loadStatisticsV126();
+}
+
+adminOrders=function(){
+  if(adminOrdersView==='config'){adminOrderSettings();return}
+  if(adminOrdersView==='stats'){adminStatisticsV126();return}
+  const st=openState(),paused=cfg.store.paused;
+  document.getElementById('adminContent').innerHTML=`<div class="orderHero"><div class="row"><div><h2 style="margin:0">Pedidos</h2><div class="hint">Acompanhe os pedidos ativos e consulte o histórico.</div></div><button class="ghost" onclick="adminOrdersView='config';adminOrders()">⚙ Configurar</button></div><div class="storeState ${paused?'paused':''}"><div><span class="stateDot"></span><b>${paused?'Recebimento pausado':st.open?'Estabelecimento aberto':'Estabelecimento fechado'}</b><div style="font-size:12px;opacity:.8">${paused?'Pedidos online temporariamente pausados':st.text}</div></div><button onclick="toggleOrdersPaused()">${paused?'Retomar':'Pausar'} ▾</button></div></div><div id="ordersListV125"></div>`;loadOrdersPanelV126();
+};
+
+// Estatísticas também ficam acessíveis em Mais, no Point e em todas as lojas.
+const _adminMoreV126Base=adminMore;
+adminMore=function(){
+  _adminMoreV126Base();
+  const list=document.querySelector('#adminContent .moreList');if(!list||document.getElementById('statsCardV126'))return;
+  const holder=document.createElement('div');holder.id='statsCardV126';holder.innerHTML=moreCard('📊','Estatísticas de vendas','Faturamento, clientes, ranking e histórico',"adminTab='orders';adminOrdersView='stats';renderAdmin()");
+  list.appendChild(holder);
+};
+
+// Versão exibida no Admin.
+setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.26.0')})},0);
+
+
 // Inicializa somente depois de todas as camadas de compatibilidade do arquivo terem sido carregadas.
 initializeOnlineStateV13();
 </script>
 
 </body></html>
-<!-- v1.24.3: convite resolve o tenant pelo slug antes de abrir a criação de senha, evitando fallback para o Point. -->
+<!-- v1.26.0: pedidos ativos/histórico, exclusão, encerramento diário e estatísticas para Point e tenants. -->
