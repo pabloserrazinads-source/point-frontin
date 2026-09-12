@@ -6965,6 +6965,167 @@ PedeviaV130.enhanceAdminProducts=function(){
 const _adminMoreV130MediaBase=adminMore;
 adminMore=function(){_adminMoreV130MediaBase();const list=document.querySelector('#adminContent .moreList');if(list&&!document.getElementById('mediaOptimizeV130')){const h=document.createElement('div');h.id='mediaOptimizeV130';h.innerHTML=moreCard('◫','Otimizar imagens','Mover imagens antigas para o Storage da Pedevia','PedeviaV130.optimizeImages()');list.appendChild(h)}};
 
+// ===== v1.31.0: GESTÃO COMERCIAL · VENCIMENTO, SUSPENSÃO E CANCELAMENTO =====
+(function(){
+  const STATUS_META_V131={
+    draft:{label:'Rascunho',cls:'hidden',icon:'⚪'},
+    active:{label:'Ativo',cls:'available',icon:'🟢'},
+    suspended:{label:'Suspenso',cls:'unavailable',icon:'🟡'},
+    cancelled:{label:'Cancelado',cls:'hidden',icon:'🔴'}
+  };
+
+  function serviceStatusV131(r){
+    const s=String(r?.service_status||'').toLowerCase();
+    if(STATUS_META_V131[s])return s;
+    return r?.active?'active':'draft';
+  }
+  function statusBadgeV131(r){
+    const s=serviceStatusV131(r),m=STATUS_META_V131[s];
+    return `<span class="badge ${m.cls}">${m.icon} ${m.label}</span>`;
+  }
+  function brDateV131(v){
+    if(!v)return 'Sem vencimento';
+    const d=new Date(String(v).slice(0,10)+'T12:00:00');
+    return Number.isFinite(d.getTime())?d.toLocaleDateString('pt-BR'):'Sem vencimento';
+  }
+  function isOverdueV131(r){
+    if(!r?.billing_due_date||serviceStatusV131(r)!=='active')return false;
+    const due=new Date(String(r.billing_due_date).slice(0,10)+'T23:59:59');
+    return Number.isFinite(due.getTime())&&due<new Date();
+  }
+  window.serviceStatusV131=serviceStatusV131;
+
+  // Status visual usado por todas as versões anteriores do painel mestre.
+  clientSiteStatusV120=function(row){
+    const overdue=isOverdueV131(row);
+    return statusBadgeV131(row)+(overdue?' <span class="badge unavailable">Mensalidade vencida</span>':'');
+  };
+
+  // Lista mestre comercial com vencimento e ações rápidas.
+  renderClientSitesListV120=function(rows){
+    const el=document.getElementById('clientSitesListV120');if(!el)return;
+    if(!rows?.length){
+      el.innerHTML=`<div class="emptySection"><b>Nenhuma loja criada ainda.</b><br><span class="hint">Clique em “+ Nova loja” para criar o primeiro estabelecimento.</span></div>`;
+      return;
+    }
+    const total=rows.length,active=rows.filter(r=>serviceStatusV131(r)==='active').length,suspended=rows.filter(r=>serviceStatusV131(r)==='suspended').length,overdue=rows.filter(isOverdueV131).length;
+    el.innerHTML=`<div class="v126StatsGrid" id="masterSummaryV131">
+      <div class="v126Stat"><b>${total}</b><small>Estabelecimentos</small></div>
+      <div class="v126Stat"><b>${active}</b><small>Ativos</small></div>
+      <div class="v126Stat"><b>${suspended}</b><small>Suspensos</small></div>
+      <div class="v126Stat"><b>${overdue}</b><small>Vencidos</small></div>
+    </div>`+rows.map(r=>{
+      const url=tenantPublicUrlV121(r.slug||''),s=serviceStatusV131(r),due=r.billing_due_date?`Vencimento: ${brDateV131(r.billing_due_date)}`:'Vencimento não definido';
+      const quick=s==='suspended'||s==='cancelled'||s==='draft'
+        ?`<button class="ghost" onclick="setClientServiceStatusV131('${r.id}','active')">Reativar</button>`
+        :`<button class="ghost" onclick="setClientServiceStatusV131('${r.id}','suspended')">Suspender</button>`;
+      return `<div class="adminItem" style="align-items:flex-start">
+        <div style="min-width:0"><b>${esc(r.name||'Loja')}</b> ${clientSiteStatusV120(r)}<br>
+        <span class="hint">/${esc(r.slug||'')} · ${esc(r.admin_email||'sem administrador')}</span><br>
+        <small class="hint">${esc(due)}${isOverdueV131(r)?' · <b style="color:#b91c1c">VENCIDO</b>':''}</small><br>
+        <small class="hint">${esc(url)}</small></div>
+        <div class="miniBtns" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+          <button class="ghost" onclick="openClientSiteV121('${r.id}')">Abrir site</button>
+          <button class="ghost" onclick="copyClientSiteLinkV121('${r.id}')">Copiar link</button>
+          ${quick}
+          <button class="ghost" onclick="editClientSiteV120('${r.id}')">Gerenciar</button>
+        </div>
+      </div>`;
+    }).join('');
+  };
+
+  // Modal de gerenciamento comercial da loja.
+  editClientSiteV120=function(id){
+    const r=(window.clientSitesV120||[]).find(x=>String(x.id)===String(id));if(!r)return;
+    const cfg0=r.config||{},s0=cfg0.store||{},status=serviceStatusV131(r),m=STATUS_META_V131[status];
+    window.clientQrDraftV1201=s0.clientQrImage||'';
+    window.clientLogoDraftV1211=s0.brandImage||'';
+    const heroTitle=s0.heroTitle||'Texto inicial do site',heroText=s0.heroText||'';
+    showModal(`<div class="row"><div><h2 style="margin:0">${esc(r.name)}</h2><div class="hint">Gestão do estabelecimento na Pedevia</div></div><button class="ghost" onclick="closeModal()">✕</button></div>
+      <div class="panel" style="padding:13px;margin:12px 0">
+        <div class="row"><div><b>Situação do serviço</b><div class="hint">Controle comercial visível somente para a administração da Pedevia.</div></div>${statusBadgeV131(r)}</div>
+        <label>Vencimento da mensalidade</label><input id="cseDueV131" type="date" class="field" value="${escapeAttrV120(r.billing_due_date?String(r.billing_due_date).slice(0,10):'')}">
+        <label>Observação interna / motivo da suspensão</label><textarea id="cseReasonV131" class="field" rows="3" placeholder="Ex.: mensalidade de setembro pendente">${esc(r.suspension_reason||'')}</textarea>
+        <div class="miniBtns" style="margin-top:10px;display:flex;gap:7px;flex-wrap:wrap">
+          ${status!=='active'?`<button class="btn" onclick="setClientServiceStatusV131('${r.id}','active')">🟢 Reativar estabelecimento</button>`:''}
+          ${status!=='suspended'?`<button class="ghost" onclick="setClientServiceStatusV131('${r.id}','suspended')">🟡 Suspender</button>`:''}
+          ${status!=='cancelled'?`<button class="dangerBtn" onclick="setClientServiceStatusV131('${r.id}','cancelled')">🔴 Cancelar serviço</button>`:''}
+        </div>
+        <div class="hint" style="margin-top:8px">Suspender ou cancelar não apaga produtos, pedidos, clientes, estatísticas nem configurações. Reativar restaura a loja.</div>
+      </div>
+      <label>Nome</label><input id="cseNameV120" class="field" value="${escapeAttrV120(r.name)}">
+      <label>Slug</label><input id="cseSlugV120" class="field" value="${escapeAttrV120(r.slug)}">
+      <label>WhatsApp</label><input id="cseWaV120" class="field" value="${escapeAttrV120(r.whatsapp||'')}">
+      <label>Administrador</label><input id="cseEmailV120" type="email" class="field" value="${escapeAttrV120(r.admin_email||'')}">
+      <div class="panel" style="margin:14px 0;padding:14px"><b>Logo do estabelecimento</b><div id="clientLogoPreviewV1211"></div><label class="btn" style="display:inline-block;margin-top:10px;cursor:pointer">Enviar logo<input type="file" accept="image/*" style="display:none" onchange="readClientLogoV1211(this)"></label></div>
+      <div class="panel" style="margin:14px 0;padding:14px"><b>Texto inicial do site</b><label>Título</label><input id="cseHeroTitleV1211" class="field" value="${escapeAttrV120(heroTitle)}"><label>Texto complementar</label><textarea id="cseHeroTextV1211" class="field" rows="3">${esc(heroText)}</textarea></div>
+      <button id="cseSaveBtnV120" class="btn full" onclick="saveClientSiteV131('${r.id}')">Salvar alterações</button>
+      <button class="ghost full" style="margin-top:8px" onclick="resendClientInviteV122('${r.id}')">Reenviar convite de acesso</button>
+      <button class="dangerBtn full" style="margin-top:8px" onclick="deleteClientSiteV120('${r.id}')">Excluir definitivamente esta loja</button>`);
+    setTimeout(()=>{try{renderClientLogoPreviewV1211()}catch(e){}},0);
+  };
+
+  window.saveClientSiteV131=async function(id){
+    const row=(window.clientSitesV120||[]).find(x=>String(x.id)===String(id));if(!row)return;
+    const name=document.getElementById('cseNameV120')?.value.trim(),slug=slugifyStoreV120(document.getElementById('cseSlugV120')?.value),wa=(document.getElementById('cseWaV120')?.value||'').replace(/\D/g,''),email=(document.getElementById('cseEmailV120')?.value||'').trim().toLowerCase();
+    if(!name||!slug||!email){alert('Nome, slug e e-mail são obrigatórios.');return}
+    const config=JSON.parse(JSON.stringify(row.config||cleanClientConfigV120(name,wa)));config.store=config.store||{};
+    config.store.name=name;config.store.whatsapp=wa;config.store.hubSlug=slug;
+    if(window.clientLogoDraftV1211!==undefined)config.store.brandImage=window.clientLogoDraftV1211||'';
+    config.store.heroTitle=(document.getElementById('cseHeroTitleV1211')?.value||'').trim()||'Texto inicial do site';config.store.heroEmoji='';config.store.heroText=(document.getElementById('cseHeroTextV1211')?.value||'').trim();
+    const due=document.getElementById('cseDueV131')?.value||null,reason=(document.getElementById('cseReasonV131')?.value||'').trim();
+    const btn=document.getElementById('cseSaveBtnV120');if(btn){btn.disabled=true;btn.textContent='Salvando...'}
+    const {error}=await supabaseClient.from('client_sites').update({name,slug,whatsapp:wa,admin_email:email,billing_due_date:due||null,suspension_reason:reason||null,config,updated_at:new Date().toISOString()}).eq('id',id);
+    if(error){alert('Erro ao salvar: '+error.message);if(btn){btn.disabled=false;btn.textContent='Salvar alterações'}return}
+    closeModal();await openClientSitesMasterV120();
+  };
+
+  window.setClientServiceStatusV131=async function(id,next){
+    const row=(window.clientSitesV120||[]).find(x=>String(x.id)===String(id));if(!row)return;
+    const labels={active:'reativar',suspended:'suspender',cancelled:'cancelar'};
+    if(next!=='active'&&!confirm(`Deseja realmente ${labels[next]||'alterar'} “${row.name}”?\n\nNenhum dado da loja será apagado.`))return;
+    let reason=(document.getElementById('cseReasonV131')?.value||row.suspension_reason||'').trim();
+    if(next==='suspended'&&!reason)reason='Suspensão administrativa';
+    const now=new Date().toISOString(),patch={service_status:next,active:next==='active',suspension_reason:next==='active'?null:(reason||null),updated_at:now};
+    if(next==='suspended'){patch.suspended_at=now;patch.cancelled_at=null}
+    if(next==='cancelled'){patch.cancelled_at=now;patch.suspended_at=null}
+    if(next==='active'){patch.suspended_at=null;patch.cancelled_at=null}
+    const due=document.getElementById('cseDueV131')?.value;if(due!==undefined)patch.billing_due_date=due||null;
+    const {error}=await supabaseClient.from('client_sites').update(patch).eq('id',id);
+    if(error){alert('Não foi possível alterar a situação: '+error.message);return}
+    closeModal();await openClientSitesMasterV120();
+    alert(next==='active'?'Estabelecimento reativado.':next==='suspended'?'Estabelecimento suspenso. O cardápio público foi bloqueado sem apagar os dados.':'Serviço cancelado. Os dados foram preservados para possível reativação.');
+  };
+
+  function showServiceUnavailableV131(info){
+    const status=String(info?.service_status||'').toLowerCase(),name=info?.name||'Este estabelecimento';
+    const title=status==='draft'?'Cardápio em preparação':'Cardápio temporariamente indisponível';
+    const text=status==='draft'?'Este estabelecimento ainda está preparando o cardápio na Pedevia.':'Este estabelecimento está temporariamente indisponível na Pedevia.';
+    const shop=document.getElementById('shopView');
+    if(shop)shop.innerHTML=`<div class="panel" style="max-width:620px;margin:55px auto;text-align:center;padding:28px"><div style="font-size:52px">🏪</div><h2>${esc(title)}</h2><p><b>${esc(name)}</b></p><p class="hint">${esc(text)}</p></div>`;
+    document.getElementById('cartBar')?.classList.add('hide');
+  }
+  async function publicServiceInfoV131(slug){
+    try{const {data,error}=await supabaseClient.rpc('get_public_client_site_status',{p_slug:slug});if(error)return null;return Array.isArray(data)?data[0]:data}catch(e){return null}
+  }
+
+  // Substitui somente a inicialização pública do tenant: lojas suspensas/canceladas mostram tela neutra.
+  const previousInitV131=initializeOnlineStateV13;
+  initializeOnlineStateV13=async function(){
+    const slug=tenantSlugFromLocationV121();
+    if(!slug)return previousInitV131();
+    const row=await loadTenantRowV121(slug);
+    if(row){applyTenantConfigV121(row);renderShop();updateCart();return true}
+    const info=await publicServiceInfoV131(slug);
+    if(info?.slug){showServiceUnavailableV131(info);return false}
+    showTenantNotFoundV121(slug);return false;
+  };
+
+  // Atualiza a versão visível sem interferir nas demais camadas.
+  setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.31.0')})},900);
+})();
+
+
 // Inicializa somente depois de todas as camadas de compatibilidade do arquivo terem sido carregadas.
 initializeOnlineStateV13();
 </script>
@@ -6973,4 +7134,5 @@ initializeOnlineStateV13();
 <!-- v1.26.0: pedidos ativos/histórico, exclusão, encerramento diário e estatísticas para Point e tenants. -->
 
 <!-- v1.27.0: auditoria geral, isolamento por loja, realtime, horários avançados e operação profissional. -->
-<!-- v1.30.2: consolidação comercial, UX, kanban de pedidos, PWA, horários especiais e integrações. -->
+<!-- v1.30.3: ajustes de WhatsApp e ordenação silenciosa. -->
+<!-- v1.31.0: gestão comercial, vencimento, suspensão e cancelamento de estabelecimentos. -->
