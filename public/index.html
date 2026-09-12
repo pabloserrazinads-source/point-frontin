@@ -1613,7 +1613,7 @@ function offerTargetOptions(scope,current){
 }
 function editOffer(id){let o=cfg.offers.find(x=>x.id===id);if(!o)return;
  if(o.type==='loyalty'){
-   showModal(`<div class="row"><h2>Programa de fidelidade</h2><button class="ghost" onclick="closeModal()">✕</button></div><label>Nome</label><input id="ofTitle" class="field" value="${esc(o.title)}"><label>Descrição para o cliente</label><textarea id="ofDesc" class="field">${esc(o.description||'')}</textarea><div class="two"><div><label>Quantidade de pedidos</label><input id="ofOrders" type="number" min="1" class="field" value="${o.requiredOrders||10}"></div><div><label>Benefício (%)</label><input id="ofReward" type="number" min="0" max="100" class="field" value="${o.rewardPercent||10}"></div></div><label class="switchrow"><span>Programa ativo</span><input id="ofActive" type="checkbox" ${o.active?'checked':''}></label><div class="notice">O programa já aparece no cardápio. O controle automático de quantos pedidos cada cliente possui será ligado ao banco de dados quando publicarmos o site.</div><button class="btn full" onclick="saveLoyaltyOffer('${id}')">Salvar fidelidade</button>`);return;
+   showModal(`<div class="row"><h2>Programa de fidelidade</h2><button class="ghost" onclick="closeModal()">✕</button></div><label>Nome</label><input id="ofTitle" class="field" value="${esc(o.title)}"><label>Descrição para o cliente</label><textarea id="ofDesc" class="field">${esc(o.description||'')}</textarea><div class="two"><div><label>Quantidade de pedidos</label><input id="ofOrders" type="number" min="1" class="field" value="${o.requiredOrders||10}"></div><div><label>Benefício (%)</label><input id="ofReward" type="number" min="0" max="100" class="field" value="${o.rewardPercent||10}"></div></div><label class="switchrow"><span>Programa ativo</span><input id="ofActive" type="checkbox" ${o.active?'checked':''}></label><div class="notice">O programa já aparece no cardápio e o progresso dos clientes é controlado automaticamente pelos pedidos registrados.</div><button class="btn full" onclick="saveLoyaltyOffer('${id}')">Salvar fidelidade</button>`);return;
  }
  showModal(`<div class="row"><h2>Editar desconto</h2><button class="ghost" onclick="closeModal()">✕</button></div><label>Nome da oferta</label><input id="ofTitle" class="field" value="${esc(o.title)}"><label>Descrição para o cliente</label><textarea id="ofDesc" class="field">${esc(o.description||'')}</textarea><div class="two"><div><label>Desconto (%)</label><input id="ofPercent" type="number" min="0" max="100" class="field" value="${+o.percent||0}"></div><div><label>Pedido mínimo (R$)</label><input id="ofMin" type="number" min="0" step=".01" class="field" value="${+o.minValue||0}"></div></div><label>Aplicar em</label><select id="ofScope" class="field" onchange="refreshOfferTarget('${id}')"><option value="all" ${o.scope==='all'?'selected':''}>Todo o cardápio</option><option value="section" ${o.scope==='section'?'selected':''}>Uma seção</option><option value="product" ${o.scope==='product'?'selected':''}>Um produto</option></select><div id="offerTargetWrap"></div><label class="switchrow"><span>Oferta ativa</span><input id="ofActive" type="checkbox" ${o.active?'checked':''}></label><button class="btn full" onclick="savePercentOffer('${id}')">Salvar oferta</button>`);setTimeout(()=>refreshOfferTarget(id),0)
 }
@@ -7171,13 +7171,7 @@ adminMore=function(){_adminMoreV130MediaBase();const list=document.querySelector
 initializeOnlineStateV13();
 </script>
 
-</body></html>
-<!-- v1.26.0: pedidos ativos/histórico, exclusão, encerramento diário e estatísticas para Point e tenants. -->
 
-<!-- v1.27.0: auditoria geral, isolamento por loja, realtime, horários avançados e operação profissional. -->
-<!-- v1.30.3: ajustes de WhatsApp e ordenação silenciosa. -->
-<!-- v1.31.0: gestão comercial, vencimento, suspensão e cancelamento de estabelecimentos. -->
-<!-- v1.31.1: mensalidade individual editável e assinatura visível no painel do proprietário. -->
 
 <script>
 // ===== v1.31.2: CORREÇÃO DO PEDIDO MÍNIMO =====
@@ -7238,3 +7232,309 @@ setTimeout(()=>{
 </script>
 <!-- v1.31.2: pedido mínimo validado pelo subtotal de produtos, excluindo taxa de entrega. -->
 
+<script>
+// ===== v1.31.3: WHATSAPP EM FORMATO DE COMANDA =====
+(function(){
+  function cleanDeliveryAddressV1313(address,reference){
+    let a=String(address||'').trim();
+    const r=String(reference||'').trim();
+    if(r){
+      const suffix=' · '+r;
+      if(a.endsWith(suffix))a=a.slice(0,-suffix.length).trim();
+    }
+    return a;
+  }
+
+  function optionLineV1313(x){
+    const q=Math.max(1,Number(x?.qty||1));
+    const price=Math.max(0,Number(x?.price||0));
+    return `   ↳ ${q}x ${String(x?.name||'Complemento')}${price?` (+${brl(price*q)})`:''}`;
+  }
+
+  buildOrderTextV111=function(){
+    normalizeOrderExtrasV111();
+    const st=window.checkoutState||{};
+    const o=cfg.store.orderConfig||{};
+    const t=checkoutTotalsV111();
+    const storeName=String(cfg.store.name||'Estabelecimento').trim();
+    const L=[`🛍️ *Novo pedido via ${storeName}:*`,''];
+
+    cart.forEach(i=>{
+      const p=cfg.products.find(x=>x.id===i.pid)||{};
+      let base=Number(p.price||0);
+
+      if(i.variantId && Array.isArray(p.variants)){
+        const v=p.variants.find(x=>x.id===i.variantId);
+        if(v)base=Number(v.price||0);
+      }
+
+      const qty=Math.max(1,Number(i.qty||1));
+      const productName=`${p.name||'Produto'}${i.variantName?' · '+i.variantName:''}`;
+      L.push(`*${qty}x ${productName} (${brl(base*qty)})*`);
+
+      (i.groups||[]).forEach(g=>{
+        (g.items||[]).forEach(x=>L.push(optionLineV1313(x)));
+      });
+
+      if(i.obs)L.push(`   ↳ Obs.: ${i.obs}`);
+      L.push('');
+    });
+
+    L.push('*Valor*');
+    L.push('Produtos: '+brl(t.sub));
+    if(t.promoDiscount)L.push(`${t.promoOffer?.title||'Oferta'}: - ${brl(t.promoDiscount)}`);
+    if(t.loyaltyDiscount)L.push(`Fidelidade (${t.loyaltyPercent}%): - ${brl(t.loyaltyDiscount)}`);
+    if(t.delivery)L.push('Taxa de entrega: '+brl(t.delivery));
+    if(t.payAdj)L.push((t.payAdj>0?'Taxa':'Desconto')+' de pagamento: '+brl(Math.abs(t.payAdj)));
+    if(t.service)L.push((o.serviceFeeLabel||'Taxa de serviço')+': '+brl(t.service));
+    L.push('*Total: '+brl(t.total)+'*','');
+
+    L.push('*Forma de pagamento*');
+    L.push(paymentKeyLabel(st.payment),'');
+
+    if(st.mode==='delivery'){
+      const addr=cleanDeliveryAddressV1313(st.address,st.reference);
+      L.push('*Entrega*');
+      if(st.neighborhood)L.push(st.neighborhood);
+      if(addr)L.push(addr);
+      if(st.reference)L.push(st.reference);
+      L.push('');
+    }else if(st.mode==='pickup'){
+      L.push('*Retirada*');
+      if(cfg.store.address)L.push(cfg.store.address);
+      L.push('');
+    }else{
+      L.push('*Consumo no local*');
+      if(st.table)L.push('Mesa: '+st.table);
+      L.push('');
+    }
+
+    if(st.note){
+      L.push('*Observações*',st.note,'');
+    }
+
+    if(st.payment==='pix' && o.pixKey){
+      L.push('*Pix para pagamento*',o.pixKey);
+      if(o.pixHolder)L.push(o.pixHolder);
+      L.push('');
+    }
+
+    L.push('*Cliente*');
+    L.push(`${st.customer||'-'}${st.phone?' - '+st.phone:''}`);
+
+    return L.filter(x=>x!==null&&x!==undefined).join('\n');
+  };
+
+  setTimeout(()=>{
+    document.querySelectorAll('.adminHead .hint').forEach(el=>{
+      if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.31.3');
+      }
+    });
+  },1200);
+})();
+</script>
+<!-- v1.31.3: somente formatação profissional da mensagem enviada ao WhatsApp. -->
+
+
+<script>
+// ===== v1.31.4: PAINEL ADMIN DO CLUBE DE FIDELIDADE =====
+(function(){
+
+  function loyaltyOfferAdminV1314(){
+    normalizeOffers();
+    return (cfg.offers||[]).find(o=>o.type==='loyalty')||null;
+  }
+
+  function loyaltyStatusTextAdminV1314(count, offer){
+    const required=Math.max(1,Number(offer?.requiredOrders||10));
+    const reward=Math.max(0,Number(offer?.rewardPercent||10));
+    const n=Math.max(0,Number(count||0));
+    const progress=n%required;
+    const eligible=n>0 && progress===0;
+    const remaining=eligible?0:required-progress;
+    return {
+      count:n,
+      required,
+      reward,
+      progress:eligible?required:progress,
+      eligible,
+      remaining,
+      label:eligible
+        ? `Recompensa disponível · ${reward}% OFF`
+        : `${progress}/${required} · faltam ${remaining}`
+    };
+  }
+
+  window.openLoyaltyCustomersAdminV1314=async function(){
+    const offer=loyaltyOfferAdminV1314();
+    if(!offer){
+      alert('Crie primeiro um programa de fidelidade.');
+      return;
+    }
+
+    showModal(`
+      <div class="row">
+        <div>
+          <h2 style="margin:0">★ Clientes do Clube</h2>
+          <div class="hint">${Math.max(1,+offer.requiredOrders||10)} pedidos → ${Math.max(0,+offer.rewardPercent||10)}% de benefício</div>
+        </div>
+        <button class="ghost" onclick="closeModal()">✕</button>
+      </div>
+      <div style="margin-top:12px">
+        <input id="loyaltyAdminSearchV1314" class="field" placeholder="Buscar cliente ou celular" oninput="filterLoyaltyCustomersAdminV1314()">
+      </div>
+      <div id="loyaltyAdminSummaryV1314" class="v126StatsGrid" style="margin-top:10px"></div>
+      <div id="loyaltyAdminListV1314">
+        <div class="panel"><p class="hint">Carregando clientes e progresso...</p></div>
+      </div>
+    `);
+
+    await loadLoyaltyCustomersAdminV1314();
+  };
+
+  window.loadLoyaltyCustomersAdminV1314=async function(){
+    const host=document.getElementById('loyaltyAdminListV1314');
+    const summary=document.getElementById('loyaltyAdminSummaryV1314');
+    if(!host)return;
+
+    const offer=loyaltyOfferAdminV1314();
+    try{
+      // Usa os pedidos já isolados por estabelecimento apenas para descobrir
+      // nome/celular dos clientes. O número oficial da fidelidade vem da RPC
+      // get_pedevia_loyalty_status_v127, que é a mesma usada pelo cliente.
+      const rows=await fetchAllStoreOrdersV126();
+      const map=new Map();
+
+      rows.forEach(o=>{
+        const phone=normalizePhoneV127(o.customer_phone||'');
+        if(phone.length<10)return;
+        const current=map.get(phone);
+        const created=safeDateV126(o.created_at);
+        if(!current || (created && (!current.lastDate || created>current.lastDate))){
+          map.set(phone,{
+            phone,
+            name:String(o.customer_name||'Cliente').trim()||'Cliente',
+            last:o.created_at||'',
+            lastDate:created
+          });
+        }
+      });
+
+      const customers=[...map.values()];
+      const enriched=[];
+
+      // Lotes pequenos para não disparar muitas consultas simultâneas.
+      for(let i=0;i<customers.length;i+=10){
+        const batch=customers.slice(i,i+10);
+        const results=await Promise.all(batch.map(async c=>{
+          let status=null;
+          try{status=await getLoyaltyStatusV113(c.phone)}catch(e){}
+          const count=Number(status?.order_count||0);
+          return {...c,status:loyaltyStatusTextAdminV1314(count,offer)};
+        }));
+        enriched.push(...results);
+      }
+
+      enriched.sort((a,b)=>{
+        if(a.status.eligible!==b.status.eligible)return a.status.eligible?-1:1;
+        if(a.status.count!==b.status.count)return b.status.count-a.status.count;
+        return String(a.name).localeCompare(String(b.name),'pt-BR');
+      });
+
+      window.loyaltyCustomersAdminV1314=enriched;
+
+      const withOrders=enriched.filter(c=>c.status.count>0);
+      const rewards=enriched.filter(c=>c.status.eligible);
+
+      if(summary){
+        summary.innerHTML=`
+          <div class="v126Stat"><b>${withOrders.length}</b><small>Clientes no clube</small></div>
+          <div class="v126Stat"><b>${withOrders.reduce((s,c)=>s+c.status.count,0)}</b><small>Pedidos contabilizados</small></div>
+          <div class="v126Stat"><b>${rewards.length}</b><small>Recompensas disponíveis</small></div>
+        `;
+      }
+
+      renderLoyaltyCustomersAdminV1314(enriched);
+
+    }catch(e){
+      console.error('Falha ao carregar clientes da fidelidade:',e);
+      host.innerHTML=`<div class="notice bad">Não foi possível carregar os clientes do Clube de Fidelidade.<br><small>${esc(e.message||e)}</small></div>`;
+    }
+  };
+
+  window.renderLoyaltyCustomersAdminV1314=function(rows){
+    const host=document.getElementById('loyaltyAdminListV1314');
+    if(!host)return;
+
+    const list=(rows||[]).filter(c=>c.status.count>0);
+
+    if(!list.length){
+      host.innerHTML='<div class="notice">Ainda não há clientes com pedidos contabilizados no Clube de Fidelidade.</div>';
+      return;
+    }
+
+    host.innerHTML=list.map(c=>{
+      const s=c.status;
+      const width=Math.max(4,Math.min(100,(s.progress/s.required)*100));
+      return `
+        <div class="panel loyaltyAdminCustomerV1314"
+             data-search="${esc((c.name+' '+c.phone).toLowerCase())}"
+             style="padding:14px;margin:10px 0">
+          <div class="row" style="align-items:flex-start">
+            <div style="min-width:0">
+              <b style="font-size:16px">${esc(c.name)}</b>
+              <div class="hint">${esc(c.phone)}</div>
+            </div>
+            <span class="badge ${s.eligible?'available':''}" style="${s.eligible?'':'background:#eee;color:#555'}">
+              ${s.eligible?'PRÊMIO DISPONÍVEL':s.progress+'/'+s.required}
+            </span>
+          </div>
+
+          <div class="loyaltyProgressBarV115" style="margin:12px 0 6px">
+            <span style="width:${width}%"></span>
+          </div>
+
+          <div class="row">
+            <div>
+              <b>${s.count} pedido${s.count===1?'':'s'} no clube</b>
+              <div class="hint">${s.eligible
+                ? `${s.reward}% de desconto disponível no próximo pedido`
+                : `Faltam ${s.remaining} pedido${s.remaining===1?'':'s'} para ${s.reward}% OFF`
+              }</div>
+            </div>
+            ${c.last?`<small class="hint" style="text-align:right">Último pedido<br>${esc(new Date(c.last).toLocaleDateString('pt-BR'))}</small>`:''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  };
+
+  window.filterLoyaltyCustomersAdminV1314=function(){
+    const q=String(document.getElementById('loyaltyAdminSearchV1314')?.value||'').trim().toLowerCase();
+    document.querySelectorAll('.loyaltyAdminCustomerV1314').forEach(el=>{
+      el.style.display=!q || String(el.dataset.search||'').includes(q)?'':'none';
+    });
+  };
+
+  // Mantém a tela de Ofertas já existente e acrescenta o acesso ao acompanhamento.
+  adminOffers=function(){
+    normalizeOffers();
+    let list=cfg.offers.map(o=>`<div class="offerAdminCard"><div class="row"><div><span class="offerType">${o.type==='percentage'?'DESCONTO':'FIDELIDADE'}</span><h3 style="margin:5px 0 3px">${esc(o.title)}</h3><div class="hint">${o.type==='percentage'?`${+o.percent||0}% · ${esc(offerScopeText(o))}${+o.minValue?' · mínimo '+brl(+o.minValue):''}`:`${o.requiredOrders||10} pedidos → ${o.rewardPercent||10}% de benefício`}</div></div><span class="badge ${o.active?'available':'hidden'}">${o.active?'Ativa':'Inativa'}</span></div><div class="miniBtns" style="margin-top:10px"><button class="ghost" onclick="editOffer('${o.id}')">Editar</button>${o.type==='loyalty'?`<button class="ghost" onclick="openLoyaltyCustomersAdminV1314()">Clientes do clube</button>`:''}<button class="ghost" onclick="toggleOffer('${o.id}')">${o.active?'Desativar':'Ativar'}</button><button class="dangerBtn" onclick="deleteOffer('${o.id}')">Excluir</button></div></div>`).join('')||'<div class="emptySection">Nenhuma oferta criada ainda.</div>';
+
+    $('#adminContent').innerHTML=`<div class="panel"><div class="menuBuilderHead"><div><h3 style="margin:0">Ofertas</h3><div class="hint">Crie promoções que aparecem no cardápio e podem alterar o total do pedido.</div></div></div><div class="two"><button class="btn" onclick="newOffer('percentage')">＋ Desconto</button><button class="ghost" onclick="newOffer('loyalty')">★ Fidelidade</button></div>${list}<div class="notice">Descontos percentuais ativos são aplicados automaticamente no carrinho. Se houver mais de um válido, o sistema usa o que dá o maior desconto.</div></div>`;
+  };
+
+  setTimeout(()=>{
+    document.querySelectorAll('.adminHead .hint').forEach(el=>{
+      if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.31.4');
+      }
+    });
+  },1200);
+
+})();
+</script>
+<!-- v1.31.4: acompanhamento administrativo dos clientes do Clube de Fidelidade. -->
+
+</body></html>
