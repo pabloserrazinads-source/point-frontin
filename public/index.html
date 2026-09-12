@@ -2418,7 +2418,7 @@ saveGeneralBrand=async function(){
 };
 
 // ===== v1.7: VERSIONAMENTO E MIGRAÇÕES DE DADOS =====
-const APP_VERSION='1.23.1';
+const APP_VERSION='1.24.0';
 const DATA_SCHEMA_VERSION=4;
 
 /*
@@ -5902,6 +5902,145 @@ adminMore=function(){
   document.head.appendChild(st);
 })();
 
+
+
+
+// ===== v1.24.0: RESPONSIVIDADE + TUTORIAL PRÁTICO GUIADO =====
+(function(){
+  const st=document.createElement('style');
+  st.id='pedeviaV124Styles';
+  st.textContent=`
+    html,body{max-width:100%;overflow-x:hidden!important}
+    .wrap,#adminView,#adminContent,.panel,.moreList,.moreCard,.settingsList,.settingCard{min-width:0;max-width:100%}
+    #adminView,#adminContent,.panel,.moreList{width:100%}
+    .moreCard,.settingCard{grid-template-columns:34px minmax(0,1fr) 20px!important;width:100%;overflow:hidden}
+    .moreCard>span:nth-child(2),.settingCard>span:nth-child(2){min-width:0;overflow:hidden}
+    .moreCard b,.settingCard b{overflow-wrap:anywhere;word-break:normal}
+    .moreCard small,.settingCard small{max-width:100%}
+    @media(max-width:560px){
+      .wrap{width:100%;max-width:100%;padding-left:12px!important;padding-right:12px!important}
+      .panel{padding-left:12px!important;padding-right:12px!important}
+      .moreCard,.settingCard{padding:13px 12px!important;gap:9px!important}
+      .moreCard small,.settingCard small{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.3}
+      .settingsTitle{font-size:24px}
+    }
+    #pedeviaCoachV124{
+      position:fixed;z-index:46;left:10px;right:10px;bottom:calc(78px + env(safe-area-inset-bottom));
+      background:#fff;border:1px solid rgba(113,36,137,.22);border-radius:20px;padding:13px 14px;
+      box-shadow:0 12px 38px #0003;color:var(--ink);max-width:620px;margin:auto;
+    }
+    #pedeviaCoachV124 .pcTop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+    #pedeviaCoachV124 .pcStep{font-size:11px;font-weight:900;letter-spacing:.04em;color:var(--p);text-transform:uppercase}
+    #pedeviaCoachV124 .pcTitle{font-size:17px;font-weight:900;margin:2px 0 3px}
+    #pedeviaCoachV124 .pcText{font-size:13px;line-height:1.38;color:var(--muted)}
+    #pedeviaCoachV124 .pcProgress{height:5px;background:#eee;border-radius:999px;overflow:hidden;margin:9px 0 10px}
+    #pedeviaCoachV124 .pcProgress>span{display:block;height:100%;background:var(--p);border-radius:999px}
+    #pedeviaCoachV124 .pcActions{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+    #pedeviaCoachV124 .pcActions button{padding:9px 8px;font-size:12px}
+    #pedeviaCoachV124 .pcClose{border:0;background:transparent;font-size:20px;padding:0 2px;color:#777}
+    body.pedeviaTutorialActiveV124 .wrap{padding-bottom:250px!important}
+  `;
+  document.head.appendChild(st);
+})();
+
+const PEDEVIA_PRACTICAL_TUTORIAL_V124=[
+  {title:'Nome e marca',text:'Abra a identidade da loja. Troque o nome ou a logo e toque em Salvar. A alteração é real e ficará gravada.',open:()=>{adminTab='more';renderAdmin();generalBrand();}},
+  {title:'Aparência e textos',text:'Teste uma cor, banner, estilo ou texto da loja e salve para ver como a personalização funciona.',open:()=>{adminTab='more';renderAdmin();generalAppearanceV116();}},
+  {title:'Horários de atendimento',text:'Configure pelo menos um dia de funcionamento e toque em Salvar horários.',open:()=>{adminTab='more';renderAdmin();generalHours();}},
+  {title:'Contato',text:'Confira o WhatsApp e o e-mail do estabelecimento. Faça uma alteração de teste e salve.',open:()=>{adminTab='more';renderAdmin();generalContact();}},
+  {title:'Endereço',text:'Confira o endereço que aparecerá para o cliente. Faça uma pequena edição e salve.',open:()=>{adminTab='more';renderAdmin();generalAddress();}},
+  {title:'Redes sociais',text:'Cadastre ou edite o Instagram da loja e salve. Isso ficará disponível na página pública.',open:()=>{adminTab='more';renderAdmin();generalSocial();}},
+  {title:'Compartilhamento',text:'Edite o título ou a descrição usados quando o link da loja for compartilhado e salve.',open:()=>{adminTab='more';renderAdmin();generalSharing();}},
+  {title:'Cardápio e seções',text:'Agora vá para o cardápio. Crie uma seção ou edite uma existente para entender a organização da vitrine.',open:()=>{adminTab='menu';adminSubTab='products';renderAdmin();}},
+  {title:'Produto na prática',text:'Cadastre um produto de teste ou edite um produto existente: nome, preço, descrição, imagem e disponibilidade. Salve ao terminar.',open:()=>{adminTab='menu';adminSubTab='products';renderAdmin();}},
+  {title:'Complementos e estoque',text:'Abra Complementos e estoque. Edite uma regra, adicional ou disponibilidade e salve.',open:()=>{adminTab='menu';adminSubTab='stock';renderAdmin();}},
+  {title:'Pedidos',text:'Conheça as configurações de pedidos. Entre em uma opção, altere um dado de teste e salve para avançar.',open:()=>{adminTab='orders';adminOrdersView='config';renderAdmin();}},
+  {title:'Formas de pagamento',text:'Dentro de Pedidos, abra Formas de pagamentos. Ative ou confira uma forma de pagamento e salve.',open:()=>{adminTab='orders';adminOrdersView='config';renderAdmin();setTimeout(()=>{try{editPaymentSettings()}catch(e){}},120);}},
+  {title:'Entrega, retirada e consumo local',text:'Abra uma modalidade de atendimento, confira suas regras e salve uma alteração de teste.',open:()=>{adminTab='orders';adminOrdersView='config';renderAdmin();}},
+  {title:'Ofertas e fidelidade',text:'Abra Ofertas. Crie uma promoção de teste ou edite uma existente e salve. Depois você pode desativá-la quando quiser.',open:()=>{adminTab='offers';renderAdmin();}},
+  {title:'Integrações',text:'Veja onde ficam Analytics, Google Ads e Meta Pixel. Só preencha IDs reais se você os possuir; se não, use Próxima etapa.',open:()=>{adminTab='more';renderAdmin();generalIntegrations();},manual:true},
+  {title:'Colaboradores',text:'Veja onde outros usuários podem ser adicionados à administração. Se não quiser cadastrar ninguém agora, use Próxima etapa.',open:()=>{adminTab='more';renderAdmin();generalCollaborators();},manual:true},
+  {title:'QR Code',text:'Veja o QR Code e o link da loja. Esta etapa é de consulta: use Próxima etapa quando terminar.',open:()=>{adminTab='more';renderAdmin();generalQr();},manual:true},
+  {title:'Teste final da loja',text:'Abra a loja como cliente, monte um pedido de teste e confira toda a experiência. O tutorial poderá ser aberto novamente em Mais.',open:()=>{mode='shop';$('#adminView').classList.add('hide');$('#shopView').classList.remove('hide');$('#cartBar').classList.remove('hide');$('#modeBtn').textContent='⚙️';renderShop();},manual:true}
+];
+window.pedeviaTutorialStepV124=0;
+window.pedeviaTutorialActiveV124=false;
+window.pedeviaTutorialAdvancingV124=false;
+
+function saveTutorialProgressV124(done=false){
+  if(!window.pedeviaTenantV121)return;
+  cfg.store=cfg.store||{};
+  cfg.store.pedeviaTutorialPracticalStep=window.pedeviaTutorialStepV124;
+  cfg.store.pedeviaTutorialPracticalCompleted=!!done;
+  cfg.store.pedeviaOnboardingVersion='1.24';
+  try{saveTenantConfigV122()}catch(e){console.warn(e)}
+}
+function removeTutorialCoachV124(){
+  document.getElementById('pedeviaCoachV124')?.remove();
+  document.body.classList.remove('pedeviaTutorialActiveV124');
+}
+function renderTutorialCoachV124(){
+  removeTutorialCoachV124();
+  if(!window.pedeviaTutorialActiveV124)return;
+  const i=window.pedeviaTutorialStepV124;
+  const x=PEDEVIA_PRACTICAL_TUTORIAL_V124[i];
+  if(!x)return;
+  const host=document.createElement('div');host.id='pedeviaCoachV124';
+  const pct=Math.round(((i+1)/PEDEVIA_PRACTICAL_TUTORIAL_V124.length)*100);
+  host.innerHTML=`<div class="pcTop"><div><div class="pcStep">Tutorial prático · ${i+1}/${PEDEVIA_PRACTICAL_TUTORIAL_V124.length}</div><div class="pcTitle">${esc(x.title)}</div></div><button class="pcClose" onclick="pausePracticalTutorialV124()">×</button></div><div class="pcText">${esc(x.text)}</div><div class="pcProgress"><span style="width:${pct}%"></span></div><div class="pcActions"><button class="ghost" onclick="skipPracticalStepV124()">Pular etapa</button><button class="btn" onclick="nextPracticalTutorialV124()">${i===PEDEVIA_PRACTICAL_TUTORIAL_V124.length-1?'Concluir tutorial':'Próxima etapa →'}</button></div>`;
+  document.body.appendChild(host);document.body.classList.add('pedeviaTutorialActiveV124');
+}
+function openPracticalStepV124(){
+  const x=PEDEVIA_PRACTICAL_TUTORIAL_V124[window.pedeviaTutorialStepV124];if(!x)return;
+  try{x.open()}catch(e){console.error('Tutorial:',e)}
+  setTimeout(renderTutorialCoachV124,180);
+  saveTutorialProgressV124(false);
+}
+function openPedeviaTutorialV123(start){
+  closeModal();
+  const saved=Number(cfg?.store?.pedeviaTutorialPracticalStep||0);
+  window.pedeviaTutorialStepV124=Number.isFinite(start)?Math.max(0,Math.min(PEDEVIA_PRACTICAL_TUTORIAL_V124.length-1,start)) : Math.max(0,Math.min(PEDEVIA_PRACTICAL_TUTORIAL_V124.length-1,saved));
+  window.pedeviaTutorialActiveV124=true;
+  openPracticalStepV124();
+}
+function nextPracticalTutorialV124(){
+  if(!window.pedeviaTutorialActiveV124||window.pedeviaTutorialAdvancingV124)return;
+  window.pedeviaTutorialAdvancingV124=true;
+  setTimeout(()=>window.pedeviaTutorialAdvancingV124=false,500);
+  if(window.pedeviaTutorialStepV124>=PEDEVIA_PRACTICAL_TUTORIAL_V124.length-1){
+    saveTutorialProgressV124(true);markTenantOnboardingV123(true);window.pedeviaTutorialActiveV124=false;removeTutorialCoachV124();
+    if(mode!=='admin'){mode='admin';$('#shopView').classList.add('hide');$('#adminView').classList.remove('hide');$('#cartBar').classList.add('hide');$('#modeBtn').textContent='🛍️';}
+    adminTab='home';renderAdmin();alert('Tutorial prático concluído! Você pode refazê-lo quando quiser em Mais → Tutorial da Pedevia.');return;
+  }
+  window.pedeviaTutorialStepV124++;
+  openPracticalStepV124();
+}
+function skipPracticalStepV124(){nextPracticalTutorialV124()}
+function pausePracticalTutorialV124(){
+  saveTutorialProgressV124(false);window.pedeviaTutorialActiveV124=false;removeTutorialCoachV124();
+  alert('Tutorial pausado. Você pode continuar depois em Mais → Tutorial da Pedevia.');
+}
+
+// Ao tocar em um botão real de salvar/concluir durante o tutorial, a alteração é salva
+// pela própria tela e o guia avança automaticamente para a próxima atividade.
+document.addEventListener('click',function(ev){
+  if(!window.pedeviaTutorialActiveV124)return;
+  const b=ev.target?.closest?.('button');if(!b||b.closest('#pedeviaCoachV124'))return;
+  const t=(b.textContent||'').trim().toLowerCase();
+  if(!/(salvar|concluir|criar produto|adicionar produto|criar oferta)/.test(t))return;
+  setTimeout(()=>{if(window.pedeviaTutorialActiveV124)nextPracticalTutorialV124()},700);
+},true);
+
+// O primeiro acesso agora abre diretamente o tutorial prático, mantendo a opção de pular.
+showPedeviaWelcomeV123=function(){
+  const name=cfg?.store?.name||window.pedeviaTenantV121?.name||'seu estabelecimento';
+  showModal(`<div style="text-align:center;padding:6px 2px 2px"><div style="width:74px;height:74px;border-radius:24px;margin:0 auto 14px;display:grid;place-items:center;background:var(--primary,#712489);color:#fff;font-size:34px;font-weight:900">P</div><div class="hint">PEDEVIA</div><h2 style="font-size:27px;margin:6px 0 8px">Bem-vindo à sua nova loja! 👋</h2><p style="line-height:1.55;margin:0 auto 16px;max-width:420px">O acesso de <b>${esc(name)}</b> está pronto. Agora você pode aprender usando as telas reais da sua loja.</p><div style="background:rgba(0,0,0,.035);padding:13px;border-radius:16px;text-align:left;margin-bottom:16px"><b>Tutorial prático:</b><div class="hint" style="margin-top:6px;line-height:1.5">O guia abre cada configuração, explica o que fazer e acompanha você enquanto realiza alterações reais. Ao salvar uma etapa, seguimos automaticamente para a próxima.</div></div><button class="btn full" onclick="closeModal();openPedeviaTutorialV123(0)">Começar tutorial prático →</button><button class="ghost full" style="margin-top:8px" onclick="skipWelcomeV123()">Pular tutorial e ir ao painel</button></div>`);
+};
+
+// Exibe a versão nova no cabeçalho administrativo.
+setTimeout(()=>{
+  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9]/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.24.0')});
+},0);
 
 // Inicializa somente depois de todas as camadas de compatibilidade do arquivo terem sido carregadas.
 initializeOnlineStateV13();
