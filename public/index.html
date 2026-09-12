@@ -779,9 +779,6 @@ ${moreCard('☎','Contato',formatWa(s.whatsapp),'generalContact()')}
 ${moreCard('⌖','Endereço',s.address,'generalAddress()')}
 ${moreCard('◎','Redes Sociais',s.instagram||'Adicionar rede social','generalSocial()')}
 ${moreCard('↗','Compartilhamento em Redes Sociais','Título, descrição e imagem','generalSharing()')}
-${moreCard('www','Link e domínio',s.hubSlug,'generalDomain()')}
-${moreCard('♙','Colaboradores',`${s.collaborators.length} colaborador(es)`,'generalCollaborators()')}
-${moreCard('♧','Integrações','Analytics, Ads e Meta Pixel','generalIntegrations()')}
 ${moreCard('▦','QR Code','Gerar QR Code do cardápio','generalQr()')}
 ${moreCard('🏪','Sites dos clientes','Painel mestre para criar e administrar cardápios','openClientSitesMasterV120()')}
 ${moreCard('🧺','Pedidos','Configurações de pedidos','adminTab=\'orders\';adminOrdersView=\'config\';renderAdmin()')}
@@ -2418,7 +2415,7 @@ saveGeneralBrand=async function(){
 };
 
 // ===== v1.7: VERSIONAMENTO E MIGRAÇÕES DE DADOS =====
-const APP_VERSION='1.24.0';
+const APP_VERSION='1.24.1';
 const DATA_SCHEMA_VERSION=4;
 
 /*
@@ -4332,10 +4329,7 @@ adminMore=function(){
   ${moreCard('⌖','Endereço',s.address,'generalAddress()')}
   ${moreCard('◎','Redes Sociais',s.instagram||'Adicionar rede social','generalSocial()')}
   ${moreCard('↗','Compartilhamento em Redes Sociais','Título, descrição e imagem','generalSharing()')}
-  ${moreCard('www','Link e domínio',s.hubSlug,'generalDomain()')}
-  ${moreCard('♙','Colaboradores',`${s.collaborators.length} colaborador(es)`,'generalCollaborators()')}
-  ${moreCard('♧','Integrações','Analytics, Ads e Meta Pixel','generalIntegrations()')}
-  ${moreCard('▦','QR Code','Gerar QR Code do cardápio','generalQr()')}
+        ${moreCard('▦','QR Code','Gerar QR Code do cardápio','generalQr()')}
   ${moreCard('🧺','Pedidos','Configurações de pedidos',"adminTab='orders';adminOrdersView='config';renderAdmin()")}
   </div></div>`;
 };
@@ -5117,10 +5111,7 @@ adminMore=function(){
   ${moreCard('⌖','Endereço',s.address,'generalAddress()')}
   ${moreCard('◎','Redes Sociais',s.instagram||'Adicionar rede social','generalSocial()')}
   ${moreCard('↗','Compartilhamento em Redes Sociais','Título, descrição e imagem','generalSharing()')}
-  ${moreCard('www','Link e domínio',s.hubSlug,'generalDomain()')}
-  ${moreCard('♙','Colaboradores',`${s.collaborators.length} colaborador(es)`,'generalCollaborators()')}
-  ${moreCard('♧','Integrações','Analytics, Ads e Meta Pixel','generalIntegrations()')}
-  ${moreCard('▦','QR Code','Gerar QR Code do cardápio','generalQr()')}
+        ${moreCard('▦','QR Code','Gerar QR Code do cardápio','generalQr()')}
   <div id="platformMasterSlotV1201"></div>
   ${moreCard('🧺','Pedidos','Configurações de pedidos',"adminTab='orders';adminOrdersView='config';renderAdmin()")}
   </div></div>`;
@@ -5757,8 +5748,7 @@ const PEDEVIA_TUTORIAL_V123=[
   {icon:'📍',title:'Contato, endereço e redes sociais',text:'Em Mais, você encontra os dados institucionais e canais de contato.',items:['Atualize WhatsApp, endereço e informações do estabelecimento.','Cadastre Instagram e outras redes disponíveis.','Configure título, descrição e imagem usados ao compartilhar o link da loja.']},
   {icon:'🔗',title:'Link, QR Code e divulgação',text:'Seu estabelecimento possui um link público próprio dentro da Pedevia.',items:['Compartilhe o link gerado para sua loja.','Use QR Code para facilitar o acesso ao cardápio.','No Painel Mestre também pode existir um QR Code enviado pelo estabelecimento para ficar arquivado no cadastro.']},
   {icon:'🛒',title:'Experiência do cliente',text:'Sempre teste a loja como se você fosse um cliente antes de divulgar.',items:['Abra a visão pública e navegue pelas categorias.','Monte produtos e confira regras obrigatórias de complementos.','Adicione itens ao carrinho e revise subtotal, descontos, entrega e total.','Faça um pedido de teste para confirmar o fluxo completo.']},
-  {icon:'👥',title:'Colaboradores e integrações',text:'A área Mais também reúne recursos avançados para a operação crescer.',items:['Gerencie colaboradores quando esse recurso for utilizado.','Configure integrações de Analytics, anúncios e Meta Pixel quando necessário.','Não compartilhe sua senha de administrador; cada acesso deve ser tratado com segurança.']},
-  {icon:'⚙️',title:'Configurações e ajuda',text:'Quase tudo que personaliza a operação fica em Mais.',items:['Nome e marca, aparência, horários, contato, endereço e redes sociais.','Compartilhamento, link, colaboradores, integrações, QR Code e configurações de pedidos.','Se esquecer alguma coisa, volte em Mais → Tutorial da Pedevia e faça este guia novamente quantas vezes quiser.']},
+  {icon:'⚙️',title:'Configurações e ajuda',text:'Quase tudo que personaliza a operação fica em Mais.',items:['Nome e marca, aparência, horários, contato, endereço e redes sociais.','Compartilhamento, QR Code e configurações de pedidos.','Se esquecer alguma coisa, volte em Mais → Tutorial da Pedevia e faça este guia novamente quantas vezes quiser.']},
   {icon:'🚀',title:'Sua loja está pronta para ser montada',text:'Agora você já conhece o caminho. Comece pela identidade da loja, configure o funcionamento e depois cadastre o cardápio.',items:['1. Logo, nome e aparência','2. Contato, endereço e horários','3. Categorias, produtos e complementos','4. Pagamentos e entrega','5. Pedido de teste e publicação do link']}
 ];
 window.pedeviaTutorialStepV123=0;
@@ -5958,8 +5948,6 @@ const PEDEVIA_PRACTICAL_TUTORIAL_V124=[
   {title:'Formas de pagamento',text:'Dentro de Pedidos, abra Formas de pagamentos. Ative ou confira uma forma de pagamento e salve.',open:()=>{adminTab='orders';adminOrdersView='config';renderAdmin();setTimeout(()=>{try{editPaymentSettings()}catch(e){}},120);}},
   {title:'Entrega, retirada e consumo local',text:'Abra uma modalidade de atendimento, confira suas regras e salve uma alteração de teste.',open:()=>{adminTab='orders';adminOrdersView='config';renderAdmin();}},
   {title:'Ofertas e fidelidade',text:'Abra Ofertas. Crie uma promoção de teste ou edite uma existente e salve. Depois você pode desativá-la quando quiser.',open:()=>{adminTab='offers';renderAdmin();}},
-  {title:'Integrações',text:'Veja onde ficam Analytics, Google Ads e Meta Pixel. Só preencha IDs reais se você os possuir; se não, use Próxima etapa.',open:()=>{adminTab='more';renderAdmin();generalIntegrations();},manual:true},
-  {title:'Colaboradores',text:'Veja onde outros usuários podem ser adicionados à administração. Se não quiser cadastrar ninguém agora, use Próxima etapa.',open:()=>{adminTab='more';renderAdmin();generalCollaborators();},manual:true},
   {title:'QR Code',text:'Veja o QR Code e o link da loja. Esta etapa é de consulta: use Próxima etapa quando terminar.',open:()=>{adminTab='more';renderAdmin();generalQr();},manual:true},
   {title:'Teste final da loja',text:'Abra a loja como cliente, monte um pedido de teste e confira toda a experiência. O tutorial poderá ser aberto novamente em Mais.',open:()=>{mode='shop';$('#adminView').classList.add('hide');$('#shopView').classList.remove('hide');$('#cartBar').classList.remove('hide');$('#modeBtn').textContent='⚙️';renderShop();},manual:true}
 ];
@@ -6039,7 +6027,7 @@ showPedeviaWelcomeV123=function(){
 
 // Exibe a versão nova no cabeçalho administrativo.
 setTimeout(()=>{
-  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9]/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.24.0')});
+  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9]/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.24.1')});
 },0);
 
 // Inicializa somente depois de todas as camadas de compatibilidade do arquivo terem sido carregadas.
@@ -6047,3 +6035,4 @@ initializeOnlineStateV13();
 </script>
 
 </body></html>
+<!-- v1.24.1: ocultados Link e domínio, Colaboradores e Integrações do Point e dos estabelecimentos; removidos também do tutorial. -->
