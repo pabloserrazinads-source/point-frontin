@@ -2418,7 +2418,7 @@ saveGeneralBrand=async function(){
 };
 
 // ===== v1.7: VERSIONAMENTO E MIGRAÇÕES DE DADOS =====
-const APP_VERSION='1.21.2';
+const APP_VERSION='1.22.0';
 const DATA_SCHEMA_VERSION=4;
 
 /*
@@ -5488,6 +5488,271 @@ saveClientSiteV120=async function(id){
   if(error){alert('Erro ao salvar: '+error.message);if(btn){btn.disabled=false;btn.textContent='Salvar'}return}
   closeModal();await openClientSitesMasterV120();
 };
+
+
+// ===== v1.22.0: ADMIN INDIVIDUAL + CONVITE AUTOMÁTICO =====
+// A criação de lojas e convites passa por uma Edge Function segura.
+const PEDEVIA_ADMIN_FUNCTION_V122='pedevia-admin';
+
+function currentTenantSlugV122(){
+  return window.pedeviaTenantV121?.slug||tenantSlugFromLocationV121();
+}
+
+async function invokePedeviaAdminV122(body){
+  const {data,error}=await supabaseClient.functions.invoke(PEDEVIA_ADMIN_FUNCTION_V122,{body});
+  if(error){
+    let msg=error.message||'Falha no servidor da Pedevia.';
+    try{
+      const ctx=error.context;
+      if(ctx && typeof ctx.json==='function'){
+        const j=await ctx.json();
+        if(j?.error)msg=j.error;
+      }
+    }catch(_e){}
+    throw new Error(msg);
+  }
+  if(!data?.ok)throw new Error(data?.error||'Não foi possível concluir a operação.');
+  return data;
+}
+
+// Criação automática: cria a loja e dispara o convite para o administrador.
+createClientSiteV120=async function(){
+  const name=$('#csNameV120').value.trim();
+  const slug=slugifyStoreV120($('#csSlugV120').value||name);
+  const wa=$('#csWaV120').value.replace(/\D/g,'');
+  const email=$('#csEmailV120').value.trim().toLowerCase();
+  if(!name||!slug||!email){alert('Preencha nome, endereço do site e e-mail do administrador.');return}
+  const btn=$('#csCreateBtnV120');
+  if(btn){btn.disabled=true;btn.textContent='Criando loja e enviando convite...'}
+  try{
+    const config=cleanClientConfigV120(name,wa);
+    config.store.hubSlug=slug;
+    const result=await invokePedeviaAdminV122({
+      action:'create_site',name,slug,whatsapp:wa,admin_email:email,config,
+      redirect_to:`${PEDEVIA_PUBLIC_BASE}/${encodeURIComponent(slug)}?definir-senha=1`
+    });
+    closeModal();
+    await openClientSitesMasterV120();
+    const site=result.site;
+    const invite=result.invite||{};
+    let text=`Loja “${name}” criada com sucesso.`;
+    if(invite.sent) text+=`\n\nConvite enviado para ${email}. O cliente poderá definir a própria senha pelo e-mail.`;
+    else if(invite.existing) text+=`\n\nEsse e-mail já possui uma conta. Ele já pode entrar com a senha existente.`;
+    else text+=`\n\nA loja foi criada, mas o convite não foi enviado. Você pode reenviar em Gerenciar.`;
+    alert(text);
+    if(site?.id)setTimeout(()=>editClientSiteV120(site.id),120);
+  }catch(e){
+    console.error(e);alert('Não foi possível criar a loja: '+(e.message||e));
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent='Criar loja e enviar convite'}
+  }
+};
+
+// Atualiza o texto do botão/modal de nova loja para deixar o fluxo evidente.
+newClientSiteV120=function(){
+  showModal(`<div class="row"><div><h2 style="margin:0">Nova loja</h2><div class="hint">Cria a loja na Pedevia e envia automaticamente um convite de acesso ao proprietário.</div></div><button class="ghost" onclick="closeModal()">✕</button></div>
+  <label>Nome do estabelecimento</label><input id="csNameV120" class="field" placeholder="Ex.: Pizzaria Central" oninput="document.getElementById('csSlugV120').value=slugifyStoreV120(this.value)">
+  <label>Endereço do site (slug)</label><input id="csSlugV120" class="field" placeholder="pizzaria-central"><div class="hint">Ex.: pedevia.cardapioonline.workers.dev/pizzaria-central</div>
+  <label>WhatsApp da loja</label><input id="csWaV120" class="field" inputmode="tel" placeholder="5524999999999">
+  <label>E-mail do proprietário</label><input id="csEmailV120" class="field" type="email" placeholder="dono@empresa.com"><div class="hint">O cliente receberá um e-mail para criar a própria senha. Você não precisa cadastrar senha para ele.</div>
+  <button id="csCreateBtnV120" class="btn full" onclick="createClientSiteV120()">Criar loja e enviar convite</button>`);
+};
+
+async function resendClientInviteV122(id){
+  const row=clientRowV121(id);if(!row)return;
+  if(!row.admin_email){alert('Cadastre o e-mail do administrador primeiro.');return}
+  try{
+    const r=await invokePedeviaAdminV122({
+      action:'invite_admin',site_id:row.id,admin_email:String(row.admin_email).trim().toLowerCase(),
+      redirect_to:`${tenantPublicUrlV121(row.slug)}?definir-senha=1`
+    });
+    if(r.invite?.sent)alert('Convite enviado para '+row.admin_email+'.');
+    else if(r.invite?.existing)alert('Esse e-mail já possui conta na Pedevia e pode entrar com a senha existente.');
+    else alert('Não foi possível enviar o convite agora.');
+  }catch(e){alert('Erro ao enviar convite: '+(e.message||e))}
+}
+
+// Acrescenta o botão de convite ao editor mestre sem perder as opções da v1.21.
+const _editClientSiteV122=editClientSiteV120;
+editClientSiteV120=function(id){
+  _editClientSiteV122(id);
+  setTimeout(()=>{
+    const saveBtn=document.getElementById('cseSaveBtnV120');
+    if(!saveBtn||document.getElementById('resendInviteV122'))return;
+    const b=document.createElement('button');
+    b.id='resendInviteV122';b.type='button';b.className='ghost full';b.style.marginTop='8px';
+    b.textContent='✉️ Enviar / reenviar convite de acesso';
+    b.onclick=()=>resendClientInviteV122(id);
+    saveBtn.insertAdjacentElement('afterend',b);
+  },0);
+};
+
+async function loadTenantAdminRowV122(slug){
+  const {data,error}=await supabaseClient.from('client_sites')
+    .select('id,name,slug,whatsapp,active,config,admin_email')
+    .eq('slug',slug).maybeSingle();
+  if(error)throw error;
+  return data||null;
+}
+
+async function saveTenantConfigV122(){
+  const row=window.pedeviaTenantV121;
+  if(!row?.id)return false;
+  const payload=JSON.parse(JSON.stringify(cfg));
+  const {error}=await supabaseClient.from('client_sites').update({
+    name:cfg.store?.name||row.name,
+    whatsapp:String(cfg.store?.whatsapp||row.whatsapp||'').replace(/\D/g,''),
+    config:payload,
+    updated_at:new Date().toISOString()
+  }).eq('id',row.id);
+  if(error)throw error;
+  row.name=cfg.store?.name||row.name;
+  row.whatsapp=cfg.store?.whatsapp||row.whatsapp;
+  row.config=payload;
+  return true;
+}
+
+// Todas as telas administrativas já existentes passam a salvar no registro da loja do cliente.
+const _saveSiteConfigOnlineV122=saveSiteConfigOnline;
+saveSiteConfigOnline=async function(){
+  if(window.pedeviaTenantV121)return saveTenantConfigV122();
+  return _saveSiteConfigOnlineV122();
+};
+const _syncAllProductsOnlineV122=syncAllProductsOnline;
+syncAllProductsOnline=async function(){
+  if(window.pedeviaTenantV121)return saveTenantConfigV122();
+  return _syncAllProductsOnlineV122();
+};
+const _ensureSiteConfigInitializedV122=ensureSiteConfigInitialized;
+ensureSiteConfigInitialized=async function(){
+  if(window.pedeviaTenantV121)return true;
+  return _ensureSiteConfigInitializedV122();
+};
+
+async function enterTenantAdminV122(){
+  const slug=currentTenantSlugV122();
+  if(!slug)throw new Error('Loja não identificada.');
+  const row=await loadTenantAdminRowV122(slug);
+  if(!row)throw new Error('Este usuário não possui acesso administrativo a esta loja.');
+  applyTenantConfigV121(row);
+  logged=true;
+  $('#loginBox')?.classList.add('hide');
+  $('#adminPanel')?.classList.remove('hide');
+  const head=document.querySelector('#adminPanel .adminHead h2');if(head)head.textContent='Painel · '+(row.name||'Loja');
+  renderAdmin();
+  return true;
+}
+
+// Na loja do cliente, a engrenagem agora abre o Admin dela — não o Admin do Point.
+switchMode=function(){
+  mode=mode==='shop'?'admin':'shop';
+  $('#shopView').classList.toggle('hide',mode!=='shop');
+  $('#adminView').classList.toggle('hide',mode!=='admin');
+  $('#cartBar').classList.toggle('hide',mode!=='shop');
+  $('#modeBtn').textContent=mode==='shop'?'⚙️':'🛍️';
+  if(mode==='admin'&&logged){
+    if(window.pedeviaTenantV121)enterTenantAdminV122().catch(e=>{
+      logged=false;$('#adminPanel')?.classList.add('hide');$('#loginBox')?.classList.remove('hide');
+      if($('#loginMsg'))$('#loginMsg').textContent=e.message||String(e);
+    });
+    else renderAdmin();
+  }
+};
+
+const _loginPointV122=login;
+login=async function(){
+  if(!tenantSlugFromLocationV121())return _loginPointV122();
+  const email=($('#loginEmail')?.value||'').trim();
+  const password=$('#loginPass')?.value||'';
+  const msg=$('#loginMsg'),btn=$('#loginBtn');
+  if(!email||!password){if(msg)msg.textContent='Digite e-mail e senha.';return}
+  if(btn){btn.disabled=true;btn.textContent='Entrando...'}
+  if(msg)msg.textContent='';
+  try{
+    const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+    if(error)throw error;
+    if(!data.session)throw new Error('Sessão não iniciada.');
+    await enterTenantAdminV122();
+  }catch(e){
+    console.error(e);
+    try{await supabaseClient.auth.signOut()}catch(_e){}
+    logged=false;
+    if(msg)msg.textContent=e.message?.includes('acesso administrativo')?e.message:'Não foi possível entrar. Confira o e-mail e a senha.';
+  }finally{if(btn){btn.disabled=false;btn.textContent='Entrar'}}
+};
+
+const _restoreAdminSessionPointV122=restoreAdminSession;
+restoreAdminSession=async function(){
+  if(!tenantSlugFromLocationV121())return _restoreAdminSessionPointV122();
+  try{
+    const {data}=await supabaseClient.auth.getSession();
+    logged=!!data?.session;
+    if(logged){
+      try{await enterTenantAdminV122()}
+      catch(e){
+        logged=false;$('#adminPanel')?.classList.add('hide');$('#loginBox')?.classList.remove('hide');
+      }
+    }else{
+      $('#adminPanel')?.classList.add('hide');$('#loginBox')?.classList.remove('hide');
+    }
+  }catch(e){console.error(e)}
+};
+
+function showSetPasswordV122(){
+  if(document.getElementById('invitePasswordV122'))return;
+  showModal(`<div id="invitePasswordV122"><div class="row"><div><h2 style="margin:0">Crie sua senha</h2><div class="hint">Seu acesso à Pedevia está quase pronto.</div></div></div>
+    <label>Nova senha</label><input id="newPassV122" class="field" type="password" autocomplete="new-password" placeholder="Mínimo de 8 caracteres">
+    <label>Repita a senha</label><input id="newPass2V122" class="field" type="password" autocomplete="new-password" placeholder="Repita a senha">
+    <button id="setPassBtnV122" class="btn full" onclick="setInvitedPasswordV122()">Salvar minha senha</button>
+    <p id="setPassMsgV122" class="hint"></p></div>`);
+}
+
+async function setInvitedPasswordV122(){
+  const p1=$('#newPassV122')?.value||'',p2=$('#newPass2V122')?.value||'',msg=$('#setPassMsgV122'),btn=$('#setPassBtnV122');
+  if(p1.length<8){if(msg)msg.textContent='Use pelo menos 8 caracteres.';return}
+  if(p1!==p2){if(msg)msg.textContent='As senhas não são iguais.';return}
+  if(btn){btn.disabled=true;btn.textContent='Salvando...'}
+  try{
+    const {error}=await supabaseClient.auth.updateUser({password:p1});
+    if(error)throw error;
+    const u=new URL(location.href);u.searchParams.delete('definir-senha');history.replaceState({},'',u.pathname+u.search+u.hash);
+    closeModal();alert('Senha criada com sucesso. Seu acesso administrativo está liberado.');
+    await enterTenantAdminV122();
+    mode='admin';$('#shopView').classList.add('hide');$('#adminView').classList.remove('hide');$('#cartBar').classList.add('hide');$('#modeBtn').textContent='🛍️';
+  }catch(e){if(msg)msg.textContent='Não foi possível salvar a senha: '+(e.message||e)}
+  finally{if(btn){btn.disabled=false;btn.textContent='Salvar minha senha'}}
+}
+
+async function maybeHandleInviteV122(){
+  if(new URLSearchParams(location.search).get('definir-senha')!=='1')return;
+  // O Supabase pode levar alguns instantes para converter o token do convite em sessão.
+  for(let i=0;i<8;i++){
+    const {data}=await supabaseClient.auth.getSession();
+    if(data?.session){showSetPasswordV122();return}
+    await new Promise(r=>setTimeout(r,250));
+  }
+  const msg=$('#loginMsg');if(msg)msg.textContent='Abra novamente o link do convite enviado para seu e-mail.';
+}
+
+const _loadTenantRowV121_v122=loadTenantRowV121;
+loadTenantRowV121=async function(slug){
+  let row=await _loadTenantRowV121_v122(slug);
+  if(row)return row;
+  if(new URLSearchParams(location.search).get('definir-senha')==='1'){
+    // Dá tempo para o token de convite virar uma sessão antes de consultar um rascunho.
+    for(let i=0;i<6;i++){
+      await new Promise(r=>setTimeout(r,250));
+      try{row=await loadTenantAdminRowV122(slug);if(row)return row}catch(_e){}
+    }
+  }
+  return null;
+};
+
+document.addEventListener('DOMContentLoaded',()=>setTimeout(maybeHandleInviteV122,300));
+supabaseClient.auth.onAuthStateChange((event,session)=>{
+  if(session && new URLSearchParams(location.search).get('definir-senha')==='1')setTimeout(maybeHandleInviteV122,50);
+});
+
 
 // Inicializa somente depois de todas as camadas de compatibilidade do arquivo terem sido carregadas.
 initializeOnlineStateV13();
