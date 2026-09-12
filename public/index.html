@@ -8301,4 +8301,140 @@ setTimeout(()=>{
 </script>
 <!-- v1.31.9: campo de dinheiro não é mais reconstruído durante a digitação; teclado móvel permanece aberto. -->
 
+
+
+<script>
+// ===== v1.31.10: CORREÇÃO REAL DO FOCO/TECLADO NO PAGAMENTO EM DINHEIRO =====
+(function(){
+
+  // A causa restante era o observer antigo da v1.31.8:
+  // ao alterar textContent do resultado do troco, ele detectava childList,
+  // reconstruía o bloco inteiro e destruía o input focado.
+  //
+  // Esta versão atualiza SOMENTE o nó de texto existente (characterData),
+  // que não dispara aquele observer.
+
+  function setTextWithoutChildListV13110(el,text){
+    if(!el)return;
+    const value=String(text??'');
+    if(el.firstChild && el.firstChild.nodeType===Node.TEXT_NODE){
+      el.firstChild.nodeValue=value;
+      // remove nós extras sem tocar no primeiro
+      while(el.childNodes.length>1)el.removeChild(el.lastChild);
+    }else{
+      // só acontece na primeira vez; depois fica estável
+      el.appendChild(document.createTextNode(value));
+    }
+  }
+
+  window.updateCashChangeV1318=function(){
+    const input=document.getElementById('cashPaidV1318');
+    const out=document.getElementById('cashChangeV1318');
+    const warn=document.getElementById('cashWarnV1318');
+    if(!input||!out)return;
+
+    window.checkoutState=window.checkoutState||{};
+    window.checkoutState.cashPaid=input.value;
+
+    const total=Number(checkoutTotalsV111()?.total||0);
+    const raw=String(input.value||'').trim().replace(/[R$\s]/g,'');
+    let normalized=raw;
+    if(normalized.includes(','))normalized=normalized.replace(/\./g,'').replace(',','.');
+    const paid=Number(normalized)||0;
+    const change=Math.max(0,paid-total);
+
+    if(!input.value.trim()){
+      setTextWithoutChildListV13110(out,'Informe com quanto você vai pagar');
+      if(warn)warn.style.display='none';
+      return;
+    }
+
+    if(paid<total){
+      setTextWithoutChildListV13110(out,'Valor informado: '+brl(paid));
+      if(warn){
+        warn.style.display='block';
+        // NÃO usa textContent aqui.
+        if(warn.firstChild && warn.firstChild.nodeType===Node.TEXT_NODE){
+          warn.firstChild.nodeValue='O valor para pagamento precisa ser igual ou maior que o total do pedido.';
+        }
+      }
+    }else{
+      setTextWithoutChildListV13110(
+        out,
+        change>0 ? 'Troco: '+brl(change) : 'Não precisa de troco'
+      );
+      if(warn)warn.style.display='none';
+    }
+  };
+
+  // Evita qualquer reconstrução do bloco enquanto o campo estiver focado.
+  // Se alguma camada antiga tentar substituir o bloco, restauramos o mesmo input.
+  let cashFocusGuardV13110=false;
+
+  document.addEventListener('focusin',function(ev){
+    if(ev.target?.id==='cashPaidV1318'){
+      cashFocusGuardV13110=true;
+    }
+  },true);
+
+  document.addEventListener('focusout',function(ev){
+    if(ev.target?.id==='cashPaidV1318'){
+      setTimeout(()=>{cashFocusGuardV13110=false},180);
+    }
+  },true);
+
+  // Remove o oninput inline para termos um único fluxo de atualização.
+  document.addEventListener('focusin',function(ev){
+    if(ev.target?.id!=='cashPaidV1318')return;
+    ev.target.removeAttribute('oninput');
+  },true);
+
+  // Um único listener para digitação.
+  document.addEventListener('input',function(ev){
+    if(ev.target?.id!=='cashPaidV1318')return;
+    updateCashChangeV1318();
+  },true);
+
+  // Mantém o input estável mesmo se houver tentativa de atualização do checkout.
+  const guardObserverV13110=new MutationObserver((mutations)=>{
+    if(!cashFocusGuardV13110)return;
+    const active=document.activeElement;
+    if(active?.id==='cashPaidV1318')return;
+
+    // Se o campo foi recriado enquanto estava digitando, recupera foco e cursor.
+    const input=document.getElementById('cashPaidV1318');
+    if(input){
+      const len=input.value.length;
+      requestAnimationFrame(()=>{
+        try{
+          input.focus({preventScroll:true});
+          input.setSelectionRange(len,len);
+        }catch(e){}
+      });
+    }
+  });
+
+  function startGuardV13110(){
+    const sheet=document.getElementById('sheet');
+    if(sheet){
+      try{guardObserverV13110.observe(sheet,{childList:true,subtree:true})}catch(e){}
+    }
+  }
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',startGuardV13110,{once:true});
+  }else startGuardV13110();
+  setTimeout(startGuardV13110,700);
+
+  setTimeout(()=>{
+    document.querySelectorAll('.adminHead .hint').forEach(el=>{
+      if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.31.10');
+      }
+    });
+  },1200);
+
+})();
+</script>
+<!-- v1.31.10: cálculo de troco sem reconstruir o input; foco e teclado permanecem estáveis. -->
+
 </body></html>
