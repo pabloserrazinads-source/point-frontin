@@ -7977,4 +7977,232 @@ setTimeout(()=>{
 </script>
 <!-- v1.31.7: elimina flash do Point em tenants e adiciona recuperação segura de senha. -->
 
+
+
+<script>
+// ===== v1.31.8: DINHEIRO, VALOR PAGO E TROCO =====
+(function(){
+
+  function moneyNumberV1318(v){
+    if(typeof v==='number') return isFinite(v)?v:0;
+    let s=String(v??'').trim().replace(/[R$\s]/g,'');
+    if(s.includes(',')) s=s.replace(/\./g,'').replace(',','.');
+    const n=Number(s);
+    return isFinite(n)?n:0;
+  }
+
+  function isCashV1318(){
+    const p=String(window.checkoutState?.payment||'').toLowerCase();
+    return p==='cash' || p==='dinheiro';
+  }
+
+  function cashChangeV1318(){
+    const total=Number(checkoutTotalsV111()?.total||0);
+    const paid=moneyNumberV1318(window.checkoutState?.cashPaid||0);
+    return {total,paid,change:Math.max(0,paid-total)};
+  }
+
+  window.updateCashChangeV1318=function(){
+    const input=document.getElementById('cashPaidV1318');
+    const out=document.getElementById('cashChangeV1318');
+    const warn=document.getElementById('cashWarnV1318');
+    if(!input||!out)return;
+
+    window.checkoutState=window.checkoutState||{};
+    window.checkoutState.cashPaid=input.value;
+
+    const x=cashChangeV1318();
+    if(!input.value.trim()){
+      out.textContent='Informe com quanto você vai pagar';
+      if(warn)warn.style.display='none';
+      return;
+    }
+
+    if(x.paid<x.total){
+      out.textContent='Valor informado: '+brl(x.paid);
+      if(warn){
+        warn.style.display='block';
+        warn.textContent='O valor para pagamento precisa ser igual ou maior que o total do pedido.';
+      }
+    }else{
+      out.textContent=x.change>0
+        ? 'Troco: '+brl(x.change)
+        : 'Não precisa de troco';
+      if(warn)warn.style.display='none';
+    }
+  };
+
+  function injectCashBoxV1318(){
+    const sheet=document.getElementById('sheet');
+    if(!sheet)return;
+
+    const old=document.getElementById('cashPaymentBoxV1318');
+    if(!isCashV1318()){
+      old?.remove();
+      return;
+    }
+
+    // Procura a área imediatamente depois da forma de pagamento.
+    const labels=[...sheet.querySelectorAll('label,div,h3,h4')];
+    let anchor=labels.find(el=>/forma de pagamento/i.test(el.textContent||''));
+    if(!anchor)return;
+
+    // sobe até um bloco razoável da forma de pagamento
+    let block=anchor;
+    for(let i=0;i<4 && block.parentElement && block.parentElement!==sheet;i++){
+      if(block.querySelector?.('button') && /dinheiro/i.test(block.textContent||'')) break;
+      block=block.parentElement;
+    }
+
+    let box=old;
+    if(!box){
+      box=document.createElement('div');
+      box.id='cashPaymentBoxV1318';
+      box.className='notice';
+      box.style.cssText='margin:12px 0 18px;padding:14px;border-radius:16px;';
+      block.insertAdjacentElement('afterend',box);
+    }
+
+    const x=cashChangeV1318();
+    const value=window.checkoutState?.cashPaid||'';
+    box.innerHTML=`
+      <div style="font-weight:900;margin-bottom:8px">💵 Pagamento em dinheiro</div>
+      <label for="cashPaidV1318" style="display:block;margin-bottom:6px">Vai pagar com quanto?</label>
+      <input id="cashPaidV1318" class="field" inputmode="decimal"
+             placeholder="Ex.: 50,00" value="${esc(String(value))}"
+             oninput="updateCashChangeV1318()">
+      <div id="cashChangeV1318" style="font-weight:900;margin-top:8px">
+        ${value ? (x.paid>=x.total ? (x.change>0?'Troco: '+brl(x.change):'Não precisa de troco') : 'Valor informado: '+brl(x.paid)) : 'Informe com quanto você vai pagar'}
+      </div>
+      <div id="cashWarnV1318" class="hint" style="display:${value&&x.paid<x.total?'block':'none'};color:#b8323f;margin-top:5px">
+        O valor para pagamento precisa ser igual ou maior que o total do pedido.
+      </div>
+    `;
+  }
+
+  // Injeta o campo sempre que o checkout for redesenhado/trocada a forma de pagamento.
+  const obsV1318=new MutationObserver(()=>{
+    clearTimeout(window._cashInjectTimerV1318);
+    window._cashInjectTimerV1318=setTimeout(injectCashBoxV1318,30);
+  });
+  document.addEventListener('DOMContentLoaded',()=>{
+    const sheet=document.getElementById('sheet');
+    if(sheet)obsV1318.observe(sheet,{childList:true,subtree:true});
+  });
+  setTimeout(()=>{
+    const sheet=document.getElementById('sheet');
+    if(sheet && !window._cashObsStartedV1318){
+      try{obsV1318.observe(sheet,{childList:true,subtree:true});window._cashObsStartedV1318=true}catch(e){}
+    }
+    injectCashBoxV1318();
+  },700);
+
+  // Validação final: dinheiro não pode seguir sem valor suficiente.
+  const finishBaseV1318=window.finishCheckoutV111;
+  if(typeof finishBaseV1318==='function'){
+    window.finishCheckoutV111=async function(){
+      if(isCashV1318()){
+        const input=document.getElementById('cashPaidV1318');
+        if(input)window.checkoutState.cashPaid=input.value;
+        const x=cashChangeV1318();
+
+        if(!String(window.checkoutState?.cashPaid||'').trim()){
+          pedeviaToastV1315?.('Informe com quanto vai pagar em dinheiro.','error');
+          input?.focus();
+          return;
+        }
+        if(x.paid<x.total){
+          pedeviaToastV1315?.('O valor em dinheiro é menor que o total do pedido.','error');
+          input?.focus();
+          return;
+        }
+      }
+      return finishBaseV1318.apply(this,arguments);
+    };
+  }
+
+  // Formato profissional do WhatsApp + informação de dinheiro/troco.
+  buildOrderTextV111=function(){
+    normalizeOrderExtrasV111();
+    const st=window.checkoutState||{};
+    const o=cfg.store.orderConfig||{};
+    const t=checkoutTotalsV111();
+    const storeName=String(cfg.store.name||'Estabelecimento').trim();
+    const L=[`🛍️ *Novo pedido via ${storeName}:*`,''];
+
+    cart.forEach(i=>{
+      const p=cfg.products.find(x=>x.id===i.pid)||{};
+      let base=Number(p.price||0);
+      if(i.variantId && Array.isArray(p.variants)){
+        const v=p.variants.find(x=>x.id===i.variantId);
+        if(v)base=Number(v.price||0);
+      }
+      const qty=Math.max(1,Number(i.qty||1));
+      const productName=`${p.name||'Produto'}${i.variantName?' · '+i.variantName:''}`;
+      L.push(`*${qty}x ${productName} (${brl(base*qty)})*`);
+      (i.groups||[]).forEach(g=>(g.items||[]).forEach(x=>{
+        const q=Math.max(1,Number(x?.qty||1));
+        const price=Math.max(0,Number(x?.price||0));
+        L.push(`   ↳ ${q}x ${String(x?.name||'Complemento')}${price?` (+${brl(price*q)})`:''}`);
+      }));
+      if(i.obs)L.push(`   ↳ Obs.: ${i.obs}`);
+      L.push('');
+    });
+
+    L.push('*Valor*','Produtos: '+brl(t.sub));
+    if(t.promoDiscount)L.push(`${t.promoOffer?.title||'Oferta'}: - ${brl(t.promoDiscount)}`);
+    if(t.loyaltyDiscount)L.push(`Fidelidade (${t.loyaltyPercent}%): - ${brl(t.loyaltyDiscount)}`);
+    if(t.delivery)L.push('Taxa de entrega: '+brl(t.delivery));
+    if(t.payAdj)L.push((t.payAdj>0?'Taxa':'Desconto')+' de pagamento: '+brl(Math.abs(t.payAdj)));
+    if(t.service)L.push((o.serviceFeeLabel||'Taxa de serviço')+': '+brl(t.service));
+    L.push('*Total: '+brl(t.total)+'*','');
+
+    L.push('*Forma de pagamento*',paymentKeyLabel(st.payment));
+    if(isCashV1318()){
+      const x=cashChangeV1318();
+      L.push('Vai pagar com: '+brl(x.paid));
+      L.push('Troco: '+brl(x.change));
+    }
+    L.push('');
+
+    if(st.mode==='delivery'){
+      let addr=String(st.address||'').trim(), ref=String(st.reference||'').trim();
+      if(ref && addr.endsWith(' · '+ref))addr=addr.slice(0,-(' · '+ref).length).trim();
+      L.push('*Entrega*');
+      if(st.neighborhood)L.push(st.neighborhood);
+      if(addr)L.push(addr);
+      if(ref)L.push(ref);
+      L.push('');
+    }else if(st.mode==='pickup'){
+      L.push('*Retirada*');
+      if(cfg.store.address)L.push(cfg.store.address);
+      L.push('');
+    }else{
+      L.push('*Consumo no local*');
+      if(st.table)L.push('Mesa: '+st.table);
+      L.push('');
+    }
+
+    if(st.note)L.push('*Observações*',st.note,'');
+    if(st.payment==='pix'&&o.pixKey){
+      L.push('*Pix para pagamento*',o.pixKey);
+      if(o.pixHolder)L.push(o.pixHolder);
+      L.push('');
+    }
+    L.push('*Cliente*',`${st.customer||'-'}${st.phone?' - '+st.phone:''}`);
+    return L.filter(x=>x!==null&&x!==undefined).join('\n');
+  };
+
+  setTimeout(()=>{
+    document.querySelectorAll('.adminHead .hint').forEach(el=>{
+      if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.31.8');
+      }
+    });
+  },1200);
+
+})();
+</script>
+<!-- v1.31.8: dinheiro com valor pago, cálculo de troco e envio dessas informações ao WhatsApp. -->
+
 </body></html>
