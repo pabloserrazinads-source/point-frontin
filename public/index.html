@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#6f2388">
-<title>Point do Açaí Frontin · Admin v0.9</title>
+<title>Pedevia · Cardápio online</title>
 <style>
 :root{--p:#712489;--p2:#a942b5;--bg:#f7f4f8;--card:#fff;--ink:#28232b;--muted:#7c7480;--line:#e8e1ea;--ok:#198b57;--bad:#c53c49;--warn:#e3a128}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
@@ -6473,9 +6473,167 @@ adminMore=function(){
 setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.26.1')})},0);
 
 
+// ===== v1.27.0: AUDITORIA GERAL PEDEVIA =====
+// Aplica-se ao Point e a todos os estabelecimentos atuais e futuros.
+
+(function injectPedeviaV127Styles(){
+  if(document.getElementById('pedeviaV127Styles'))return;
+  const s=document.createElement('style');s.id='pedeviaV127Styles';s.textContent=`
+  .v127Timeline{display:grid;gap:7px;margin:12px 0}.v127Time{display:grid;grid-template-columns:105px 1fr;gap:8px;font-size:13px}.v127Time b{font-size:12px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted,#7c7480)}
+  .v127Bars{display:grid;gap:9px}.v127Bar{display:grid;grid-template-columns:minmax(90px,1fr) 2fr auto;gap:8px;align-items:center}.v127BarTrack{height:9px;border-radius:999px;background:var(--line,#e8e1ea);overflow:hidden}.v127BarFill{height:100%;background:var(--p,#712489);border-radius:999px}.v127Bar small{white-space:nowrap}
+  .v127ScheduleDay{border:1px solid var(--line,#e8e1ea);border-radius:16px;padding:12px;margin:9px 0}.v127ScheduleDay>div:first-child{font-weight:900;margin-bottom:8px}.v127ScheduleRow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:7px}.v127ScheduleRow input{width:100%}
+  .v127Exception{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 0;border-bottom:1px solid var(--line,#e8e1ea)}
+  .v127Realtime{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--muted,#7c7480)}.v127Realtime:before{content:'';width:8px;height:8px;border-radius:50%;background:#29a56a;box-shadow:0 0 0 3px rgba(41,165,106,.12)}
+  @media(min-width:720px){.v127ScheduleGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.v127ScheduleDay{margin:0}}
+  `;document.head.appendChild(s);
+})();
+
+function currentStoreKeyV127(){return typeof currentStoreKeyV125==='function'?currentStoreKeyV125():'point-frontin'}
+function scopedLocalKeyV127(base){return `pedevia:${currentStoreKeyV127()}:${base}`}
+function normalizePhoneV127(v){let d=String(v||'').replace(/\D/g,'');if(d.startsWith('55')&&d.length>11)d=d.slice(2);return d}
+
+// --- Identidade limpa e PIX isolado ---
+const _cleanClientConfigV127Base=cleanClientConfigV120;
+cleanClientConfigV120=function(name,whatsapp){
+  const x=_cleanClientConfigV127Base(name,whatsapp);x.store=x.store||{};x.store.orderConfig=x.store.orderConfig||{};
+  x.store.orderConfig.pixKey='';x.store.orderConfig.pixHolder='';x.store.specialClosures=[];
+  return x;
+};
+function sanitizeTenantV127(){
+  if(!window.pedeviaTenantV121)return;
+  cfg.store=cfg.store||{};cfg.store.orderConfig=cfg.store.orderConfig||{};
+  const o=cfg.store.orderConfig;
+  if(String(o.pixKey||'')==='24998375867' && /Pablo\s*-\s*PicPay/i.test(String(o.pixHolder||''))){o.pixKey='';o.pixHolder=''}
+  if(!Array.isArray(cfg.store.specialClosures))cfg.store.specialClosures=[];
+  document.title=`${cfg.store.name||'Estabelecimento'} · Pedevia`;
+}
+const _applyTenantConfigV127Base=applyTenantConfigV121;
+applyTenantConfigV121=function(row){const r=_applyTenantConfigV127Base(row);sanitizeTenantV127();return r};
+
+// --- Cache e perfil do cliente por estabelecimento ---
+loadCustomerCacheV113=function(){try{return JSON.parse(localStorage.getItem(scopedLocalKeyV127('customer'))||'null')||{}}catch(e){return {}}};
+saveCustomerCacheV113=function(name,phone){const data={name:String(name||'').trim(),phone:normalizePhoneV127(phone),updatedAt:Date.now()};try{localStorage.setItem(scopedLocalKeyV127('customer'),JSON.stringify(data))}catch(e){}return data};
+cacheCustomerPhoneV115=function(phone){const p=normalizePhoneV127(phone);if(p.length>=10){try{localStorage.setItem(scopedLocalKeyV127('customer-phone'),p)}catch(e){}}return p};
+getCachedCustomerPhoneV115=function(){try{return localStorage.getItem(scopedLocalKeyV127('customer-phone'))||''}catch(e){return ''}};
+
+getCustomerProfileV115=async function(phone){
+  const p=normalizePhoneV127(phone);if(p.length<10)return null;
+  try{const {data,error}=await supabaseClient.rpc('get_pedevia_customer_profile_v127',{p_store_key:currentStoreKeyV127(),p_phone:p});if(error)throw error;return Array.isArray(data)?data[0]||null:data||null}catch(e){console.error('Erro ao consultar perfil isolado:',e);return null}
+};
+upsertCustomerProfileV115=async function(profile={}){
+  const phone=normalizePhoneV127(profile.phone);if(phone.length<10)return null;cacheCustomerPhoneV115(phone);
+  try{const {data,error}=await supabaseClient.rpc('upsert_pedevia_customer_profile_v127',{p_store_key:currentStoreKeyV127(),p_phone:phone,p_name:String(profile.name||'').trim(),p_neighborhood:String(profile.neighborhood||'').trim(),p_address:String(profile.address||'').trim(),p_reference:String(profile.reference||'').trim()});if(error)throw error;return Array.isArray(data)?data[0]||null:data}catch(e){console.error('Erro ao salvar perfil isolado:',e);return null}
+};
+getLoyaltyStatusV113=async function(phone){
+  const p=normalizePhoneV127(phone);if(p.length<10)return null;
+  try{const {data,error}=await supabaseClient.rpc('get_pedevia_loyalty_status_v127',{p_store_key:currentStoreKeyV127(),p_phone:p});if(error)throw error;return Array.isArray(data)?data[0]||null:data||null}catch(e){console.warn('Não foi possível consultar fidelidade isolada:',e);return null}
+};
+registerOrderAndCustomerV115=async function(){
+  const st=window.checkoutState||{},phone=normalizePhoneV127(st.phone);if(phone.length<10)throw new Error('Telefone inválido');cacheCustomerPhoneV115(phone);
+  const t=checkoutTotalsV111(),orderId=ensureClientOrderIdV113();
+  const {data,error}=await supabaseClient.rpc('register_pedevia_customer_order_v127',{p_store_key:currentStoreKeyV127(),p_client_order_id:orderId,p_phone:phone,p_name:String(st.customer||'').trim(),p_neighborhood:String(st.neighborhood||''),p_address:String(st.address||''),p_reference:String(st.reference||''),p_total:Number(t.total||0),p_order_text:buildOrderTextV111()});
+  if(error)throw error;const result=Array.isArray(data)?data[0]||null:data;if(result)updateLoyaltyDisplaysV115(result);return result;
+};
+
+// --- Horário confiável, múltiplos expedientes, madrugada e fechamentos excepcionais ---
+window.pedeviaServerOffsetV127=0;
+async function syncServerClockV127(){try{const before=Date.now(),{data,error}=await supabaseClient.rpc('pedevia_server_time_v127');if(error)throw error;const after=Date.now(),server=new Date(data).getTime();if(Number.isFinite(server))window.pedeviaServerOffsetV127=server-((before+after)/2)}catch(e){console.warn('Relógio do servidor indisponível; usando horário local.',e)}}
+function nowV127(){return new Date(Date.now()+(window.pedeviaServerOffsetV127||0))}
+function hmV127(v){const a=String(v||'').split(':').map(Number);return (a[0]||0)*60+(a[1]||0)}
+function dateKeyV127(d){const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${day}`}
+function scheduleStateV127(){
+  const s=cfg.store||{},d=nowV127();if(s.paused)return{open:false,text:s.pauseMessage||'Estabelecimento temporariamente fechado.'};if(s.scheduleMode==='always')return{open:true,text:'Aberto agora'};
+  const special=(s.specialClosures||[]).find(x=>x&&x.date===dateKeyV127(d)&&x.closed!==false);if(special)return{open:false,text:special.message||'Fechado excepcionalmente hoje'};
+  const dow=d.getDay(),m=d.getHours()*60+d.getMinutes(),today=s.hours?.[String(dow)]||[],prev=s.hours?.[String((dow+6)%7)]||[];
+  for(const x of today){const a=hmV127(x[0]),b=hmV127(x[1]);if(a===b)return{open:true,text:'Aberto agora'};if(a<b&&m>=a&&m<b)return{open:true,text:`Aberto agora · até ${x[1]}`};if(a>b&&m>=a)return{open:true,text:`Aberto agora · até ${x[1]} de amanhã`}}
+  for(const x of prev){const a=hmV127(x[0]),b=hmV127(x[1]);if(a>b&&m<b)return{open:true,text:`Aberto agora · até ${x[1]}`};if(a===b)return{open:true,text:'Aberto agora'}}
+  const txt=today.length?today.map(x=>`${x[0]}–${x[1]}`).join(', '):'Fechado hoje';return{open:false,text:today.length?`Fechado agora · hoje ${txt}`:txt};
+}
+openState=function(){return scheduleStateV127()};
+todayScheduleText=function(){const s=cfg.store||{};if(s.scheduleMode==='always')return'Aberto 24 horas';const d=nowV127(),sp=(s.specialClosures||[]).find(x=>x?.date===dateKeyV127(d)&&x.closed!==false);if(sp)return sp.message||'Fechado excepcionalmente hoje';const r=s.hours?.[String(d.getDay())]||[];return r.length?r.map(x=>`${x[0]}–${x[1]}`).join(', '):'Fechado hoje'};
+nextCloseText=function(){const st=scheduleStateV127();return st.open?st.text.replace(/^Aberto agora\s*·?\s*/,'Até '):todayScheduleText()};
+
+function specialClosuresHtmlV127(){const arr=cfg.store.specialClosures||[];return arr.length?arr.slice().sort((a,b)=>a.date.localeCompare(b.date)).map((x,i)=>`<div class="v127Exception"><div><b>${esc(new Date(x.date+'T12:00:00').toLocaleDateString('pt-BR'))}</b><small>${esc(x.message||'Fechado excepcionalmente')}</small></div><button class="ghost" onclick="removeSpecialClosureV127(${i})">Remover</button></div>`).join(''):'<p class="hint">Nenhum fechamento excepcional cadastrado.</p>'}
+function removeSpecialClosureV127(i){cfg.store.specialClosures=(cfg.store.specialClosures||[]).filter((_,idx)=>idx!==i);generalHours()}
+function addSpecialClosureV127(){const date=document.getElementById('v127CloseDate')?.value,msg=document.getElementById('v127CloseMsg')?.value.trim()||'Fechado excepcionalmente';if(!date){alert('Escolha a data.');return}cfg.store.specialClosures=cfg.store.specialClosures||[];cfg.store.specialClosures=cfg.store.specialClosures.filter(x=>x.date!==date);cfg.store.specialClosures.push({date,closed:true,message:msg});generalHours()}
+
+generalHours=function(){
+  const s=cfg.store,n=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];if(!Array.isArray(s.specialClosures))s.specialClosures=[];
+  const days=n.map((name,i)=>{const r=s.hours?.[String(i)]||[],a=r[0]||['',''],b=r[1]||['',''];return `<div class="v127ScheduleDay"><div>${name}</div><div class="v127ScheduleRow"><input id="ga${i}_1" type="time" value="${a[0]||''}"><input id="gb${i}_1" type="time" value="${a[1]||''}"></div><div class="v127ScheduleRow"><input id="ga${i}_2" type="time" value="${b[0]||''}"><input id="gb${i}_2" type="time" value="${b[1]||''}"></div><small class="hint">Use a 2ª faixa para intervalo de almoço. Horários como 18:00–02:00 funcionam normalmente.</small></div>`}).join('');
+  generalShell('Horário de Atendimento',`<p class="hint">Você pode cadastrar até dois expedientes por dia e também horários que passam da meia-noite.</p><select id="gSchedule" class="field"><option value="fixed">Atende em horários pré-estabelecidos</option><option value="always">Sempre aberto</option></select><div class="v127ScheduleGrid">${days}</div><div class="panel" style="margin-top:14px"><h3>Fechamento excepcional</h3><p class="hint">Use para feriados, manutenção, férias ou qualquer dia em que a programação semanal não deve valer.</p><input id="v127CloseDate" type="date" class="field"><input id="v127CloseMsg" class="field" placeholder="Ex.: Fechado para manutenção"><button class="ghost full" onclick="addSpecialClosureV127()">+ Adicionar fechamento</button><div style="margin-top:10px">${specialClosuresHtmlV127()}</div></div><button class="btn full" onclick="saveGeneralHours()">Salvar horários</button>`);document.getElementById('gSchedule').value=s.scheduleMode||'fixed';
+};
+saveGeneralHours=async function(){
+  cfg.store.scheduleMode=document.getElementById('gSchedule')?.value||'fixed';cfg.store.hours=cfg.store.hours||{};
+  for(let i=0;i<7;i++){const list=[];for(let k=1;k<=2;k++){const a=document.getElementById(`ga${i}_${k}`)?.value||'',b=document.getElementById(`gb${i}_${k}`)?.value||'';if(a&&b)list.push([a,b])}cfg.store.hours[String(i)]=list}
+  try{if(typeof persistAdminStateV15==='function'){const ok=await persistAdminStateV15({products:false,notify:true,message:'Horários salvos online.'});if(ok){generalHours();renderShop();return}}save();generalHours();renderShop()}catch(e){alert('Não foi possível salvar os horários: '+(e.message||e))}
+};
+adminHours=generalHours;
+
+// --- Registro robusto + numeração independente por estabelecimento ---
+orderNumberV125=function(o){const n=o?.store_order_number??o?.order_number;return '#'+String(n||'').padStart(3,'0')};
+createOnlineOrderV125=async function(){
+  if(!storeAcceptingOrdersV125())throw new Error('O estabelecimento fechou antes da finalização.');
+  const st=window.checkoutState||{},t=checkoutTotalsV111(),text=buildOrderTextV111();
+  const items=(cart||[]).map(i=>{const p=(cfg.products||[]).find(x=>x.id===i.pid);return{product_id:i.pid,name:p?.name||'Produto',variant:i.variantName||'',quantity:+i.qty||1,unit_price:+i.unit||0,groups:i.groups||[],note:i.obs||''}});
+  const args={p_store_key:currentStoreKeyV127(),p_store_name:currentStoreNameV125(),p_customer_name:String(st.customer||document.getElementById('coName')?.value||'').trim(),p_customer_phone:String(st.phone||document.getElementById('coPhone')?.value||'').trim(),p_order_mode:String(st.mode||''),p_address:String(st.address||''),p_neighborhood:String(st.neighborhood||''),p_table_number:String(st.table||''),p_payment_method:String(st.payment||''),p_note:String(st.note||document.getElementById('coObs')?.value||'').trim(),p_items:items,p_subtotal:Number(t.sub||0),p_discount:Number((t.promoDiscount||0)+(t.loyaltyDiscount||0)),p_delivery_fee:Number(t.delivery||0),p_payment_adjustment:Number(t.payAdj||0),p_service_fee:Number(t.service||0),p_total:Number(t.total||0),p_whatsapp_text:text};
+  const {data,error}=await supabaseClient.rpc('register_pedevia_order_v127',args);if(error)throw error;const row=Array.isArray(data)?data[0]:data;if(!row)throw new Error('O servidor não confirmou o pedido.');return row;
+};
+orderCopyTextV125=function(o){let txt=String(o?.whatsapp_text||'').trim();const head=`🧾 *PEDIDO ${orderNumberV125(o)}*`;if(txt){if(!txt.startsWith('🧾 *PEDIDO'))txt=head+'\n'+txt;return txt.replace(/POINT DO AÇAÍ FRONTIN/gi,o.store_name||currentStoreNameV125())}const lines=[`${head} · ${o.store_name||currentStoreNameV125()}`,''];(o.items||[]).forEach(i=>lines.push(`*${i.quantity||1}x ${i.name||'Produto'}* — ${brl((+i.unit_price||0)*(+i.quantity||1))}`));lines.push('',`Cliente: ${o.customer_name||'-'}`,`Celular: ${o.customer_phone||'-'}`,`Tipo: ${orderModeLabelV125(o.order_mode)}`,`Pagamento: ${paymentKeyLabel(o.payment_method)}`,`*TOTAL: ${brl(+o.total||0)}*`);return lines.join('\n')};
+
+// --- Linha do tempo, WhatsApp do cliente e impressão térmica ---
+function orderTimelineV127(o){const rows=[['Recebido',o.created_at],['Aceito',o.accepted_at],['Preparando',o.preparing_at],['Pronto',o.ready_at],['Concluído',o.completed_at],['Cancelado',o.cancelled_at]].filter(x=>x[1]);return rows.length?`<div class="v127Timeline">${rows.map(([n,v])=>`<div class="v127Time"><b>${n}</b><span>${orderDateV125(v)}</span></div>`).join('')}</div>`:''}
+function customerWhatsAppUrlV127(o){let d=String(o?.customer_phone||'').replace(/\D/g,'');if(!d)return'';if(!d.startsWith('55'))d='55'+d;return`https://wa.me/${d}`}
+function openCustomerWhatsAppV127(id){const o=(window.pedeviaOrdersV125||[]).find(x=>String(x.id)===String(id));if(!o)return;const u=customerWhatsAppUrlV127(o);if(!u){alert('Este pedido não possui celular válido.');return}window.open(u+'?text='+encodeURIComponent(`Olá, ${o.customer_name||'cliente'}! Sobre o seu pedido ${orderNumberV125(o)} na ${o.store_name||currentStoreNameV125()}:`),'_blank')}
+function printOrderV127(id){const o=(window.pedeviaOrdersV125||[]).find(x=>String(x.id)===String(id));if(!o)return;const w=window.open('','_blank','width=420,height=650');if(!w){alert('Permita pop-ups para imprimir o pedido.');return}const items=(o.items||[]).map(i=>`<div><b>${i.quantity||1}x ${esc(i.name||'Produto')}</b><span>${brl((+i.unit_price||0)*(+i.quantity||1))}</span></div>${(i.groups||[]).map(g=>`<small>${esc(g.name||'Complementos')}: ${(g.items||[]).map(x=>esc(x.name||x)).join(', ')}</small>`).join('')}${i.note?`<small>Obs.: ${esc(i.note)}</small>`:''}`).join('');w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Pedido ${orderNumberV125(o)}</title><style>body{font:13px Arial;margin:10px;color:#000}h2{text-align:center;margin:0 0 4px}.muted{text-align:center;font-size:11px;margin-bottom:10px}.item>div,body>div.row{display:flex;justify-content:space-between;gap:8px}.item{border-top:1px dashed #000;padding:7px 0}.item small{display:block;margin-top:3px}.total{border-top:2px solid #000;margin-top:8px;padding-top:8px;font-size:17px;font-weight:bold;display:flex;justify-content:space-between}@media print{body{width:72mm;margin:3mm}}</style></head><body><h2>${esc(o.store_name||currentStoreNameV125())}</h2><div class="muted">Pedido ${orderNumberV125(o)} · ${orderDateV125(o.created_at)}</div><p><b>${esc(o.customer_name||'-')}</b><br>${esc(o.customer_phone||'')}<br>${esc(orderModeLabelV125(o.order_mode))}${o.address?'<br>'+esc(o.address):''}${o.neighborhood?' · '+esc(o.neighborhood):''}</p>${(o.items||[]).map(i=>`<div class="item"><div><b>${i.quantity||1}x ${esc(i.name||'Produto')}</b><span>${brl((+i.unit_price||0)*(+i.quantity||1))}</span></div>${(i.groups||[]).map(g=>`<small>${esc(g.name||'Complementos')}: ${(g.items||[]).map(x=>esc(x.name||x)).join(', ')}</small>`).join('')}${i.note?`<small>Obs.: ${esc(i.note)}</small>`:''}</div>`).join('')}<p>Pagamento: ${esc(paymentKeyLabel(o.payment_method))}${o.note?'<br>Obs.: '+esc(o.note):''}</p><div class="total"><span>TOTAL</span><span>${brl(+o.total||0)}</span></div><script>onload=()=>{print();setTimeout(()=>close(),300)}<\/script></body></html>`);w.document.close()}
+
+updateOrderStatusV126=async function(id){const status=document.getElementById('orderStatusV125')?.value||'new',now=new Date().toISOString(),patch={status,updated_at:now};if(status==='accepted')patch.accepted_at=now;if(status==='preparing')patch.preparing_at=now;if(status==='ready')patch.ready_at=now;if(status==='completed')patch.completed_at=now;if(status==='cancelled')patch.cancelled_at=now;const {error}=await supabaseClient.from('pedevia_orders').update(patch).eq('id',id).eq('store_key',currentStoreKeyV127());if(error){alert('Não foi possível atualizar o pedido: '+error.message);return}closeModal();await loadOrdersPanelV126()};
+updateOrderStatusV125=updateOrderStatusV126;
+viewOrderV125=function(id){const o=(window.pedeviaOrdersV125||[]).find(x=>String(x.id)===String(id));if(!o)return;const items=(o.items||[]).map(i=>`<div class="summary"><div class="row"><b>${i.quantity||1}x ${esc(i.name||'Produto')}${i.variant?' · '+esc(i.variant):''}</b><b>${brl((+i.unit_price||0)*(+i.quantity||1))}</b></div>${(i.groups||[]).map(g=>`<small><b>${esc(g.name||'Complementos')}:</b> ${(g.items||[]).map(x=>esc(x.name||x)).join(', ')}</small>`).join('')}${i.note?`<small>Obs.: ${esc(i.note)}</small>`:''}</div>`).join('');showModal(`<div class="row"><div><h2 style="margin:0">Pedido ${orderNumberV125(o)}</h2><div class="hint">${orderDateV125(o.created_at)}</div></div><button class="ghost" onclick="closeModal()">✕</button></div>${items}<div class="summary"><div><b>${esc(o.customer_name||'-')}</b> · ${esc(o.customer_phone||'-')}</div><small>${orderModeLabelV125(o.order_mode)}${o.neighborhood?' · '+esc(o.neighborhood):''}${o.address?' · '+esc(o.address):''}${o.table_number?' · Mesa '+esc(o.table_number):''}</small><small>Pagamento: ${esc(paymentKeyLabel(o.payment_method))}</small>${o.note?`<small>Obs.: ${esc(o.note)}</small>`:''}<div class="row" style="margin-top:8px"><strong>Total</strong><strong>${brl(+o.total||0)}</strong></div></div>${orderTimelineV127(o)}<label>Status</label><select id="orderStatusV125" class="field"><option value="new">Novo</option><option value="accepted">Aceito</option><option value="preparing">Preparando</option><option value="ready">Pronto</option><option value="completed">Concluído</option><option value="cancelled">Cancelado</option></select><button class="btn full" onclick="updateOrderStatusV126('${o.id}')">Salvar status</button><div class="v126OrderActions"><button class="ghost" onclick="openCustomerWhatsAppV127('${o.id}')">WhatsApp do cliente</button><button class="ghost" onclick="copyOrderV125('${o.id}')">Copiar</button><button class="ghost" onclick="printOrderV127('${o.id}')">Imprimir</button></div><button class="dangerBtn full" style="width:100%;margin-top:8px" onclick="deleteOrderV126('${o.id}')">Excluir pedido definitivamente</button>`);setTimeout(()=>{const s=document.getElementById('orderStatusV125');if(s)s.value=o.status||'new'},0)};
+renderOrderCardV126=function(o){return `<div class="panel" style="padding:13px"><div class="row"><div><b style="font-size:17px">${orderNumberV125(o)}</b> <span class="badge ${orderStatusClassV125(o.status)}">${orderStatusLabelV125(o.status)}</span><div class="hint">${orderDateV125(o.created_at)} · ${esc(o.customer_name||'Cliente')} · ${orderModeLabelV125(o.order_mode)}</div></div><b>${brl(+o.total||0)}</b></div><div class="v126OrderActions"><button class="ghost" onclick="viewOrderV125('${o.id}')">Ver pedido</button><button class="ghost" onclick="openCustomerWhatsAppV127('${o.id}')">WhatsApp</button><button class="ghost" onclick="printOrderV127('${o.id}')">Imprimir</button><button class="ghost" onclick="copyOrderV125('${o.id}')">Copiar</button>${archivedOrderV126(o)?`<button class="ghost v126Danger" onclick="deleteOrderV126('${o.id}')">Excluir</button>`:''}</div></div>`};
+
+// --- Realtime + alerta sonoro ---
+let ordersChannelV127=null,lastRealtimeOrderV127='';
+function beepOrderV127(){if(cfg.store?.orderConfig?.panelAlerts===false)return;try{const C=window.AudioContext||window.webkitAudioContext,c=new C(),o=c.createOscillator(),g=c.createGain();o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.setValueAtTime(.001,c.currentTime);g.gain.exponentialRampToValueAtTime(.15,c.currentTime+.02);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.45);o.start();o.stop(c.currentTime+.46)}catch(e){}}
+function notifyNewOrderV127(row){if(row?.id===lastRealtimeOrderV127)return;lastRealtimeOrderV127=row?.id||'';beepOrderV127();if(document.visibilityState==='hidden'&&'Notification'in window&&Notification.permission==='granted'){try{new Notification(`${currentStoreNameV125()} · novo pedido`,{body:`${row.customer_name||'Cliente'} · ${brl(+row.total||0)}`})}catch(e){}}if(mode==='admin'&&logged&&adminTab==='orders'&&adminOrdersView!=='config'&&adminOrdersView!=='stats')loadOrdersPanelV126()}
+function subscribeOrdersV127(){if(!logged||!supabaseClient?.channel)return;if(ordersChannelV127){try{supabaseClient.removeChannel(ordersChannelV127)}catch(e){}}const key=currentStoreKeyV127();ordersChannelV127=supabaseClient.channel(`orders-${key}-${Date.now()}`).on('postgres_changes',{event:'INSERT',schema:'public',table:'pedevia_orders',filter:`store_key=eq.${key}`},p=>notifyNewOrderV127(p.new)).subscribe()}
+const _renderAdminV127Base=renderAdmin;
+renderAdmin=function(){_renderAdminV127Base();if(logged)setTimeout(subscribeOrdersV127,50)};
+
+// --- Estatísticas ampliadas + CSV ---
+function csvCellV127(v){const s=String(v??'').replace(/"/g,'""');return `"${s}"`}
+function exportOrdersCsvV127(){const rows=window.statsOrdersV126||[];if(!rows.length){alert('Não há pedidos para exportar.');return}const head=['Pedido','Data','Cliente','Celular','Tipo','Pagamento','Status','Total'];const lines=[head.map(csvCellV127).join(';'),...rows.map(o=>[orderNumberV125(o),new Date(o.created_at).toLocaleString('pt-BR'),o.customer_name,o.customer_phone,orderModeLabelV125(o.order_mode),paymentKeyLabel(o.payment_method),orderStatusLabelV125(o.status),Number(o.total||0).toFixed(2).replace('.',',')].map(csvCellV127).join(';'))];const blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`pedevia-${currentStoreKeyV127()}-pedidos.csv`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)}
+function groupStatsV127(rows,keyFn,valueFn=()=>1){const m=new Map();rows.forEach(o=>{const k=keyFn(o)||'Não informado';m.set(k,(m.get(k)||0)+valueFn(o))});return [...m.entries()].sort((a,b)=>b[1]-a[1])}
+function barsV127(entries,format=v=>String(v)){const max=Math.max(1,...entries.map(x=>x[1]));return `<div class="v127Bars">${entries.map(([k,v])=>`<div class="v127Bar"><span>${esc(k)}</span><div class="v127BarTrack"><div class="v127BarFill" style="width:${Math.max(3,(v/max)*100)}%"></div></div><small>${esc(format(v))}</small></div>`).join('')}</div>`}
+const _loadStatisticsV127Base=loadStatisticsV126;
+loadStatisticsV126=async function(){await _loadStatisticsV127Base();const host=document.getElementById('statsHostV126');if(!host||!window.statsOrdersV126)return;const cutoff=statsCutoffV126(),period=cutoff?window.statsOrdersV126.filter(o=>{const d=safeDateV126(o.created_at);return d&&d>=cutoff}):window.statsOrdersV126,completed=period.filter(statusRevenueV126);const byPay=groupStatsV127(completed,o=>paymentKeyLabel(o.payment_method),o=>+o.total||0).slice(0,8),byMode=groupStatsV127(completed,o=>orderModeLabelV125(o.order_mode)),byHour=groupStatsV127(completed,o=>String(new Date(o.created_at).getHours()).padStart(2,'0')+'h').slice(0,8);let prep=completed.map(o=>{const a=safeDateV126(o.accepted_at||o.created_at),b=safeDateV126(o.ready_at||o.completed_at);return a&&b?Math.max(0,(b-a)/60000):null}).filter(x=>x!==null&&x<1440);const avg=prep.length?prep.reduce((a,b)=>a+b,0)/prep.length:0;host.insertAdjacentHTML('beforeend',`<div class="panel"><div class="row"><h3 style="margin:0">Operação</h3><button class="ghost" onclick="exportOrdersCsvV127()">Exportar CSV</button></div><div class="v126StatsGrid"><div class="v126Stat"><b>${avg?Math.round(avg)+' min':'—'}</b><small>Tempo médio até ficar pronto</small></div><div class="v126Stat"><b>${period.length}</b><small>Pedidos registrados no período</small></div></div></div><div class="panel"><h3>Faturamento por forma de pagamento</h3>${barsV127(byPay,v=>brl(v))||'<p class="hint">Sem dados.</p>'}</div><div class="panel"><h3>Pedidos por modalidade</h3>${barsV127(byMode)||'<p class="hint">Sem dados.</p>'}</div><div class="panel"><h3>Horários de pico</h3>${barsV127(byHour)||'<p class="hint">Sem dados.</p>'}</div>`)};
+
+// --- Limpeza de textos históricos do Point onde não fazem sentido na plataforma ---
+function cleanLegacyLabelsV127(){document.querySelectorAll('#adminContent .hint').forEach(el=>{if(el.textContent?.trim()==='Visão geral do Point do Açaí.')el.textContent='Visão geral do estabelecimento.'});if(!tenantSlugFromLocationV121())document.title=`${cfg.store?.name||'Point do Açaí Frontin'} · Pedevia`}
+const _renderAdminV127Clean=renderAdmin;
+renderAdmin=function(){_renderAdminV127Clean();setTimeout(cleanLegacyLabelsV127,0)};
+
+syncServerClockV127();setInterval(syncServerClockV127,10*60*1000);
+setTimeout(()=>{sanitizeTenantV127();cleanLegacyLabelsV127();document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.27.0')})},0);
+
+// --- Backups de configuração + resumo do painel mestre ---
+async function openConfigBackupsV127(){
+  generalShell('Backups de configuração','<div id="v127Backups"><p class="hint">Carregando backups...</p></div>');
+  const host=document.getElementById('v127Backups');
+  try{const {data,error}=await supabaseClient.from('pedevia_config_backups').select('id,store_key,actor_email,created_at').eq('store_key',currentStoreKeyV127()).order('created_at',{ascending:false}).limit(30);if(error)throw error;const rows=data||[];host.innerHTML=rows.length?`<p class="hint">A Pedevia salva automaticamente a versão anterior sempre que a configuração da loja é alterada.</p>${rows.map((b,i)=>`<div class="adminItem"><div><b>Backup ${rows.length-i}</b><small>${new Date(b.created_at).toLocaleString('pt-BR')}${b.actor_email?' · '+esc(b.actor_email):''}</small></div><button class="ghost" onclick="restoreConfigBackupV127('${b.id}')">Restaurar</button></div>`).join('')}`:'<div class="notice">Ainda não há backups. O primeiro será criado automaticamente na próxima alteração salva.</div>'}catch(e){host.innerHTML=`<div class="notice bad">Não foi possível carregar os backups: ${esc(e.message||e)}</div>`}
+}
+async function restoreConfigBackupV127(id){if(!confirm('Restaurar esta versão da configuração?\n\nA configuração atual também será preservada como backup antes da restauração.'))return;try{const {error}=await supabaseClient.rpc('restore_pedevia_config_backup_v127',{p_backup_id:id});if(error)throw error;alert('Backup restaurado. A página será recarregada para aplicar a versão escolhida.');location.reload()}catch(e){alert('Não foi possível restaurar: '+(e.message||e))}}
+const _adminMoreV127BackupBase=adminMore;
+adminMore=function(){_adminMoreV127BackupBase();const list=document.querySelector('#adminContent .moreList');if(!list||document.getElementById('backupCardV127'))return;const h=document.createElement('div');h.id='backupCardV127';h.innerHTML=moreCard('↶','Backups da configuração','Restaure uma versão anterior da sua loja','openConfigBackupsV127()');list.appendChild(h)};
+
+const _renderClientSitesListV127Base=renderClientSitesListV120;
+renderClientSitesListV120=function(rows){_renderClientSitesListV127Base(rows);const host=document.getElementById('clientSitesListV120');if(!host||document.getElementById('masterSummaryV127'))return;const active=(rows||[]).filter(x=>x.active).length,box=document.createElement('div');box.id='masterSummaryV127';box.className='v126StatsGrid';box.innerHTML=`<div class="v126Stat"><b>${rows?.length||0}</b><small>Estabelecimentos</small></div><div class="v126Stat"><b>${active}</b><small>Lojas ativas</small></div><div class="v126Stat"><b>${(rows?.length||0)-active}</b><small>Rascunhos/inativas</small></div>`;host.prepend(box)};
+
+
 // Inicializa somente depois de todas as camadas de compatibilidade do arquivo terem sido carregadas.
 initializeOnlineStateV13();
 </script>
 
 </body></html>
 <!-- v1.26.0: pedidos ativos/histórico, exclusão, encerramento diário e estatísticas para Point e tenants. -->
+
+<!-- v1.27.0: auditoria geral, isolamento por loja, realtime, horários avançados e operação profissional. -->
