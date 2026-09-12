@@ -2418,7 +2418,7 @@ saveGeneralBrand=async function(){
 };
 
 // ===== v1.7: VERSIONAMENTO E MIGRAÇÕES DE DADOS =====
-const APP_VERSION='1.23.0';
+const APP_VERSION='1.23.1';
 const DATA_SCHEMA_VERSION=4;
 
 /*
@@ -5833,6 +5833,74 @@ adminMore=function(){
   holder.innerHTML=moreCard('🎓','Tutorial da Pedevia','Rever o guia completo de todas as funcionalidades','openPedeviaTutorialV123(0)');
   list.insertBefore(holder,list.firstChild);
 };
+
+
+// ===== v1.23.1: CORREÇÃO RESPONSIVA DO PAINEL MESTRE =====
+(function(){
+  const st=document.createElement('style');
+  st.id='pedeviaMasterResponsiveV1231';
+  st.textContent=`
+    #clientSitesListV120 .adminItem{
+      width:100%;
+      min-width:0;
+      box-sizing:border-box;
+    }
+    #clientSitesListV120 .adminItem>div:first-child{
+      min-width:0;
+      overflow-wrap:anywhere;
+      word-break:break-word;
+    }
+    #clientSitesListV120 .adminItem>div:first-child small,
+    #clientSitesListV120 .adminItem>div:first-child .hint{
+      overflow-wrap:anywhere;
+      word-break:break-word;
+    }
+    #clientSitesListV120 .miniBtns{
+      max-width:100%;
+      box-sizing:border-box;
+    }
+    #clientSitesListV120 .miniBtns .ghost{
+      white-space:normal;
+      line-height:1.15;
+      min-height:42px;
+      box-sizing:border-box;
+    }
+    @media (max-width:680px){
+      #clientSitesListV120 .adminItem{
+        display:block !important;
+        padding:14px 0 !important;
+      }
+      #clientSitesListV120 .adminItem>div:first-child{
+        width:100%;
+        padding-right:0;
+      }
+      #clientSitesListV120 .miniBtns{
+        display:grid !important;
+        grid-template-columns:repeat(3,minmax(0,1fr));
+        gap:7px !important;
+        width:100%;
+        margin-top:12px;
+        justify-content:stretch !important;
+      }
+      #clientSitesListV120 .miniBtns .ghost{
+        width:100%;
+        min-width:0;
+        padding:10px 6px;
+        font-size:13px;
+        border-radius:12px;
+      }
+    }
+    @media (max-width:390px){
+      #clientSitesListV120 .miniBtns{
+        grid-template-columns:1fr;
+      }
+      #clientSitesListV120 .miniBtns .ghost{
+        font-size:14px;
+      }
+    }
+  `;
+  document.head.appendChild(st);
+})();
 
 
 // Inicializa somente depois de todas as camadas de compatibilidade do arquivo terem sido carregadas.
