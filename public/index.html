@@ -6648,7 +6648,7 @@ renderClientSitesListV120=function(rows){_renderClientSitesListV127Base(rows);co
 
 /* ===== Pedevia v1.30.2 · Consolidação comercial ===== */
 window.PedeviaV130 = window.PedeviaV130 || {
-  version:'1.30.0',
+  version:'1.30.3',
   ensureDefaults(){
     cfg.store=cfg.store||{}; cfg.store.orderConfig=cfg.store.orderConfig||{};
     const o=cfg.store.orderConfig;
@@ -6704,7 +6704,7 @@ window.PedeviaV130 = window.PedeviaV130 || {
       <div class="v130Customer"><b>${esc(o.customer_name||'Cliente')}</b><small>${esc(orderModeLabelV125(o.order_mode))}${o.table_number?' · Mesa '+esc(o.table_number):''}</small></div>
       ${address?`<button class="v130Address" onclick="PedeviaV130.openMaps('${encodeURIComponent(address)}')">⌖ ${esc(address)}</button>`:''}
       <div class="v130Mini">${(o.items||[]).slice(0,3).map(i=>`${i.quantity||1}x ${esc(i.name||'Produto')}`).join(' · ')}${(o.items||[]).length>3?' +'+((o.items||[]).length-3):''}</div>
-      ${next?`<button class="btn full v130Next" onclick="PedeviaV130.setStatus('${o.id}','${next}',true)">${this.nextLabel(o.status)}</button>`:''}
+      ${next?`<button class="btn full v130Next" onclick="PedeviaV130.setStatus('${o.id}','${next}',false)">${this.nextLabel(o.status)}</button>`:''}
       <div class="v130CardActions"><button onclick="viewOrderV125('${o.id}')">Ver</button><button onclick="PedeviaV130.messageStatus('${o.id}')">WhatsApp</button><button onclick="printOrderV127('${o.id}')">Imprimir</button></div>
     </article>`;
   },
@@ -6939,7 +6939,7 @@ setTimeout(()=>PedeviaV130.sanitizeLegacy(),800);
 Object.assign(PedeviaV130,{
   selectedProducts(){return [...document.querySelectorAll('.v130ProdSelect:checked')].map(x=>x.value)},
   async bulkSet(status){const ids=this.selectedProducts();if(!ids.length){alert('Selecione pelo menos um produto.');return}ids.forEach(id=>{const p=(cfg.products||[]).find(x=>String(x.id)===String(id));if(p)p.status=status});if(await this.persist(true,'Produtos atualizados.')){renderAdmin();renderShop()}},
-  async moveProduct(id,dir){const list=cfg.products||[],i=list.findIndex(x=>String(x.id)===String(id));if(i<0)return;const p=list[i],same=list.map((x,idx)=>({x,idx})).filter(a=>a.x.category===p.category),pos=same.findIndex(a=>a.idx===i),target=same[pos+dir];if(!target)return;[list[i],list[target.idx]]=[list[target.idx],list[i]];if(await this.persist(true,'Ordem dos produtos atualizada.')){renderAdmin();renderShop()}},
+  async moveProduct(id,dir){const list=cfg.products||[],i=list.findIndex(x=>String(x.id)===String(id));if(i<0)return;const p=list[i],same=list.map((x,idx)=>({x,idx})).filter(a=>a.x.category===p.category),pos=same.findIndex(a=>a.idx===i),target=same[pos+dir];if(!target)return;[list[i],list[target.idx]]=[list[target.idx],list[i]];try{const ok=typeof persistAdminStateV15==='function'?await persistAdminStateV15({products:true,notify:false}):(save(),true);if(ok!==false){renderAdmin();renderShop()}}catch(e){console.error('Falha ao salvar ordem dos produtos',e);alert('Não foi possível salvar a nova ordem dos produtos.')}},
   async optimizeImages(){
     if(!confirm('Migrar imagens antigas salvas dentro da configuração para o Storage da Pedevia?\n\nIsso reduz o peso da loja e não altera as imagens que já estão em URLs.'))return;
     let changed=0;try{
