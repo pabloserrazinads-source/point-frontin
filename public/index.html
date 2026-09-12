@@ -6196,9 +6196,32 @@ async function createOnlineOrderV125(){
     status:'new',
     whatsapp_text:text
   };
-  const {data,error}=await supabaseClient.from('pedevia_orders').insert(payload).select('*').single();
+  // Usa RPC SECURITY DEFINER para permitir que clientes anônimos registrem
+  // pedidos sem depender de leitura direta da tabela client_sites sob RLS.
+  const {data,error}=await supabaseClient.rpc('register_pedevia_order_v1261',{
+    p_store_key:payload.store_key,
+    p_store_name:payload.store_name,
+    p_customer_name:payload.customer_name,
+    p_customer_phone:payload.customer_phone,
+    p_order_mode:payload.order_mode,
+    p_address:payload.address,
+    p_neighborhood:payload.neighborhood,
+    p_table_number:payload.table_number,
+    p_payment_method:payload.payment_method,
+    p_note:payload.note,
+    p_items:payload.items,
+    p_subtotal:payload.subtotal,
+    p_discount:payload.discount,
+    p_delivery_fee:payload.delivery_fee,
+    p_payment_adjustment:payload.payment_adjustment,
+    p_service_fee:payload.service_fee,
+    p_total:payload.total,
+    p_whatsapp_text:payload.whatsapp_text
+  });
   if(error)throw error;
-  return data;
+  const row=Array.isArray(data)?data[0]:data;
+  if(!row)throw new Error('O pedido não retornou confirmação do servidor.');
+  return row;
 }
 
 async function fetchOrdersV125(){
@@ -6273,7 +6296,11 @@ finishWhatsApp=async function(){
     if(n)window.checkoutState.customer=n.value.trim();if(p)window.checkoutState.phone=p.value.trim();if(o)window.checkoutState.note=o.value.trim();
     if(!window.checkoutState.customer||!window.checkoutState.phone){alert('Informe seu nome e celular.');return}
     let created=null;
-    try{created=await createOnlineOrderV125()}catch(e){console.warn('Pedido não foi salvo no painel:',e)}
+    try{created=await createOnlineOrderV125()}catch(e){
+      console.error('Pedido não foi salvo no painel:',e);
+      alert('Não foi possível registrar o pedido no painel. Atualize a página e tente novamente. Se continuar, avise o estabelecimento.');
+      return;
+    }
     if(created){
       const num=orderNumberV125(created);
       window.pedeviaCurrentOrderNumberV125=num;
@@ -6296,7 +6323,7 @@ setTimeout(()=>{
 },0);
 
 
-// ===== Pedevia v1.26.0: HISTÓRICO, LIMPEZA E ESTATÍSTICAS =====
+// ===== Pedevia v1.26.1: HISTÓRICO, LIMPEZA, ESTATÍSTICAS E REGISTRO ROBUSTO DE PEDIDOS =====
 (function injectV126Styles(){
   if(document.getElementById('pedeviaV126Styles'))return;
   const st=document.createElement('style');st.id='pedeviaV126Styles';st.textContent=`
@@ -6443,7 +6470,7 @@ adminMore=function(){
 };
 
 // Versão exibida no Admin.
-setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.26.0')})},0);
+setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.26.1')})},0);
 
 
 // Inicializa somente depois de todas as camadas de compatibilidade do arquivo terem sido carregadas.
