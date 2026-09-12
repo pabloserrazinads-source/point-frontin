@@ -2418,7 +2418,7 @@ saveGeneralBrand=async function(){
 };
 
 // ===== v1.7: VERSIONAMENTO E MIGRAÇÕES DE DADOS =====
-const APP_VERSION='1.22.1';
+const APP_VERSION='1.23.0';
 const DATA_SCHEMA_VERSION=4;
 
 /*
@@ -5741,6 +5741,98 @@ document.addEventListener('DOMContentLoaded',()=>setTimeout(maybeHandleInviteV12
 supabaseClient.auth.onAuthStateChange((event,session)=>{
   if(session && new URLSearchParams(location.search).get('definir-senha')==='1')setTimeout(maybeHandleInviteV122,50);
 });
+
+
+
+// ===== v1.23.0: BOAS-VINDAS + TUTORIAL COMPLETO PEDEVIA =====
+const PEDEVIA_TUTORIAL_V123=[
+  {icon:'👋',title:'Bem-vindo à Pedevia',text:'Este painel é o centro de controle do seu estabelecimento. Você pode administrar a loja pelo celular e as alterações ficam salvas na sua própria empresa.',items:['Seu acesso é exclusivo desta loja.','A engrenagem abre o painel administrativo.','O ícone de sacola volta para a visão do cliente.']},
+  {icon:'🏠',title:'Início do painel',text:'A tela inicial reúne atalhos e informações rápidas para você acompanhar o funcionamento do estabelecimento.',items:['Confira o estado da loja antes de divulgar o link.','Use os atalhos para chegar rapidamente às áreas mais usadas.','Mudanças feitas no painel refletem no cardápio público.']},
+  {icon:'🍔',title:'Cardápio e produtos',text:'Aqui você monta o que o cliente realmente verá e poderá comprar.',items:['Crie, edite, organize e remova produtos.','Defina nome, descrição, preço, foto, categoria e disponibilidade.','Use Disponível, Indisponível ou Oculto para controlar a exibição sem precisar apagar o produto.','Organize categorias e seções para deixar o cardápio fácil de navegar.']},
+  {icon:'➕',title:'Complementos, adicionais e regras',text:'Produtos podem ter grupos de escolhas para montar pedidos personalizados.',items:['Crie complementos, caldas, sabores, tamanhos e adicionais.','Defina mínimo e máximo de escolhas em cada grupo.','Adicione preço extra quando uma opção tiver acréscimo.','Controle individualmente se cada opção está disponível, indisponível ou oculta.']},
+  {icon:'🧺',title:'Pedidos',text:'A área de pedidos concentra as configurações usadas no fechamento da compra.',items:['Configure entrega, retirada e consumo no local.','Defina pedido mínimo, taxa de entrega e bairros quando disponíveis.','Configure Pix, dinheiro, débito e crédito.','Revise as informações antes de começar a receber pedidos reais.']},
+  {icon:'🏷️',title:'Ofertas e promoções',text:'Use ofertas para destacar condições especiais sem precisar alterar manualmente todo o cardápio.',items:['Crie promoções e descontos quando desejar.','Defina quando uma oferta está ativa.','Revise sempre o valor final exibido no checkout antes de divulgar uma promoção.']},
+  {icon:'🎨',title:'Nome, logo e aparência',text:'A loja pode ter a identidade visual do seu estabelecimento.',items:['Envie a logo uma vez: ela aparece no topo e na apresentação principal.','Altere nome, textos iniciais, cores, estilos e modelos visuais.','Use a prévia para conferir como o cliente verá a loja.','Se não houver logo, a Pedevia mantém um espaço neutro em vez de usar a marca de outra empresa.']},
+  {icon:'🕐',title:'Horários e funcionamento',text:'Mantenha os horários corretos para o cliente saber quando pode pedir.',items:['Configure dias e horários de atendimento.','Pause a loja manualmente quando necessário.','Personalize a mensagem exibida quando o estabelecimento estiver pausado ou fechado.']},
+  {icon:'📍',title:'Contato, endereço e redes sociais',text:'Em Mais, você encontra os dados institucionais e canais de contato.',items:['Atualize WhatsApp, endereço e informações do estabelecimento.','Cadastre Instagram e outras redes disponíveis.','Configure título, descrição e imagem usados ao compartilhar o link da loja.']},
+  {icon:'🔗',title:'Link, QR Code e divulgação',text:'Seu estabelecimento possui um link público próprio dentro da Pedevia.',items:['Compartilhe o link gerado para sua loja.','Use QR Code para facilitar o acesso ao cardápio.','No Painel Mestre também pode existir um QR Code enviado pelo estabelecimento para ficar arquivado no cadastro.']},
+  {icon:'🛒',title:'Experiência do cliente',text:'Sempre teste a loja como se você fosse um cliente antes de divulgar.',items:['Abra a visão pública e navegue pelas categorias.','Monte produtos e confira regras obrigatórias de complementos.','Adicione itens ao carrinho e revise subtotal, descontos, entrega e total.','Faça um pedido de teste para confirmar o fluxo completo.']},
+  {icon:'👥',title:'Colaboradores e integrações',text:'A área Mais também reúne recursos avançados para a operação crescer.',items:['Gerencie colaboradores quando esse recurso for utilizado.','Configure integrações de Analytics, anúncios e Meta Pixel quando necessário.','Não compartilhe sua senha de administrador; cada acesso deve ser tratado com segurança.']},
+  {icon:'⚙️',title:'Configurações e ajuda',text:'Quase tudo que personaliza a operação fica em Mais.',items:['Nome e marca, aparência, horários, contato, endereço e redes sociais.','Compartilhamento, link, colaboradores, integrações, QR Code e configurações de pedidos.','Se esquecer alguma coisa, volte em Mais → Tutorial da Pedevia e faça este guia novamente quantas vezes quiser.']},
+  {icon:'🚀',title:'Sua loja está pronta para ser montada',text:'Agora você já conhece o caminho. Comece pela identidade da loja, configure o funcionamento e depois cadastre o cardápio.',items:['1. Logo, nome e aparência','2. Contato, endereço e horários','3. Categorias, produtos e complementos','4. Pagamentos e entrega','5. Pedido de teste e publicação do link']}
+];
+window.pedeviaTutorialStepV123=0;
+
+function tenantOnboardingDoneV123(){return !!cfg?.store?.pedeviaOnboardingCompleted}
+async function markTenantOnboardingV123(done=true){
+  if(!window.pedeviaTenantV121)return;
+  cfg.store=cfg.store||{};
+  cfg.store.pedeviaOnboardingCompleted=!!done;
+  cfg.store.pedeviaOnboardingVersion='1.23';
+  try{await saveTenantConfigV122()}catch(e){console.warn('Não foi possível salvar o estado do tutorial:',e)}
+}
+
+function tutorialProgressV123(){
+  const n=PEDEVIA_TUTORIAL_V123.length,i=window.pedeviaTutorialStepV123;
+  return `<div style="height:7px;background:#eee;border-radius:999px;overflow:hidden;margin:14px 0 18px"><div style="height:100%;width:${((i+1)/n)*100}%;background:var(--primary,#712489);border-radius:999px;transition:.25s"></div></div>`;
+}
+function renderTutorialV123(){
+  const i=Math.max(0,Math.min(PEDEVIA_TUTORIAL_V123.length-1,window.pedeviaTutorialStepV123));
+  const x=PEDEVIA_TUTORIAL_V123[i];
+  const host=document.getElementById('pedeviaTutorialV123');if(!host)return;
+  host.innerHTML=`<div style="text-align:center"><div style="font-size:52px;line-height:1">${x.icon}</div><div class="hint" style="margin-top:8px">Etapa ${i+1} de ${PEDEVIA_TUTORIAL_V123.length}</div><h2 style="margin:8px 0">${esc(x.title)}</h2></div>${tutorialProgressV123()}<p style="font-size:15px;line-height:1.55">${esc(x.text)}</p><div style="background:rgba(0,0,0,.035);border-radius:16px;padding:12px 14px;margin:14px 0">${x.items.map(v=>`<div style="display:flex;gap:9px;align-items:flex-start;margin:8px 0"><b style="color:var(--primary,#712489)">✓</b><span>${esc(v)}</span></div>`).join('')}</div><div style="display:flex;gap:8px;margin-top:18px"><button class="ghost" style="flex:1" onclick="tutorialPrevV123()" ${i===0?'disabled':''}>← Voltar</button>${i<PEDEVIA_TUTORIAL_V123.length-1?`<button class="btn" style="flex:1" onclick="tutorialNextV123()">Continuar →</button>`:`<button class="btn" style="flex:1" onclick="finishTutorialV123()">Concluir tutorial ✓</button>`}</div><button class="ghost full" style="margin-top:10px" onclick="skipTutorialV123()">Pular tutorial</button>`;
+}
+function openPedeviaTutorialV123(start=0){
+  window.pedeviaTutorialStepV123=start;
+  showModal(`<div id="pedeviaTutorialV123"></div>`);
+  setTimeout(renderTutorialV123,0);
+}
+function tutorialNextV123(){if(window.pedeviaTutorialStepV123<PEDEVIA_TUTORIAL_V123.length-1){window.pedeviaTutorialStepV123++;renderTutorialV123()}}
+function tutorialPrevV123(){if(window.pedeviaTutorialStepV123>0){window.pedeviaTutorialStepV123--;renderTutorialV123()}}
+async function finishTutorialV123(){await markTenantOnboardingV123(true);closeModal();alert('Tutorial concluído. Você pode abri-lo novamente em Mais → Tutorial da Pedevia.')}
+async function skipTutorialV123(){await markTenantOnboardingV123(true);closeModal();alert('Tutorial pulado. Quando quiser rever, abra Mais → Tutorial da Pedevia.')}
+
+function showPedeviaWelcomeV123(){
+  const name=cfg?.store?.name||window.pedeviaTenantV121?.name||'seu estabelecimento';
+  showModal(`<div style="text-align:center;padding:6px 2px 2px"><div style="width:74px;height:74px;border-radius:24px;margin:0 auto 14px;display:grid;place-items:center;background:var(--primary,#712489);color:#fff;font-size:34px;font-weight:900">P</div><div class="hint">PEDEVIA</div><h2 style="font-size:27px;margin:6px 0 8px">Bem-vindo à sua nova loja! 👋</h2><p style="line-height:1.55;margin:0 auto 16px;max-width:420px">O acesso de <b>${esc(name)}</b> está pronto. Antes de começar, podemos te mostrar todo o sistema em um tutorial completo.</p><div style="background:rgba(0,0,0,.035);padding:13px;border-radius:16px;text-align:left;margin-bottom:16px"><b>Você vai aprender a:</b><div class="hint" style="margin-top:6px;line-height:1.5">Cadastrar produtos e adicionais · configurar pedidos e pagamentos · personalizar a loja · criar ofertas · ajustar horários · divulgar o link e QR Code · usar todas as configurações.</div></div><button class="btn full" onclick="closeModal();openPedeviaTutorialV123(0)">Fazer tutorial completo →</button><button class="ghost full" style="margin-top:8px" onclick="skipWelcomeV123()">Pular tutorial e ir ao painel</button></div>`);
+}
+async function skipWelcomeV123(){await markTenantOnboardingV123(true);closeModal()}
+
+// Depois de criar a senha, apresenta a Pedevia antes de abrir o tutorial.
+setInvitedPasswordV122=async function(){
+  const p1=$('#newPassV122')?.value||'',p2=$('#newPass2V122')?.value||'',msg=$('#setPassMsgV122'),btn=$('#setPassBtnV122');
+  if(p1.length<8){if(msg)msg.textContent='Use pelo menos 8 caracteres.';return}
+  if(p1!==p2){if(msg)msg.textContent='As senhas não são iguais.';return}
+  if(btn){btn.disabled=true;btn.textContent='Criando minha senha...'}
+  try{
+    const {error}=await supabaseClient.auth.updateUser({password:p1});if(error)throw error;
+    const u=new URL(location.href);u.searchParams.delete('definir-senha');history.replaceState({},'',u.pathname+u.search+u.hash);
+    closeModal();
+    await enterTenantAdminV122();
+    mode='admin';$('#shopView').classList.add('hide');$('#adminView').classList.remove('hide');$('#cartBar').classList.add('hide');$('#modeBtn').textContent='🛍️';
+    setTimeout(showPedeviaWelcomeV123,180);
+  }catch(e){if(msg)msg.textContent='Não foi possível salvar a senha: '+(e.message||e)}
+  finally{if(btn){btn.disabled=false;btn.textContent='Criar senha e continuar'}}
+};
+
+// Deixa a tela de definição de senha com aparência de primeiro acesso.
+showSetPasswordV122=function(){
+  if(document.getElementById('invitePasswordV122'))return;
+  const name=cfg?.store?.name||window.pedeviaTenantV121?.name||'seu estabelecimento';
+  showModal(`<div id="invitePasswordV122" style="text-align:center"><div style="width:70px;height:70px;border-radius:22px;margin:0 auto 12px;display:grid;place-items:center;background:var(--primary,#712489);color:#fff;font-size:32px;font-weight:900">P</div><div class="hint">PEDEVIA · PRIMEIRO ACESSO</div><h2 style="margin:7px 0">Olá! Sua loja está quase pronta 👋</h2><p class="hint" style="line-height:1.5">Crie uma senha para administrar <b>${esc(name)}</b>. Essa senha é somente sua e não fica disponível para quem criou a loja.</p><div style="text-align:left;margin-top:18px"><label>Crie sua senha</label><input id="newPassV122" class="field" type="password" autocomplete="new-password" placeholder="Mínimo de 8 caracteres"><label>Confirme sua senha</label><input id="newPass2V122" class="field" type="password" autocomplete="new-password" placeholder="Digite novamente"><div class="hint">✓ Mínimo de 8 caracteres &nbsp; · &nbsp; ✓ As duas senhas devem ser iguais</div></div><button id="setPassBtnV122" class="btn full" style="margin-top:16px" onclick="setInvitedPasswordV122()">Criar senha e continuar</button><p id="setPassMsgV122" class="hint"></p></div>`);
+};
+
+// Acrescenta um acesso permanente ao tutorial em Mais para administradores de lojas Pedevia.
+const _adminMoreBeforeTutorialV123=adminMore;
+adminMore=function(){
+  _adminMoreBeforeTutorialV123();
+  if(!window.pedeviaTenantV121)return;
+  const list=document.querySelector('#adminContent .moreList');
+  if(!list||document.getElementById('pedeviaTutorialCardV123'))return;
+  const holder=document.createElement('div');holder.id='pedeviaTutorialCardV123';
+  holder.innerHTML=moreCard('🎓','Tutorial da Pedevia','Rever o guia completo de todas as funcionalidades','openPedeviaTutorialV123(0)');
+  list.insertBefore(holder,list.firstChild);
+};
 
 
 // Inicializa somente depois de todas as camadas de compatibilidade do arquivo terem sido carregadas.
