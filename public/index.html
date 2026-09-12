@@ -2417,7 +2417,7 @@ saveGeneralBrand=async function(){
 };
 
 // ===== v1.7: VERSIONAMENTO E MIGRAÇÕES DE DADOS =====
-const APP_VERSION='1.20.1';
+const APP_VERSION='1.21.0';
 const DATA_SCHEMA_VERSION=4;
 
 /*
@@ -3839,7 +3839,7 @@ document.addEventListener('DOMContentLoaded',()=>{
   setTimeout(()=>loadKnownCustomerV115(),700);
 });
 
-initializeOnlineStateV13();
+// Inicialização movida para a camada multi-loja v1.21.
 
 document.addEventListener("DOMContentLoaded",()=>{restoreAdminSession()});
 
@@ -5189,6 +5189,151 @@ saveClientSiteV120=async function(id){
   if(error){alert('Erro ao salvar: '+error.message);if(btn){btn.disabled=false;btn.textContent='Salvar'}return}
   closeModal();await openClientSitesMasterV120();
 };
+</script>
+
+
+<script id="v121MultiTenant">
+// ===== v1.21.0: PEDEVIA · LOJAS PÚBLICAS POR SLUG =====
+const PEDEVIA_PUBLIC_BASE='https://pedevia.cardapioonline.workers.dev';
+window.pedeviaTenantV121=null;
+
+function tenantSlugFromLocationV121(){
+  const qs=new URLSearchParams(location.search);
+  const fromQuery=slugifyStoreV120(qs.get('loja')||'');
+  if(fromQuery)return fromQuery;
+  const parts=location.pathname.split('/').filter(Boolean);
+  if(!parts.length)return '';
+  const first=slugifyStoreV120(parts[0]);
+  // caminhos técnicos que não representam uma loja
+  if(['index-html','favicon-ico','robots-txt'].includes(first))return '';
+  return first;
+}
+
+function tenantPublicUrlV121(slug){
+  return `${PEDEVIA_PUBLIC_BASE}/${encodeURIComponent(slugifyStoreV120(slug))}`;
+}
+
+async function loadTenantRowV121(slug){
+  // Cliente comum: somente lojas ativas por RPC pública e segura.
+  try{
+    const {data,error}=await supabaseClient.rpc('get_public_client_site',{p_slug:slug});
+    if(!error && data){
+      const row=Array.isArray(data)?data[0]:data;
+      if(row && row.slug)return row;
+    }
+  }catch(e){console.warn('RPC pública da loja indisponível:',e)}
+
+  // Dono da plataforma autenticado pode visualizar também rascunhos.
+  try{
+    const {data:sessionData}=await supabaseClient.auth.getSession();
+    if(sessionData?.session){
+      const {data,error}=await supabaseClient.from('client_sites').select('id,name,slug,whatsapp,active,config,admin_email').eq('slug',slug).maybeSingle();
+      if(!error && data)return data;
+    }
+  }catch(e){console.warn('Prévia autenticada indisponível:',e)}
+  return null;
+}
+
+function applyTenantConfigV121(row){
+  const incoming=JSON.parse(JSON.stringify(row?.config||{}));
+  const safeBase=JSON.parse(JSON.stringify(DEFAULT));
+  const store=Object.assign({},safeBase.store||{},incoming.store||{});
+  store.name=row?.name||store.name||'Estabelecimento';
+  store.whatsapp=row?.whatsapp||store.whatsapp||'';
+  store.hubSlug=row?.slug||store.hubSlug||'';
+
+  cfg={
+    store,
+    categories:Array.isArray(incoming.categories)?incoming.categories:[],
+    sections:Array.isArray(incoming.sections)?incoming.sections:[],
+    groups:Array.isArray(incoming.groups)?incoming.groups:[],
+    products:Array.isArray(incoming.products)?incoming.products:[],
+    offers:Array.isArray(incoming.offers)?incoming.offers:[]
+  };
+
+  // Garante pelo menos uma seção vazia para lojas recém-criadas.
+  if(!cfg.sections.length){cfg.sections=[{id:'produtos',title:'Produtos',description:'',accent:'#712489',display:'cards',active:true,order:0}]}
+  if(!cfg.categories.length){cfg.categories=cfg.sections.map(s=>({id:s.id,name:s.title||'Produtos',active:s.active!==false}))}
+  activeCat=cfg.categories.find(c=>c.active!==false)?.id||cfg.categories[0]?.id||'';
+  window.pedeviaTenantV121=row;
+  try{document.title=`${cfg.store.name} · Pedevia`}catch(e){}
+
+  // Identidade visual e compatibilidade das versões mais novas.
+  try{if(typeof ensureV116Defaults==='function')ensureV116Defaults()}catch(e){console.warn(e)}
+  try{if(typeof ensureDesignV117==='function')ensureDesignV117()}catch(e){console.warn(e)}
+  try{if(typeof refreshVisualV116==='function')refreshVisualV116()}catch(e){console.warn(e)}
+  try{if(typeof applyBrandHeaderV116==='function')applyBrandHeaderV116()}catch(e){console.warn(e)}
+}
+
+function showTenantNotFoundV121(slug){
+  const shop=document.getElementById('shopView');
+  if(shop)shop.innerHTML=`<div class="panel" style="max-width:620px;margin:50px auto;text-align:center"><div style="font-size:52px">🏪</div><h2>Loja indisponível</h2><p class="hint">O endereço <b>/${esc(slug)}</b> não está publicado ou não existe na Pedevia.</p><button class="btn" onclick="location.href='/'">Ir para a Pedevia</button></div>`;
+  document.getElementById('cartBar')?.classList.add('hide');
+}
+
+const _initializePointOnlineStateV121=initializeOnlineStateV13;
+initializeOnlineStateV13=async function(){
+  const slug=tenantSlugFromLocationV121();
+  if(!slug){
+    window.pedeviaTenantV121=null;
+    return _initializePointOnlineStateV121();
+  }
+
+  const row=await loadTenantRowV121(slug);
+  if(!row){showTenantNotFoundV121(slug);return false}
+  applyTenantConfigV121(row);
+  renderShop();
+  updateCart();
+  return true;
+};
+
+// Lista mestre: adiciona link público e cópia rápida.
+renderClientSitesListV120=function(rows){
+  const el=$('#clientSitesListV120');if(!el)return;
+  if(!rows.length){
+    el.innerHTML=`<div class="emptySection"><b>Nenhuma loja criada ainda.</b><br><span class="hint">Clique em “+ Nova loja” para gerar a primeira estrutura limpa.</span></div>`;
+    return;
+  }
+  el.innerHTML=rows.map(r=>{
+    const url=tenantPublicUrlV121(r.slug||'');
+    return `<div class="adminItem" style="align-items:flex-start">
+      <div><b>${esc(r.name||'Loja')}</b> ${clientSiteStatusV120(r)}<br>
+      <span class="hint">/${esc(r.slug||'')} · ${esc(r.admin_email||'sem administrador')}</span><br>
+      <small class="hint">${esc(url)}</small><br>
+      <small class="hint">Criada em ${r.created_at?new Date(r.created_at).toLocaleDateString('pt-BR'):'-'}</small></div>
+      <div class="miniBtns" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+        <button class="ghost" onclick="openClientSiteV121('${r.id}')">Abrir site</button>
+        <button class="ghost" onclick="copyClientSiteLinkV121('${r.id}')">Copiar link</button>
+        <button class="ghost" onclick="editClientSiteV120('${r.id}')">Gerenciar</button>
+      </div>
+    </div>`;
+  }).join('');
+};
+
+function clientRowV121(id){return (window.clientSitesV120||[]).find(x=>String(x.id)===String(id))}
+function openClientSiteV121(id){
+  const r=clientRowV121(id);if(!r)return;
+  window.open(tenantPublicUrlV121(r.slug),'_blank','noopener');
+}
+async function copyClientSiteLinkV121(id){
+  const r=clientRowV121(id);if(!r)return;
+  const url=tenantPublicUrlV121(r.slug);
+  try{await navigator.clipboard.writeText(url);alert('Link copiado:\n'+url)}
+  catch(e){prompt('Copie o link da loja:',url)}
+}
+
+// Na página pública de uma loja, não deixa o cliente cair no Admin do Point por engano.
+const _switchModeV121=switchMode;
+switchMode=function(){
+  if(window.pedeviaTenantV121){
+    alert('O painel administrativo desta loja será liberado na próxima etapa da Pedevia.');
+    return;
+  }
+  return _switchModeV121();
+};
+
+// Inicializa somente depois de todas as camadas de compatibilidade do arquivo terem sido carregadas.
+initializeOnlineStateV13();
 </script>
 
 </body></html>
