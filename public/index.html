@@ -455,7 +455,28 @@ button:active,.tab:active,.settingCard:active,.moreCard:active,.socialBtn:active
 .v116MiniPreview .mpCaption{font-size:6px;text-align:center;color:#6e6672;margin-top:4px;font-weight:700}
 </style>
 
-</head>
+<link rel="manifest" href="/manifest.webmanifest"><meta name="theme-color" content="#712489"><style id="pedevia-v130-styles">
+/* ===== Pedevia v1.30.0 ===== */
+.v130ShopTools{position:sticky;top:0;z-index:16;padding:8px 12px;background:var(--bg);border-bottom:1px solid var(--line)}
+.v130Search{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:0 12px;box-shadow:0 4px 16px rgba(0,0,0,.04)}
+.v130Search input{width:100%;border:0;outline:0;background:transparent;color:inherit;padding:13px 0;font-size:15px}
+.quickSections{position:sticky;top:57px;z-index:15;background:var(--bg);padding-top:7px;padding-bottom:7px;box-shadow:0 5px 12px rgba(0,0,0,.04)}
+.card{position:relative}.v130Badges{position:absolute;z-index:3;top:8px;left:8px;display:flex;gap:5px;flex-wrap:wrap;max-width:85%}.v130Badges span{background:rgba(255,255,255,.94);color:#2c1631;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:900;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+#storeStatus.v130Open{font-weight:850}
+.v130OrdersHead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}.v130OrdersHead h2{margin:0}.v130HeadBtns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.v130Today{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.v130Today>div{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px}.v130Today b{display:block;font-size:18px}.v130Today span{font-size:11px;color:var(--muted)}
+.v130Board{display:grid;grid-template-columns:repeat(4,minmax(230px,1fr));gap:10px;overflow-x:auto;padding-bottom:10px}.v130OrderCol{min-width:230px;background:rgba(0,0,0,.025);border:1px solid var(--line);border-radius:18px;padding:8px}.v130OrderCol>header{display:flex;justify-content:space-between;padding:8px 7px;font-weight:900}.v130OrderCol>header b{background:var(--card);border-radius:999px;padding:2px 8px}
+.v130OrderCard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:11px;margin-bottom:8px;box-shadow:0 3px 12px rgba(0,0,0,.04)}.v130OrderCard.warn{border-color:#e3a028}.v130OrderCard.late{border-color:#d94b4b;box-shadow:0 0 0 2px rgba(217,75,75,.08)}.v130OrderTop,.v130Customer{display:flex;justify-content:space-between;gap:8px;align-items:center}.v130OrderTop b{font-size:18px}.v130Age{font-size:10px;color:var(--muted);margin-left:6px}.v130Customer{margin-top:7px}.v130Customer small{color:var(--muted)}.v130Mini{font-size:11px;color:var(--muted);margin:8px 0;line-height:1.4}.v130Address{border:0;background:transparent;color:var(--p);padding:4px 0;text-align:left;font-size:11px;cursor:pointer}.v130Next{margin-top:8px}.v130CardActions{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:6px}.v130CardActions button,.v130ProdTools button{border:1px solid var(--line);background:var(--card);color:inherit;border-radius:10px;padding:7px;font-size:11px}.v130Empty{text-align:center;color:var(--muted);padding:24px 6px;font-size:12px}.v130NavBadge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#d92d20;color:#fff;font-size:10px;margin-left:5px}
+.v130ProdTools{display:flex;gap:5px;margin-top:7px}.v130Flags{margin:12px 0}.v130Flags h3{margin-top:0}.v130HoursQuick{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.v130HoursQuick button{min-height:43px}
+.v130InstallCard{margin-top:10px}
+@media(max-width:700px){.v130Board{grid-template-columns:repeat(4,82vw);scroll-snap-type:x proximity}.v130OrderCol{scroll-snap-align:start}.v130Today{grid-template-columns:1fr 1fr}.v130Today>div:last-child{grid-column:1/-1}.v130OrdersHead{display:block}.v130HeadBtns{margin-top:8px;justify-content:flex-start}}
+@media(min-width:900px){#shopView .wrap{max-width:1180px}.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+</style>
+<style id="pedevia-v130-extra-styles">
+.v130PixBox{display:grid;grid-template-columns:140px 1fr;gap:12px;align-items:center}.v130PixQr{width:132px;height:132px;background:#fff;display:grid;place-items:center;padding:4px;border-radius:10px}.v130PixBox small{display:block;margin:5px 0;color:var(--muted);overflow-wrap:anywhere}.v130PixActions{display:flex;gap:6px;flex-wrap:wrap}@media(max-width:520px){.v130PixBox{grid-template-columns:1fr;text-align:center}.v130PixQr{margin:auto}.v130PixActions{justify-content:center}}
+</style><style id="pedevia-v130-catalog-tools">.v130BulkToolbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:10px 0;margin-bottom:8px}.v130BulkToolbar b{margin-right:auto}.v130SelectWrap{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);margin-bottom:7px}.v130SelectWrap input{width:17px;height:17px}
+</style></head>
 <body>
 <header class="top">
  <div class="logo"><div class="logoMark" id="headerLogoMark"></div><div class="brand" id="headerBrandName">POINT DO AÇAÍ<small>Engenheiro Paulo de Frontin · versão atual</small></div></div>
@@ -2415,7 +2436,7 @@ saveGeneralBrand=async function(){
 };
 
 // ===== v1.7: VERSIONAMENTO E MIGRAÇÕES DE DADOS =====
-const APP_VERSION='1.24.1';
+const APP_VERSION='1.30.0';
 const DATA_SCHEMA_VERSION=4;
 
 /*
@@ -6629,6 +6650,327 @@ const _renderClientSitesListV127Base=renderClientSitesListV120;
 renderClientSitesListV120=function(rows){_renderClientSitesListV127Base(rows);const host=document.getElementById('clientSitesListV120');if(!host||document.getElementById('masterSummaryV127'))return;const active=(rows||[]).filter(x=>x.active).length,box=document.createElement('div');box.id='masterSummaryV127';box.className='v126StatsGrid';box.innerHTML=`<div class="v126Stat"><b>${rows?.length||0}</b><small>Estabelecimentos</small></div><div class="v126Stat"><b>${active}</b><small>Lojas ativas</small></div><div class="v126Stat"><b>${(rows?.length||0)-active}</b><small>Rascunhos/inativas</small></div>`;host.prepend(box)};
 
 
+
+/* ===== Pedevia v1.30.0 · Consolidação comercial ===== */
+window.PedeviaV130 = window.PedeviaV130 || {
+  version:'1.30.0',
+  ensureDefaults(){
+    cfg.store=cfg.store||{}; cfg.store.orderConfig=cfg.store.orderConfig||{};
+    const o=cfg.store.orderConfig;
+    if(o.alertVolume===undefined)o.alertVolume=.65;
+    if(o.printWidth===undefined)o.printWidth='80';
+    if(o.whatsAppStatusMessages===undefined)o.whatsAppStatusMessages=true;
+    if(!o.statusMessages)o.statusMessages={
+      accepted:'Olá, {cliente}! Seu pedido {pedido} foi confirmado e já entrou na fila de preparo. 💜',
+      preparing:'Olá, {cliente}! Seu pedido {pedido} já está sendo preparado. 👨‍🍳',
+      ready:'Olá, {cliente}! Seu pedido {pedido} está pronto! 🎉',
+      completed:'Obrigado pelo pedido, {cliente}! 💜 Esperamos que você aproveite.',
+      cancelled:'Olá, {cliente}. Precisamos cancelar o pedido {pedido}. Entre em contato conosco para mais informações.'
+    };
+    if(!Array.isArray(cfg.store.specialHours))cfg.store.specialHours=[];
+    if(!Array.isArray(cfg.store.specialClosures))cfg.store.specialClosures=[];
+    (cfg.products||[]).forEach(p=>{if(p.featured===undefined)p.featured=false;if(p.isNew===undefined)p.isNew=false;if(p.bestSeller===undefined)p.bestSeller=false});
+  },
+  async persist(products=false,msg='Alterações salvas online.'){
+    try{
+      if(typeof persistAdminStateV15==='function')return await persistAdminStateV15({products,notify:true,message:msg});
+      save(); return true;
+    }catch(e){console.error(e);alert('Não foi possível salvar: '+(e.message||e));return false}
+  },
+  minutesAgo(v){const d=new Date(v);if(!Number.isFinite(d.getTime()))return '';const m=Math.max(0,Math.floor((Date.now()-d.getTime())/60000));return m<1?'agora':m===1?'há 1 min':`há ${m} min`},
+  orderAgeClass(o){const m=Math.max(0,(Date.now()-new Date(o.created_at).getTime())/60000);return m>=30?'late':m>=15?'warn':''},
+  orderNext(status){return ({new:'accepted',accepted:'preparing',preparing:'ready',ready:'completed'})[status]||''},
+  nextLabel(status){return ({new:'Aceitar pedido',accepted:'Iniciar preparo',preparing:'Marcar como pronto',ready:'Concluir pedido'})[status]||''},
+  statusEmoji(status){return ({new:'🔔',accepted:'✓',preparing:'🍳',ready:'✅',completed:'🏁',cancelled:'✕'})[status]||'•'},
+  templateStatus(o,status){
+    const tpl=cfg.store?.orderConfig?.statusMessages?.[status]||'';
+    return tpl.replaceAll('{cliente}',o.customer_name||'cliente').replaceAll('{pedido}',orderNumberV125(o)).replaceAll('{loja}',o.store_name||currentStoreNameV125());
+  },
+  waUrl(phone,text){let d=String(phone||'').replace(/\D/g,'');if(d.length===10||d.length===11)d='55'+d;return d.length>=12?`https://wa.me/${d}?text=${encodeURIComponent(text||'')}`:''},
+  async setStatus(id,status,sendMessage=false){
+    const o=(window.pedeviaOrdersV125||[]).find(x=>String(x.id)===String(id));if(!o)return;
+    const now=new Date().toISOString(),patch={status,updated_at:now};
+    if(status==='accepted'&&!o.accepted_at)patch.accepted_at=now;
+    if(status==='preparing'&&!o.preparing_at)patch.preparing_at=now;
+    if(status==='ready'&&!o.ready_at)patch.ready_at=now;
+    if(status==='completed'&&!o.completed_at)patch.completed_at=now;
+    if(status==='cancelled'&&!o.cancelled_at)patch.cancelled_at=now;
+    const {error}=await supabaseClient.from('pedevia_orders').update(patch).eq('id',id).eq('store_key',currentStoreKeyV127());
+    if(error){alert('Não foi possível atualizar o pedido: '+error.message);return}
+    Object.assign(o,patch);
+    if(sendMessage&&cfg.store?.orderConfig?.whatsAppStatusMessages!==false){const u=this.waUrl(o.customer_phone,this.templateStatus(o,status));if(u)window.open(u,'_blank')}
+    await this.loadBoard();
+  },
+  orderCard(o){
+    const next=this.orderNext(o.status), age=this.minutesAgo(o.created_at), ageClass=this.orderAgeClass(o);
+    const address=[o.address,o.neighborhood].filter(Boolean).join(' · ');
+    return `<article class="v130OrderCard ${ageClass}">
+      <div class="v130OrderTop"><div><b>${orderNumberV125(o)}</b><span class="v130Age">${esc(age)}</span></div><strong>${brl(+o.total||0)}</strong></div>
+      <div class="v130Customer"><b>${esc(o.customer_name||'Cliente')}</b><small>${esc(orderModeLabelV125(o.order_mode))}${o.table_number?' · Mesa '+esc(o.table_number):''}</small></div>
+      ${address?`<button class="v130Address" onclick="PedeviaV130.openMaps('${encodeURIComponent(address)}')">⌖ ${esc(address)}</button>`:''}
+      <div class="v130Mini">${(o.items||[]).slice(0,3).map(i=>`${i.quantity||1}x ${esc(i.name||'Produto')}`).join(' · ')}${(o.items||[]).length>3?' +'+((o.items||[]).length-3):''}</div>
+      ${next?`<button class="btn full v130Next" onclick="PedeviaV130.setStatus('${o.id}','${next}',true)">${this.nextLabel(o.status)}</button>`:''}
+      <div class="v130CardActions"><button onclick="viewOrderV125('${o.id}')">Ver</button><button onclick="PedeviaV130.messageStatus('${o.id}')">WhatsApp</button><button onclick="printOrderV127('${o.id}')">Imprimir</button></div>
+    </article>`;
+  },
+  openMaps(encoded){const q=decodeURIComponent(encoded);window.open('https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q),'_blank')},
+  messageStatus(id){const o=(window.pedeviaOrdersV125||[]).find(x=>String(x.id)===String(id));if(!o)return;const status=o.status==='new'?'accepted':o.status;const text=this.templateStatus(o,status)||`Olá, ${o.customer_name||'cliente'}! Sobre o seu pedido ${orderNumberV125(o)}:`;const u=this.waUrl(o.customer_phone,text);if(!u){alert('Este pedido não possui WhatsApp válido.');return}window.open(u,'_blank')},
+  async loadBoard(){
+    const host=document.getElementById('ordersListV130');if(!host)return;
+    try{
+      const rows=await fetchOrdersV125(); window.pedeviaOrdersV125=rows;
+      const active=rows.filter(o=>!['completed','cancelled'].includes(o.status));
+      const completedToday=rows.filter(o=>o.status==='completed'&&new Date(o.completed_at||o.updated_at).toDateString()===new Date().toDateString());
+      const revenue=completedToday.reduce((a,o)=>a+(+o.total||0),0);
+      const groups=[['new','Novos'],['accepted','Aceitos'],['preparing','Preparando'],['ready','Prontos']];
+      const cols=groups.map(([s,label])=>{const list=active.filter(o=>o.status===s);return `<section class="v130OrderCol"><header><span>${this.statusEmoji(s)} ${label}</span><b>${list.length}</b></header><div>${list.length?list.map(o=>this.orderCard(o)).join(''):`<div class="v130Empty">Nenhum pedido</div>`}</div></section>`}).join('');
+      host.innerHTML=`<div class="v130Today"><div><b>${completedToday.length}</b><span>concluídos hoje</span></div><div><b>${brl(revenue)}</b><span>faturamento hoje</span></div><div><b>${active.length}</b><span>em andamento</span></div></div><div class="v130Board">${cols}</div>`;
+      this.refreshOrderBadge(rows.filter(o=>o.status==='new').length);
+    }catch(e){host.innerHTML=`<div class="notice bad">Não foi possível carregar os pedidos: ${esc(e.message||e)}</div>`}
+  },
+  refreshOrderBadge(n){
+    document.querySelectorAll('button').forEach(b=>{if((b.textContent||'').trim().startsWith('Pedidos')){let x=b.querySelector('.v130NavBadge');if(n>0){if(!x){x=document.createElement('span');x.className='v130NavBadge';b.appendChild(x)}x.textContent=n}else x?.remove()}})
+  },
+  renderOrders(){
+    const st=openState(),paused=cfg.store.paused;
+    document.getElementById('adminContent').innerHTML=`<div class="v130OrdersHead"><div><h2>Pedidos</h2><div class="hint">Operação em tempo real · ${esc(st.text||'')}</div></div><div class="v130HeadBtns"><button class="ghost" onclick="adminOrdersView='stats';adminOrders()">Estatísticas</button><button class="ghost" onclick="adminOrdersView='history';adminOrders()">Histórico</button><button class="ghost" onclick="adminOrdersView='config';adminOrders()">⚙</button></div></div><div class="storeState ${paused?'paused':''}"><div><span class="stateDot"></span><b>${paused?'Recebimento pausado':st.open?'Estabelecimento aberto':'Estabelecimento fechado'}</b><div style="font-size:12px;opacity:.8">${paused?'Pedidos online temporariamente pausados':st.text}</div></div><button onclick="toggleOrdersPaused()">${paused?'Retomar':'Pausar'} ▾</button></div><div id="ordersListV130"></div>`;
+    this.loadBoard();
+  },
+  renderHistory(){adminOrdersView='history'; if(typeof renderOrdersHistoryV126==='function')return renderOrdersHistoryV126(); if(typeof loadOrdersPanelV126==='function'){document.getElementById('adminContent').innerHTML='<div id="ordersListV125"></div>';return loadOrdersPanelV126()}},
+  enhanceShop(){
+    const tabs=document.getElementById('categoryTabs'),grid=document.getElementById('productGrid');if(!tabs||!grid)return;
+    if(!document.getElementById('v130ShopTools')){const d=document.createElement('div');d.id='v130ShopTools';d.className='v130ShopTools';d.innerHTML=`<div class="v130Search"><span>⌕</span><input id="v130SearchInput" placeholder="Buscar produto" oninput="PedeviaV130.filterProducts(this.value)"></div>`;tabs.parentNode.insertBefore(d,tabs)}
+    grid.querySelectorAll('.card').forEach(card=>{
+      const onclick=card.getAttribute('onclick')||'',m=onclick.match(/openProduct\('([^']+)'\)/),id=m?.[1];if(!id)return;const p=(cfg.products||[]).find(x=>String(x.id)===String(id));if(!p)return;
+      card.dataset.search=((p.name||'')+' '+(p.desc||'')).toLowerCase();
+      if(!card.querySelector('.v130Badges')){const badges=[];if(p.bestSeller)badges.push('🔥 Mais pedido');if(p.featured)badges.push('⭐ Destaque');if(p.isNew)badges.push('🆕 Novo');if(badges.length){const b=document.createElement('div');b.className='v130Badges';b.innerHTML=badges.map(x=>`<span>${x}</span>`).join('');card.prepend(b)}}
+    });
+    const st=openState();const status=document.getElementById('storeStatus');if(status)status.classList.toggle('v130Open',!!st.open);
+  },
+  filterProducts(v){const q=String(v||'').trim().toLowerCase();document.querySelectorAll('#productGrid .card').forEach(c=>c.style.display=!q||(c.dataset.search||'').includes(q)?'':'none');document.querySelectorAll('#productGrid .clientSection').forEach(s=>{const any=[...s.querySelectorAll('.card')].some(c=>c.style.display!=='none');s.style.display=any?'':'none'})},
+  enhanceAdminProducts(){
+    document.querySelectorAll('#adminContent .adminProdCard').forEach(card=>{
+      const edit=card.querySelector('button[onclick*="editProduct"]');if(!edit||card.querySelector('.v130ProdTools'))return;const m=(edit.getAttribute('onclick')||'').match(/editProduct\('([^']+)'\)/),id=m?.[1];if(!id)return;
+      const tools=document.createElement('div');tools.className='v130ProdTools';tools.innerHTML=`<button class="ghost" onclick="PedeviaV130.duplicateProduct('${id}')">Duplicar</button><button class="ghost" onclick="PedeviaV130.toggleProduct('${id}')">Disponível ↔</button>`;card.appendChild(tools)
+    })
+  },
+  async duplicateProduct(id){const p=(cfg.products||[]).find(x=>String(x.id)===String(id));if(!p)return;const copy=JSON.parse(JSON.stringify(p));copy.id='p'+Date.now();copy.name=(p.name||'Produto')+' — cópia';copy.status='hidden';cfg.products.push(copy);if(await this.persist(true,'Produto duplicado.')){renderAdmin();renderShop()}},
+  async toggleProduct(id){const p=(cfg.products||[]).find(x=>String(x.id)===String(id));if(!p)return;p.status=p.status==='available'?'unavailable':'available';if(await this.persist(true,'Status do produto atualizado.')){renderAdmin();renderShop()}},
+  enhanceProductEditor(id){
+    const p=(cfg.products||[]).find(x=>String(x.id)===String(id)),footer=document.querySelector('.stickySave');if(!p||!footer||document.getElementById('v130ProductFlags'))return;
+    const box=document.createElement('div');box.id='v130ProductFlags';box.className='panel v130Flags';box.innerHTML=`<h3>Destaques no cardápio</h3><label class="switchrow"><span>⭐ Produto em destaque</span><input id="v130Featured" type="checkbox" ${p.featured?'checked':''}></label><label class="switchrow"><span>🔥 Marcar como mais pedido</span><input id="v130Best" type="checkbox" ${p.bestSeller?'checked':''}></label><label class="switchrow"><span>🆕 Marcar como novidade</span><input id="v130New" type="checkbox" ${p.isNew?'checked':''}></label>`;footer.parentNode.insertBefore(box,footer)
+  },
+  captureProductFlags(id){const p=(cfg.products||[]).find(x=>String(x.id)===String(id));if(!p)return;p.featured=!!document.getElementById('v130Featured')?.checked;p.bestSeller=!!document.getElementById('v130Best')?.checked;p.isNew=!!document.getElementById('v130New')?.checked},
+  tempClose(minutes){cfg.store.temporaryPauseUntil=minutes?new Date(Date.now()+minutes*60000).toISOString():'';cfg.store.pauseMessage=minutes?`Fechado temporariamente. Voltamos em aproximadamente ${minutes} minutos.`:'';this.persist(false,'Fechamento temporário salvo.').then(()=>{renderShop();generalHours()})},
+  clearTempClose(){cfg.store.temporaryPauseUntil='';cfg.store.pauseMessage='';this.persist(false,'Loja reaberta.').then(()=>{renderShop();generalHours()})},
+  addSpecialHours(){const date=document.getElementById('v130SpecialDate')?.value,a=document.getElementById('v130SpecialStart')?.value,b=document.getElementById('v130SpecialEnd')?.value;if(!date||!a||!b){alert('Informe data, abertura e fechamento.');return}cfg.store.specialHours=cfg.store.specialHours||[];cfg.store.specialHours=cfg.store.specialHours.filter(x=>x.date!==date);cfg.store.specialHours.push({date,ranges:[[a,b]]});generalHours()},
+  removeSpecialHours(date){cfg.store.specialHours=(cfg.store.specialHours||[]).filter(x=>x.date!==date);generalHours()},
+  specialHoursHtml(){return (cfg.store.specialHours||[]).map(x=>`<div class="v127Exception"><div><b>${esc(new Date(x.date+'T12:00:00').toLocaleDateString('pt-BR'))}</b><small>${esc((x.ranges||[]).map(r=>r.join('–')).join(', '))}</small></div><button class="ghost" onclick="PedeviaV130.removeSpecialHours('${x.date}')">Remover</button></div>`).join('')||'<p class="hint">Nenhum horário especial.</p>'},
+  showInstallHelp(){showModal(`<div class="row"><h2>Instalar Pedevia</h2><button class="ghost" onclick="closeModal()">✕</button></div><p>A Pedevia pode ser instalada na tela inicial do celular e aberta como aplicativo.</p><div class="notice"><b>Android/Chrome:</b><br>Menu ⋮ → Adicionar à tela inicial / Instalar app.</div><div class="notice"><b>iPhone/Safari:</b><br>Compartilhar → Adicionar à Tela de Início.</div>`)},
+  async requestNotifications(){if(!('Notification'in window)){alert('Este navegador não oferece notificações.');return}const p=await Notification.requestPermission();alert(p==='granted'?'Notificações liberadas.':'As notificações não foram liberadas.')},
+  renderPanelSettings(){
+    this.ensureDefaults();const o=cfg.store.orderConfig;
+    showModal(`<div class="row"><h2>Painel de pedidos</h2><button class="ghost" onclick="closeModal()">✕</button></div>
+      <label class="switchrow"><span>Alertas sonoros</span><input id="orAlerts" type="checkbox" ${o.panelAlerts!==false?'checked':''}></label>
+      <label>Volume do alerta</label><input id="v130Volume" type="range" min="0" max="1" step=".05" value="${Number(o.alertVolume??.65)}" class="field">
+      <button class="ghost full" onclick="beepOrderV127()">🔊 Testar som</button>
+      <label class="switchrow"><span>Abrir WhatsApp ao mudar o status</span><input id="v130StatusWa" type="checkbox" ${o.whatsAppStatusMessages!==false?'checked':''}></label>
+      <label>Largura da impressora térmica</label><select id="v130PrintWidth" class="field"><option value="58" ${String(o.printWidth)==='58'?'selected':''}>58 mm</option><option value="80" ${String(o.printWidth)!=='58'?'selected':''}>80 mm</option></select>
+      <button class="ghost full" onclick="PedeviaV130.requestNotifications()">Permitir notificações do navegador</button>
+      <h3>Mensagens automáticas</h3>${['accepted','preparing','ready','completed','cancelled'].map(s=>`<label>${orderStatusLabelV125(s)}</label><textarea id="v130Msg_${s}" class="field">${esc(o.statusMessages?.[s]||'')}</textarea>`).join('')}
+      <p class="hint">Use {cliente}, {pedido} e {loja} como variáveis.</p>
+      <button class="btn full" onclick="PedeviaV130.savePanelSettings()">Salvar</button>`)
+  },
+  async savePanelSettings(){const o=cfg.store.orderConfig;o.panelAlerts=!!document.getElementById('orAlerts')?.checked;o.alertVolume=+document.getElementById('v130Volume')?.value||0;o.whatsAppStatusMessages=!!document.getElementById('v130StatusWa')?.checked;o.printWidth=document.getElementById('v130PrintWidth')?.value||'80';o.statusMessages=o.statusMessages||{};['accepted','preparing','ready','completed','cancelled'].forEach(s=>o.statusMessages[s]=document.getElementById('v130Msg_'+s)?.value||'');if(await this.persist(false,'Painel de pedidos configurado.')){closeModal();adminOrderSettings()}},
+  async masterMetrics(){
+    const box=document.getElementById('masterSummaryV130');if(!box)return;
+    try{const since=new Date();since.setDate(1);since.setHours(0,0,0,0);const {data,error}=await supabaseClient.from('pedevia_orders').select('store_key,total,status,created_at').gte('created_at',since.toISOString());if(error)throw error;const rows=data||[],completed=rows.filter(o=>o.status==='completed'),rev=completed.reduce((a,o)=>a+(+o.total||0),0);box.innerHTML=`<div class="v126Stat"><b>${rows.length}</b><small>Pedidos este mês</small></div><div class="v126Stat"><b>${brl(rev)}</b><small>Movimentado no mês</small></div><div class="v126Stat"><b>${new Set(rows.map(x=>x.store_key)).size}</b><small>Lojas com pedidos</small></div>`}catch(e){box.innerHTML=''}
+  },
+  init(){this.ensureDefaults();setTimeout(()=>{try{this.enhanceShop()}catch(e){}},400);if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js').catch(()=>{})}
+};
+
+
+// Hooks v1.30
+const _renderShopV130Base=renderShop;
+renderShop=function(){_renderShopV130Base();setTimeout(()=>PedeviaV130.enhanceShop(),0)};
+const _adminMenuV130Base=adminMenu;
+adminMenu=function(){_adminMenuV130Base();setTimeout(()=>PedeviaV130.enhanceAdminProducts(),0)};
+const _editProductV130Base=editProduct;
+editProduct=function(id){_editProductV130Base(id);setTimeout(()=>PedeviaV130.enhanceProductEditor(id),0)};
+const _saveProductV130Base=saveProduct;
+saveProduct=async function(id){
+  PedeviaV130.captureProductFlags(id);
+  if(!window.pedeviaTenantV121)return await _saveProductV130Base(id);
+  const p=cfg.products.find(x=>String(x.id)===String(id));if(!p)return;
+  p.name=document.getElementById('epn')?.value.trim()||'Produto';
+  p.desc=document.getElementById('epd')?.value||'';
+  p.detailedDesc=document.getElementById('epdetail')?.value||'';
+  p.price=+document.getElementById('epp')?.value||0;
+  p.category=document.getElementById('epc')?.value||p.category;
+  p.image=p._pendingImage||document.getElementById('epi')?.value.trim()||p.image||'';delete p._pendingImage;
+  p.status=document.getElementById('eps')?.value||'available';
+  if(typeof collectVariantsFromEditor==='function')p.variants=collectVariantsFromEditor();delete p._draftVariants;
+  if(typeof hasVariants==='function'&&!hasVariants(p)){p.allowedModes={delivery:document.getElementById('pmDelivery')?.checked??true,pickup:document.getElementById('pmPickup')?.checked??false,dinein:document.getElementById('pmDinein')?.checked??false};if(!p.allowedModes.delivery&&!p.allowedModes.pickup&&!p.allowedModes.dinein){alert('Escolha pelo menos uma forma de atendimento para este produto.');return}}
+  if(await PedeviaV130.persist(true,'Produto salvo online.')){closeModal();renderAdmin();renderShop()}
+};
+const _deleteProductV130Base=deleteProductOnline;
+deleteProductOnline=async function(id){
+  if(!window.pedeviaTenantV121)return await _deleteProductV130Base(id);
+  const p=cfg.products.find(x=>String(x.id)===String(id));if(!p)return;
+  if(!confirm(`Excluir "${p.name}" do cardápio?`))return;
+  cfg.products=cfg.products.filter(x=>String(x.id)!==String(id));
+  if(await PedeviaV130.persist(true,'Produto excluído.')){closeModal();renderAdmin();renderShop()}
+};
+
+
+// Persiste os novos campos de destaque também no catálogo do Point.
+const _dbRowToProductV130Base=dbRowToProduct;
+dbRowToProduct=function(r){const p=_dbRowToProductV130Base(r);p.featured=!!r.featured;p.isNew=!!r.is_new;p.bestSeller=!!r.best_seller;return p};
+const _productToDbRowV130Base=productToDbRow;
+productToDbRow=function(p,sortOrder){const r=_productToDbRowV130Base(p,sortOrder);r.featured=!!p.featured;r.is_new=!!p.isNew;r.best_seller=!!p.bestSeller;return r};
+
+// Painel em colunas.
+adminOrders=function(){
+  if(adminOrdersView==='config'){adminOrderSettings();return}
+  if(adminOrdersView==='stats'){if(typeof adminStatisticsV126==='function')return adminStatisticsV126();}
+  if(adminOrdersView==='history'){return PedeviaV130.renderHistory()}
+  PedeviaV130.renderOrders();
+};
+
+// Configuração profissional do painel.
+editPanelSettings=function(){PedeviaV130.renderPanelSettings()};
+
+// Alerta respeita volume configurável.
+beepOrderV127=function(){if(cfg.store?.orderConfig?.panelAlerts===false)return;try{const C=window.AudioContext||window.webkitAudioContext,c=new C(),o=c.createOscillator(),g=c.createGain(),vol=Math.max(.001,Math.min(1,+cfg.store?.orderConfig?.alertVolume||.65));o.connect(g);g.connect(c.destination);o.frequency.value=880;g.gain.setValueAtTime(.001,c.currentTime);g.gain.exponentialRampToValueAtTime(.18*vol,c.currentTime+.02);g.gain.exponentialRampToValueAtTime(.001,c.currentTime+.48);o.start();o.stop(c.currentTime+.5)}catch(e){}};
+const _notifyNewOrderV130Base=notifyNewOrderV127;
+notifyNewOrderV127=function(row){_notifyNewOrderV130Base(row);PedeviaV130.refreshOrderBadge(((window.pedeviaOrdersV125||[]).filter(o=>o.status==='new').length)||1);if(document.getElementById('ordersListV130'))PedeviaV130.loadBoard()};
+
+// Horário: pausa temporária e exceção com horário especial.
+const _scheduleStateV130Base=scheduleStateV127;
+scheduleStateV127=function(){
+  const now=nowV127(),until=cfg.store?.temporaryPauseUntil?new Date(cfg.store.temporaryPauseUntil):null;
+  if(until&&Number.isFinite(until.getTime())&&until>now)return{open:false,text:cfg.store.pauseMessage||('Fechado temporariamente · volta '+until.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}))};
+  const date=dateKeyV127(now),sp=(cfg.store?.specialHours||[]).find(x=>x?.date===date);
+  if(sp&&Array.isArray(sp.ranges)){const m=now.getHours()*60+now.getMinutes();for(const r of sp.ranges){const a=hmV127(r[0]),b=hmV127(r[1]);if(a===b||a<b&&m>=a&&m<b||a>b&&m>=a)return{open:true,text:`Aberto em horário especial · até ${r[1]}`}}return{open:false,text:'Fechado agora · horário especial hoje: '+sp.ranges.map(r=>r.join('–')).join(', ')}}
+  return _scheduleStateV130Base();
+};
+openState=function(){return scheduleStateV127()};
+
+// Estende tela de horários sem reescrever o restante.
+const _generalHoursV130Base=generalHours;
+generalHours=function(){_generalHoursV130Base();setTimeout(()=>{const panel=document.querySelector('#adminContent .panel');if(!panel||document.getElementById('v130HoursExtra'))return;const x=document.createElement('div');x.id='v130HoursExtra';x.innerHTML=`<div class="panel" style="margin-top:14px"><h3>Fechar agora</h3><p class="hint">Pausa temporária sem alterar sua programação semanal.</p><div class="v130HoursQuick"><button class="ghost" onclick="PedeviaV130.tempClose(30)">30 min</button><button class="ghost" onclick="PedeviaV130.tempClose(60)">1 hora</button><button class="ghost" onclick="PedeviaV130.tempClose(180)">3 horas</button><button class="ghost" onclick="PedeviaV130.clearTempClose()">Reabrir agora</button></div></div><div class="panel" style="margin-top:14px"><h3>Horário especial por data</h3><p class="hint">Ex.: em um feriado abrir somente das 18h às 22h.</p><input id="v130SpecialDate" type="date" class="field"><div class="two"><input id="v130SpecialStart" type="time" class="field"><input id="v130SpecialEnd" type="time" class="field"></div><button class="ghost full" onclick="PedeviaV130.addSpecialHours()">+ Adicionar horário especial</button><div style="margin-top:10px">${PedeviaV130.specialHoursHtml()}</div></div>`;const saveBtn=[...panel.querySelectorAll('button')].find(b=>(b.textContent||'').includes('Salvar horários'));if(saveBtn)panel.insertBefore(x,saveBtn);else panel.appendChild(x)},0)};
+adminHours=generalHours;
+
+// Impressão 58/80 mm.
+printOrderV127=function(id){const o=(window.pedeviaOrdersV125||[]).find(x=>String(x.id)===String(id));if(!o)return;const width=String(cfg.store?.orderConfig?.printWidth||'80')==='58'?'52mm':'72mm';const w=window.open('','_blank','width=420,height=650');if(!w){alert('Permita pop-ups para imprimir o pedido.');return}w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Pedido ${orderNumberV125(o)}</title><style>body{font:12px Arial;margin:3mm;color:#000}.c{text-align:center}.item{border-top:1px dashed #000;padding:6px 0}.item>div,.row{display:flex;justify-content:space-between;gap:6px}.item small{display:block;margin:2px 0}.total{border-top:2px solid #000;margin-top:7px;padding-top:7px;font-size:16px;font-weight:bold;display:flex;justify-content:space-between}@media print{body{width:${width};margin:2mm}}</style></head><body><h2 class="c">${esc(o.store_name||currentStoreNameV125())}</h2><div class="c">Pedido ${orderNumberV125(o)} · ${orderDateV125(o.created_at)}</div><p><b>${esc(o.customer_name||'-')}</b><br>${esc(o.customer_phone||'')}<br>${esc(orderModeLabelV125(o.order_mode))}${o.address?'<br>'+esc(o.address):''}${o.neighborhood?' · '+esc(o.neighborhood):''}</p>${(o.items||[]).map(i=>`<div class="item"><div><b>${i.quantity||1}x ${esc(i.name||'Produto')}</b><span>${brl((+i.unit_price||0)*(+i.quantity||1))}</span></div>${(i.groups||[]).map(g=>`<small>${esc(g.name||'Complementos')}: ${(g.items||[]).map(x=>esc(x.name||x)).join(', ')}</small>`).join('')}${i.note?`<small>Obs.: ${esc(i.note)}</small>`:''}</div>`).join('')}<p>Pagamento: ${esc(paymentKeyLabel(o.payment_method))}${o.note?'<br>Obs.: '+esc(o.note):''}</p><div class="total"><span>TOTAL</span><span>${brl(+o.total||0)}</span></div><script>onload=()=>{print();setTimeout(()=>close(),300)}<\/script></body></html>`);w.document.close()};
+
+// Cartão PWA em Mais.
+const _adminMoreV130Base=adminMore;
+adminMore=function(){_adminMoreV130Base();const list=document.querySelector('#adminContent .moreList');if(list&&!document.getElementById('installCardV130')){const h=document.createElement('div');h.id='installCardV130';h.innerHTML=moreCard('▣','Instalar Pedevia','Adicionar o painel à tela inicial','PedeviaV130.showInstallHelp()');list.appendChild(h)}};
+
+// Painel mestre com métricas reais do mês.
+const _renderClientSitesListV130Base=renderClientSitesListV120;
+renderClientSitesListV120=function(rows){_renderClientSitesListV130Base(rows);const host=document.getElementById('clientSitesListV120');if(host&&!document.getElementById('masterSummaryV130')){const d=document.createElement('div');d.id='masterSummaryV130';d.className='v126StatsGrid';host.prepend(d);PedeviaV130.masterMetrics()}};
+
+// Versão.
+setTimeout(()=>{PedeviaV130.init();document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.30.0')});if(mode==='shop')renderShop()},600);
+
+// ===== v1.30 extras: Storage de imagens + Pix QR + UX de checkout =====
+Object.assign(PedeviaV130,{
+  async dataUrlToBlob(data){const r=await fetch(data);return await r.blob()},
+  async uploadMedia(dataUrl,path){
+    const blob=await this.dataUrlToBlob(dataUrl),bucket=supabaseClient.storage.from('pedevia-media');
+    const {error}=await bucket.upload(path,blob,{upsert:true,contentType:blob.type||'image/jpeg',cacheControl:'31536000'});if(error)throw error;
+    const {data}=bucket.getPublicUrl(path);if(!data?.publicUrl)throw new Error('Não foi possível obter a URL pública da imagem.');return data.publicUrl
+  },
+  async uploadProductImage(id,data){const key=currentStoreKeyV127(),path=`${key}/products/${String(id).replace(/[^a-zA-Z0-9_-]/g,'_')}-${Date.now()}.jpg`;return await this.uploadMedia(data,path)},
+  async uploadBrandImage(data){const key=currentStoreKeyV127(),path=`${key}/brand/logo-${Date.now()}.jpg`;return await this.uploadMedia(data,path)},
+  normalizePixText(v,max){return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9 .\-]/g,'').toUpperCase().trim().slice(0,max)},
+  emv(id,value){value=String(value);return id+String(value.length).padStart(2,'0')+value},
+  crc16(payload){let crc=0xFFFF;for(let i=0;i<payload.length;i++){crc^=payload.charCodeAt(i)<<8;for(let j=0;j<8;j++)crc=(crc&0x8000)?((crc<<1)^0x1021):(crc<<1),crc&=0xFFFF}return crc.toString(16).toUpperCase().padStart(4,'0')},
+  pixPayload(amount){
+    const o=cfg.store.orderConfig||{},key=String(o.pixKey||'').trim();if(!key)return'';
+    const mai=this.emv('00','BR.GOV.BCB.PIX')+this.emv('01',key);
+    let p=this.emv('00','01')+this.emv('26',mai)+this.emv('52','0000')+this.emv('53','986');
+    if(Number(amount)>0)p+=this.emv('54',Number(amount).toFixed(2));
+    p+=this.emv('58','BR')+this.emv('59',this.normalizePixText(o.pixHolder||cfg.store.name||'PEDEVIA',25)||'PEDEVIA')+this.emv('60',this.normalizePixText(o.pixCity||'RIO DE JANEIRO',15)||'RIO DE JANEIRO')+this.emv('62',this.emv('05','***'))+'6304';
+    return p+this.crc16(p)
+  },
+  loadQrLib(){return new Promise((resolve,reject)=>{if(window.QRCode)return resolve();const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';s.onload=resolve;s.onerror=reject;document.head.appendChild(s)})},
+  async enhancePixCheckout(){
+    const st=window.checkoutState||{},o=cfg.store.orderConfig||{};if(st.payment!=='pix'||!o.pixKey)return;
+    const old=document.querySelector('.pixCheckoutV111');if(!old||document.getElementById('v130PixBox'))return;
+    const t=checkoutTotalsV111(),payload=this.pixPayload(t.total),box=document.createElement('div');box.id='v130PixBox';box.className='v130PixBox';
+    box.innerHTML=`<div id="v130PixQr" class="v130PixQr"></div><div><b>Pix copia e cola</b><small>${esc(o.pixHolder||'Recebedor')} · ${esc(o.pixKey)}</small><div class="v130PixActions"><button class="ghost" onclick="PedeviaV130.copyText('${encodeURIComponent(payload)}','Código Pix copiado.')">Copiar Pix</button><button class="ghost" onclick="PedeviaV130.copyText('${encodeURIComponent(o.pixKey)}','Chave Pix copiada.')">Copiar chave</button></div></div>`;
+    old.innerHTML='';old.appendChild(box);
+    try{await this.loadQrLib();new QRCode(document.getElementById('v130PixQr'),{text:payload,width:132,height:132,correctLevel:QRCode.CorrectLevel.M})}catch(e){document.getElementById('v130PixQr').innerHTML='<small>QR indisponível</small>'}
+  },
+  async copyText(v,msg){const t=decodeURIComponent(v);try{await navigator.clipboard.writeText(t);alert(msg||'Copiado.')}catch(e){prompt('Copie:',t)}},
+  enhanceCartBar(){const bar=document.getElementById('cartBar')||document.querySelector('.cartbar');if(!bar)return;const count=(cart||[]).reduce((a,i)=>a+(+i.qty||0),0),total=typeof sum==='function'?sum():0;const btn=bar.querySelector('button');if(btn&&count)btn.innerHTML=`🛒 <b>${count} ${count===1?'item':'itens'}</b> · ${brl(total)} <span style="opacity:.8">Ver carrinho</span>`},
+  sanitizeLegacy(){
+    if(window.pedeviaTenantV121){const s=cfg.store||{};if(/point do açaí/i.test(String(s.shareTitle||'')))s.shareTitle=s.name||window.pedeviaTenantV121.name||'Estabelecimento';if(String(s.socialUrl||'').includes('point_frontin'))s.socialUrl='';if(String(s.instagram||'').includes('point_frontin'))s.instagram=''}
+  }
+});
+
+// Imagens novas deixam de ser base64 e vão para Supabase Storage.
+previewProductImage=function(id,input){
+  const f=input.files&&input.files[0];if(!f)return;
+  openImageCropper(f,{title:'Enquadrar foto do produto',shape:'square',outputWidth:1000,outputHeight:1000,onConfirm:async data=>{
+    const p=cfg.products.find(x=>String(x.id)===String(id));if(!p)return;const prev=document.getElementById('prodPrev');if(prev)prev.innerHTML='<div class="hint">Enviando imagem...</div>';
+    try{const url=await PedeviaV130.uploadProductImage(id,data);p.image=url;delete p._pendingImage;if(window.pedeviaTenantV121){await PedeviaV130.persist(true,'Imagem do produto salva.')}else{const {error}=await supabaseClient.from('products').upsert(productToDbRow(p,cfg.products.findIndex(x=>x.id===id)),{onConflict:'id'});if(error)throw error}try{localStorage.setItem(KEY,JSON.stringify(cfg))}catch(e){}if(prev)prev.innerHTML=`<img src="${esc(url)}">`;renderShop();alert('Imagem salva no Storage da Pedevia.')}catch(e){console.error(e);if(prev)prev.innerHTML=productImagePreview(p);alert('Não foi possível enviar a imagem: '+(e.message||e))}
+  }})
+};
+
+saveGeneralBrand=async function(){
+  const f=document.getElementById('gLogo')?.files?.[0],s=cfg.store;s.name=document.getElementById('gName')?.value||s.name;s.legalName=document.getElementById('gLegal')?.value||'';s.cnpj=document.getElementById('gCnpj')?.value||'';
+  if(!f){if(await PedeviaV130.persist(false,'Nome e marca salvos.')){renderShop();generalBrand()}return}
+  openImageCropper(f,{title:'Enquadrar logo',shape:'circle',outputWidth:900,outputHeight:900,onConfirm:async data=>{try{s.brandImage=await PedeviaV130.uploadBrandImage(data);if(await PedeviaV130.persist(false,'Nome e logo salvos no Storage.')){renderShop();applyBrandHeaderV116?.();generalBrand()}}catch(e){alert('Não foi possível enviar a logo: '+(e.message||e))}}})
+};
+
+// Cidade Pix configurável.
+const _editPixV130Base=editServiceAndPixV111;
+editServiceAndPixV111=function(){_editPixV130Base();setTimeout(()=>{const holder=document.getElementById('pixHolderCfg');if(!holder||document.getElementById('pixCityCfg'))return;const lab=document.createElement('label');lab.textContent='Cidade do recebedor (para QR Pix)';const inp=document.createElement('input');inp.id='pixCityCfg';inp.className='field';inp.maxLength=15;inp.value=cfg.store.orderConfig?.pixCity||'';inp.placeholder='Ex.: Rio de Janeiro';holder.insertAdjacentElement('afterend',inp);inp.insertAdjacentElement('beforebegin',lab)},0)};
+const _savePixV130Base=saveServiceAndPixV111;
+saveServiceAndPixV111=async function(){cfg.store.orderConfig.pixCity=document.getElementById('pixCityCfg')?.value.trim()||cfg.store.orderConfig.pixCity||'';return await _savePixV130Base()};
+
+const _showCustomerV130Base=showCustomerForm;
+showCustomerForm=function(){_showCustomerV130Base();setTimeout(()=>PedeviaV130.enhancePixCheckout(),20)};
+const _updateCartV130Base=updateCart;
+updateCart=function(){const r=_updateCartV130Base();setTimeout(()=>PedeviaV130.enhanceCartBar(),0);return r};
+setTimeout(()=>PedeviaV130.sanitizeLegacy(),800);
+
+
+
+// v1.30 · ferramentas de catálogo em lote e migração de imagens antigas.
+Object.assign(PedeviaV130,{
+  selectedProducts(){return [...document.querySelectorAll('.v130ProdSelect:checked')].map(x=>x.value)},
+  async bulkSet(status){const ids=this.selectedProducts();if(!ids.length){alert('Selecione pelo menos um produto.');return}ids.forEach(id=>{const p=(cfg.products||[]).find(x=>String(x.id)===String(id));if(p)p.status=status});if(await this.persist(true,'Produtos atualizados.')){renderAdmin();renderShop()}},
+  async moveProduct(id,dir){const list=cfg.products||[],i=list.findIndex(x=>String(x.id)===String(id));if(i<0)return;const p=list[i],same=list.map((x,idx)=>({x,idx})).filter(a=>a.x.category===p.category),pos=same.findIndex(a=>a.idx===i),target=same[pos+dir];if(!target)return;[list[i],list[target.idx]]=[list[target.idx],list[i]];if(await this.persist(true,'Ordem dos produtos atualizada.')){renderAdmin();renderShop()}},
+  async optimizeImages(){
+    if(!confirm('Migrar imagens antigas salvas dentro da configuração para o Storage da Pedevia?\n\nIsso reduz o peso da loja e não altera as imagens que já estão em URLs.'))return;
+    let changed=0;try{
+      if(String(cfg.store?.brandImage||'').startsWith('data:image/')){cfg.store.brandImage=await this.uploadBrandImage(cfg.store.brandImage);changed++}
+      for(const p of (cfg.products||[])){if(String(p.image||'').startsWith('data:image/')){p.image=await this.uploadProductImage(p.id,p.image);changed++}}
+      if(!changed){alert('Não encontrei imagens antigas para migrar.');return}
+      if(await this.persist(true,`${changed} imagem(ns) migrada(s) para o Storage.`)){renderShop();renderAdmin()}
+    }catch(e){alert('A migração parou porque ocorreu um erro: '+(e.message||e))}
+  }
+});
+
+// Amplia a melhoria visual do catálogo administrativo com seleção e ordenação.
+const _enhanceAdminProductsV130Base=PedeviaV130.enhanceAdminProducts.bind(PedeviaV130);
+PedeviaV130.enhanceAdminProducts=function(){
+  _enhanceAdminProductsV130Base();
+  const content=document.getElementById('adminContent');if(!content)return;
+  const first=content.querySelector('.adminProdCard');
+  if(first&&!document.getElementById('v130BulkToolbar')){const bar=document.createElement('div');bar.id='v130BulkToolbar';bar.className='v130BulkToolbar';bar.innerHTML=`<b>Ações em lote</b><button class="ghost" onclick="PedeviaV130.bulkSet('available')">Disponibilizar</button><button class="ghost" onclick="PedeviaV130.bulkSet('unavailable')">Indisponibilizar</button><button class="ghost" onclick="PedeviaV130.bulkSet('hidden')">Ocultar</button>`;first.parentNode.insertBefore(bar,first)}
+  content.querySelectorAll('.adminProdCard').forEach(card=>{const edit=card.querySelector('button[onclick*="editProduct"]'),m=(edit?.getAttribute('onclick')||'').match(/editProduct\('([^']+)'\)/),id=m?.[1];if(!id)return;if(!card.querySelector('.v130ProdSelect')){const sel=document.createElement('label');sel.className='v130SelectWrap';sel.innerHTML=`<input class="v130ProdSelect" type="checkbox" value="${esc(id)}"> Selecionar`;card.prepend(sel)}const tools=card.querySelector('.v130ProdTools');if(tools&&!tools.querySelector('.v130MoveUp')){const up=document.createElement('button');up.className='ghost v130MoveUp';up.textContent='↑';up.onclick=()=>PedeviaV130.moveProduct(id,-1);const dn=document.createElement('button');dn.className='ghost';dn.textContent='↓';dn.onclick=()=>PedeviaV130.moveProduct(id,1);tools.append(up,dn)}})
+};
+
+// Card de otimização de imagens no menu Mais.
+const _adminMoreV130MediaBase=adminMore;
+adminMore=function(){_adminMoreV130MediaBase();const list=document.querySelector('#adminContent .moreList');if(list&&!document.getElementById('mediaOptimizeV130')){const h=document.createElement('div');h.id='mediaOptimizeV130';h.innerHTML=moreCard('◫','Otimizar imagens','Mover imagens antigas para o Storage da Pedevia','PedeviaV130.optimizeImages()');list.appendChild(h)}};
+
 // Inicializa somente depois de todas as camadas de compatibilidade do arquivo terem sido carregadas.
 initializeOnlineStateV13();
 </script>
@@ -6637,3 +6979,4 @@ initializeOnlineStateV13();
 <!-- v1.26.0: pedidos ativos/histórico, exclusão, encerramento diário e estatísticas para Point e tenants. -->
 
 <!-- v1.27.0: auditoria geral, isolamento por loja, realtime, horários avançados e operação profissional. -->
+<!-- v1.30.0: consolidação comercial, UX, kanban de pedidos, PWA, horários especiais e integrações. -->
