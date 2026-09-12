@@ -5783,7 +5783,7 @@ async function finishTutorialV123(){await markTenantOnboardingV123(true);closeMo
 async function skipTutorialV123(){await markTenantOnboardingV123(true);closeModal();alert('Tutorial pulado. Quando quiser rever, abra Mais → Tutorial da Pedevia.')}
 
 function showPedeviaWelcomeV123(){
-  const name=cfg?.store?.name||window.pedeviaTenantV121?.name||'seu estabelecimento';
+  const name=window.pedeviaTenantV121?.name||cfg?.store?.name||'seu estabelecimento';
   showModal(`<div style="text-align:center;padding:6px 2px 2px"><div style="width:74px;height:74px;border-radius:24px;margin:0 auto 14px;display:grid;place-items:center;background:var(--primary,#712489);color:#fff;font-size:34px;font-weight:900">P</div><div class="hint">PEDEVIA</div><h2 style="font-size:27px;margin:6px 0 8px">Bem-vindo à sua nova loja! 👋</h2><p style="line-height:1.55;margin:0 auto 16px;max-width:420px">O acesso de <b>${esc(name)}</b> está pronto. Antes de começar, podemos te mostrar todo o sistema em um tutorial completo.</p><div style="background:rgba(0,0,0,.035);padding:13px;border-radius:16px;text-align:left;margin-bottom:16px"><b>Você vai aprender a:</b><div class="hint" style="margin-top:6px;line-height:1.5">Cadastrar produtos e adicionais · configurar pedidos e pagamentos · personalizar a loja · criar ofertas · ajustar horários · divulgar o link e QR Code · usar todas as configurações.</div></div><button class="btn full" onclick="closeModal();openPedeviaTutorialV123(0)">Fazer tutorial completo →</button><button class="ghost full" style="margin-top:8px" onclick="skipWelcomeV123()">Pular tutorial e ir ao painel</button></div>`);
 }
 async function skipWelcomeV123(){await markTenantOnboardingV123(true);closeModal()}
@@ -5808,7 +5808,7 @@ setInvitedPasswordV122=async function(){
 // Deixa a tela de definição de senha com aparência de primeiro acesso.
 showSetPasswordV122=function(){
   if(document.getElementById('invitePasswordV122'))return;
-  const name=cfg?.store?.name||window.pedeviaTenantV121?.name||'seu estabelecimento';
+  const name=window.pedeviaTenantV121?.name||cfg?.store?.name||'seu estabelecimento';
   showModal(`<div id="invitePasswordV122" style="text-align:center"><div style="width:70px;height:70px;border-radius:22px;margin:0 auto 12px;display:grid;place-items:center;background:var(--primary,#712489);color:#fff;font-size:32px;font-weight:900">P</div><div class="hint">PEDEVIA · PRIMEIRO ACESSO</div><h2 style="margin:7px 0">Olá! Sua loja está quase pronta 👋</h2><p class="hint" style="line-height:1.5">Crie uma senha para administrar <b>${esc(name)}</b>. Essa senha é somente sua e não fica disponível para quem criou a loja.</p><div style="text-align:left;margin-top:18px"><label>Crie sua senha</label><input id="newPassV122" class="field" type="password" autocomplete="new-password" placeholder="Mínimo de 8 caracteres"><label>Confirme sua senha</label><input id="newPass2V122" class="field" type="password" autocomplete="new-password" placeholder="Digite novamente"><div class="hint">✓ Mínimo de 8 caracteres &nbsp; · &nbsp; ✓ As duas senhas devem ser iguais</div></div><button id="setPassBtnV122" class="btn full" style="margin-top:16px" onclick="setInvitedPasswordV122()">Criar senha e continuar</button><p id="setPassMsgV122" class="hint"></p></div>`);
 };
 
@@ -6021,13 +6021,35 @@ document.addEventListener('click',function(ev){
 
 // O primeiro acesso agora abre diretamente o tutorial prático, mantendo a opção de pular.
 showPedeviaWelcomeV123=function(){
-  const name=cfg?.store?.name||window.pedeviaTenantV121?.name||'seu estabelecimento';
+  const name=window.pedeviaTenantV121?.name||cfg?.store?.name||'seu estabelecimento';
+  showModal(`<div style="text-align:center;padding:6px 2px 2px"><div style="width:74px;height:74px;border-radius:24px;margin:0 auto 14px;display:grid;place-items:center;background:var(--primary,#712489);color:#fff;font-size:34px;font-weight:900">P</div><div class="hint">PEDEVIA</div><h2 style="font-size:27px;margin:6px 0 8px">Bem-vindo à sua nova loja! 👋</h2><p style="line-height:1.55;margin:0 auto 16px;max-width:420px">O acesso de <b>${esc(name)}</b> está pronto. Agora você pode aprender usando as telas reais da sua loja.</p><div style="background:rgba(0,0,0,.035);padding:13px;border-radius:16px;text-align:left;margin-bottom:16px"><b>Tutorial prático:</b><div class="hint" style="margin-top:6px;line-height:1.5">O guia abre cada configuração, explica o que fazer e acompanha você enquanto realiza alterações reais. Ao salvar uma etapa, seguimos automaticamente para a próxima.</div></div><button class="btn full" onclick="closeModal();openPedeviaTutorialV123(0)">Começar tutorial prático →</button><button class="ghost full" style="margin-top:8px" onclick="skipWelcomeV123()">Pular tutorial e ir ao painel</button></div>`);
+};
+
+// ===== v1.24.2: IDENTIDADE CORRETA NO PRIMEIRO ACESSO =====
+function tenantNameV1242(){
+  // Em rotas de estabelecimentos, o registro de client_sites é a fonte principal.
+  // Isso impede que o nome padrão do Point apareça durante o carregamento inicial.
+  const tenantName=String(window.pedeviaTenantV121?.name||'').trim();
+  if(tenantName)return tenantName;
+  const cfgName=String(cfg?.store?.name||'').trim();
+  if(window.pedeviaTenantV121 && /point do açaí frontin/i.test(cfgName))return 'seu estabelecimento';
+  return cfgName||'seu estabelecimento';
+}
+
+showSetPasswordV122=function(){
+  if(document.getElementById('invitePasswordV122'))return;
+  const name=tenantNameV1242();
+  showModal(`<div id="invitePasswordV122" style="text-align:center"><div style="width:70px;height:70px;border-radius:22px;margin:0 auto 12px;display:grid;place-items:center;background:var(--primary,#712489);color:#fff;font-size:32px;font-weight:900">P</div><div class="hint">PEDEVIA · PRIMEIRO ACESSO</div><h2 style="margin:7px 0">Olá! Sua loja está quase pronta 👋</h2><p class="hint" style="line-height:1.5">Crie uma senha para administrar <b>${esc(name)}</b>. Essa senha é somente sua e não fica disponível para quem criou a loja.</p><div style="text-align:left;margin-top:18px"><label>Crie sua senha</label><input id="newPassV122" class="field" type="password" autocomplete="new-password" placeholder="Mínimo de 8 caracteres"><label>Confirme sua senha</label><input id="newPass2V122" class="field" type="password" autocomplete="new-password" placeholder="Digite novamente"><div class="hint">✓ Mínimo de 8 caracteres &nbsp; · &nbsp; ✓ As duas senhas devem ser iguais</div></div><button id="setPassBtnV122" class="btn full" style="margin-top:16px" onclick="setInvitedPasswordV122()">Criar senha e continuar</button><p id="setPassMsgV122" class="hint"></p></div>`);
+};
+
+showPedeviaWelcomeV123=function(){
+  const name=tenantNameV1242();
   showModal(`<div style="text-align:center;padding:6px 2px 2px"><div style="width:74px;height:74px;border-radius:24px;margin:0 auto 14px;display:grid;place-items:center;background:var(--primary,#712489);color:#fff;font-size:34px;font-weight:900">P</div><div class="hint">PEDEVIA</div><h2 style="font-size:27px;margin:6px 0 8px">Bem-vindo à sua nova loja! 👋</h2><p style="line-height:1.55;margin:0 auto 16px;max-width:420px">O acesso de <b>${esc(name)}</b> está pronto. Agora você pode aprender usando as telas reais da sua loja.</p><div style="background:rgba(0,0,0,.035);padding:13px;border-radius:16px;text-align:left;margin-bottom:16px"><b>Tutorial prático:</b><div class="hint" style="margin-top:6px;line-height:1.5">O guia abre cada configuração, explica o que fazer e acompanha você enquanto realiza alterações reais. Ao salvar uma etapa, seguimos automaticamente para a próxima.</div></div><button class="btn full" onclick="closeModal();openPedeviaTutorialV123(0)">Começar tutorial prático →</button><button class="ghost full" style="margin-top:8px" onclick="skipWelcomeV123()">Pular tutorial e ir ao painel</button></div>`);
 };
 
 // Exibe a versão nova no cabeçalho administrativo.
 setTimeout(()=>{
-  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9]/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.24.1')});
+  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9]/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.24.2')});
 },0);
 
 // Inicializa somente depois de todas as camadas de compatibilidade do arquivo terem sido carregadas.
@@ -6035,4 +6057,4 @@ initializeOnlineStateV13();
 </script>
 
 </body></html>
-<!-- v1.24.1: ocultados Link e domínio, Colaboradores e Integrações do Point e dos estabelecimentos; removidos também do tutorial. -->
+<!-- v1.24.2: primeiro acesso e boas-vindas usam prioritariamente o nome do tenant em client_sites, evitando vazamento do nome do Point. -->
