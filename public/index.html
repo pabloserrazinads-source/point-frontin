@@ -6047,9 +6047,59 @@ showPedeviaWelcomeV123=function(){
   showModal(`<div style="text-align:center;padding:6px 2px 2px"><div style="width:74px;height:74px;border-radius:24px;margin:0 auto 14px;display:grid;place-items:center;background:var(--primary,#712489);color:#fff;font-size:34px;font-weight:900">P</div><div class="hint">PEDEVIA</div><h2 style="font-size:27px;margin:6px 0 8px">Bem-vindo à sua nova loja! 👋</h2><p style="line-height:1.55;margin:0 auto 16px;max-width:420px">O acesso de <b>${esc(name)}</b> está pronto. Agora você pode aprender usando as telas reais da sua loja.</p><div style="background:rgba(0,0,0,.035);padding:13px;border-radius:16px;text-align:left;margin-bottom:16px"><b>Tutorial prático:</b><div class="hint" style="margin-top:6px;line-height:1.5">O guia abre cada configuração, explica o que fazer e acompanha você enquanto realiza alterações reais. Ao salvar uma etapa, seguimos automaticamente para a próxima.</div></div><button class="btn full" onclick="closeModal();openPedeviaTutorialV123(0)">Começar tutorial prático →</button><button class="ghost full" style="margin-top:8px" onclick="skipWelcomeV123()">Pular tutorial e ir ao painel</button></div>`);
 };
 
+// ===== v1.24.3: NOME DO ESTABELECIMENTO GARANTIDO NO LINK DE CONVITE =====
+// O link de convite pode abrir antes de o tenant terminar de carregar. Nesse caso,
+// buscamos explicitamente o estabelecimento pelo slug antes de montar a tela de senha.
+window.pedeviaInviteTenantNameV1243='';
+
+async function resolveInviteTenantNameV1243(){
+  const current=String(window.pedeviaTenantV121?.name||'').trim();
+  if(current){window.pedeviaInviteTenantNameV1243=current;return current}
+
+  const slug=tenantSlugFromLocationV121();
+  if(slug){
+    try{
+      let row=null;
+      // Primeiro tenta a rota pública, que funciona mesmo durante a conversão do convite em sessão.
+      try{row=await loadTenantRowV121(slug)}catch(_e){}
+      // Se já houver sessão autenticada, tenta também a leitura administrativa.
+      if(!row){try{row=await loadTenantAdminRowV122(slug)}catch(_e){}}
+      if(row?.name){
+        window.pedeviaTenantV121=row;
+        window.pedeviaInviteTenantNameV1243=String(row.name).trim();
+        return window.pedeviaInviteTenantNameV1243;
+      }
+    }catch(e){console.warn('Não foi possível resolver o nome do tenant no convite.',e)}
+  }
+
+  const cfgName=String(cfg?.store?.name||'').trim();
+  if(slug && /point do açaí frontin/i.test(cfgName))return 'seu estabelecimento';
+  return cfgName||'seu estabelecimento';
+}
+
+showSetPasswordV122=function(){
+  if(document.getElementById('invitePasswordV122'))return;
+  const name=String(window.pedeviaInviteTenantNameV1243||tenantNameV1242()||'seu estabelecimento').trim();
+  showModal(`<div id="invitePasswordV122" style="text-align:center"><div style="width:70px;height:70px;border-radius:22px;margin:0 auto 12px;display:grid;place-items:center;background:var(--primary,#712489);color:#fff;font-size:32px;font-weight:900">P</div><div class="hint">PEDEVIA · PRIMEIRO ACESSO</div><h2 style="margin:7px 0">Olá! Sua loja está quase pronta 👋</h2><p class="hint" style="line-height:1.5">Crie uma senha para administrar <b>${esc(name)}</b>. Essa senha é somente sua e não fica disponível para quem criou a loja.</p><div style="text-align:left;margin-top:18px"><label>Crie sua senha</label><input id="newPassV122" class="field" type="password" autocomplete="new-password" placeholder="Mínimo de 8 caracteres"><label>Confirme sua senha</label><input id="newPass2V122" class="field" type="password" autocomplete="new-password" placeholder="Digite novamente"><div class="hint">✓ Mínimo de 8 caracteres &nbsp; · &nbsp; ✓ As duas senhas devem ser iguais</div></div><button id="setPassBtnV122" class="btn full" style="margin-top:16px" onclick="setInvitedPasswordV122()">Criar senha e continuar</button><p id="setPassMsgV122" class="hint"></p></div>`);
+};
+
+maybeHandleInviteV122=async function(){
+  if(new URLSearchParams(location.search).get('definir-senha')!=='1')return;
+  for(let i=0;i<8;i++){
+    const {data}=await supabaseClient.auth.getSession();
+    if(data?.session){
+      await resolveInviteTenantNameV1243();
+      showSetPasswordV122();
+      return;
+    }
+    await new Promise(r=>setTimeout(r,250));
+  }
+  const msg=$('#loginMsg');if(msg)msg.textContent='Abra novamente o link do convite enviado para seu e-mail.';
+};
+
 // Exibe a versão nova no cabeçalho administrativo.
 setTimeout(()=>{
-  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9]/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.24.2')});
+  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9]/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.24.3')});
 },0);
 
 // Inicializa somente depois de todas as camadas de compatibilidade do arquivo terem sido carregadas.
@@ -6057,4 +6107,4 @@ initializeOnlineStateV13();
 </script>
 
 </body></html>
-<!-- v1.24.2: primeiro acesso e boas-vindas usam prioritariamente o nome do tenant em client_sites, evitando vazamento do nome do Point. -->
+<!-- v1.24.3: convite resolve o tenant pelo slug antes de abrir a criação de senha, evitando fallback para o Point. -->
