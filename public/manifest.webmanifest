@@ -1,0 +1,13 @@
+{
+  "name": "Pedevia",
+  "short_name": "Pedevia",
+  "description": "Cardápio online e painel de pedidos Pedevia",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#712489",
+  "icons": [
+    {"src":"/pedevia-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+  ]
+}
