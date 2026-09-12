@@ -8205,4 +8205,100 @@ setTimeout(()=>{
 </script>
 <!-- v1.31.8: dinheiro com valor pago, cálculo de troco e envio dessas informações ao WhatsApp. -->
 
+
+
+<script>
+// ===== v1.31.9: CORREÇÃO DO TECLADO NO CAMPO "VAI PAGAR COM QUANTO?" =====
+(function(){
+  // O MutationObserver da v1.31.8 podia reconstruir o bloco enquanto o usuário
+  // digitava, fazendo o input perder foco e o teclado abrir/fechar repetidamente.
+  try{ obsV1318.disconnect(); }catch(e){}
+
+  let cashLastPaymentV1319 = null;
+
+  function syncCashBoxV1319(){
+    const sheet=document.getElementById('sheet');
+    if(!sheet)return;
+
+    const cash=isCashV1318();
+    const box=document.getElementById('cashPaymentBoxV1318');
+
+    if(!cash){
+      if(box)box.remove();
+      cashLastPaymentV1319=false;
+      return;
+    }
+
+    // Se já existe, NÃO recria nem altera o input enquanto ele está em foco.
+    if(box){
+      cashLastPaymentV1319=true;
+      return;
+    }
+
+    injectCashBoxV1318();
+    cashLastPaymentV1319=true;
+  }
+
+  // Observa apenas mudanças relevantes e nunca reage à digitação/alteração
+  // dentro do próprio bloco de dinheiro.
+  const stableObserverV1319=new MutationObserver((mutations)=>{
+    if(mutations.every(m=>{
+      const t=m.target?.nodeType===1?m.target:m.target?.parentElement;
+      return t?.closest?.('#cashPaymentBoxV1318');
+    })) return;
+
+    clearTimeout(window._cashStableTimerV1319);
+    window._cashStableTimerV1319=setTimeout(syncCashBoxV1319,100);
+  });
+
+  function startStableObserverV1319(){
+    const sheet=document.getElementById('sheet');
+    if(!sheet)return;
+    try{stableObserverV1319.observe(sheet,{childList:true,subtree:true})}catch(e){}
+    syncCashBoxV1319();
+  }
+
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded',startStableObserverV1319,{once:true});
+  }else{
+    startStableObserverV1319();
+  }
+  setTimeout(startStableObserverV1319,700);
+
+  // Digitação estável: apenas calcula o troco; não redesenha o checkout.
+  document.addEventListener('input',function(ev){
+    if(ev.target?.id!=='cashPaidV1318')return;
+    window.checkoutState=window.checkoutState||{};
+    window.checkoutState.cashPaid=ev.target.value;
+    updateCashChangeV1318();
+  },true);
+
+  // Evita que handlers globais de clique do checkout reconstruam a tela
+  // quando o usuário apenas toca no campo de dinheiro.
+  document.addEventListener('click',function(ev){
+    if(ev.target?.closest?.('#cashPaymentBoxV1318')){
+      ev.stopPropagation();
+    }
+  },true);
+
+  // Ajuda navegadores móveis a manter o foco/teclado.
+  document.addEventListener('focusin',function(ev){
+    if(ev.target?.id==='cashPaidV1318'){
+      ev.target.setAttribute('inputmode','decimal');
+      ev.target.setAttribute('autocomplete','off');
+      ev.target.setAttribute('enterkeyhint','done');
+    }
+  },true);
+
+  setTimeout(()=>{
+    document.querySelectorAll('.adminHead .hint').forEach(el=>{
+      if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.31.9');
+      }
+    });
+  },1200);
+})();
+</script>
+<!-- v1.31.9: campo de dinheiro não é mais reconstruído durante a digitação; teclado móvel permanece aberto. -->
+
 </body></html>
