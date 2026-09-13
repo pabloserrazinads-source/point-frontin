@@ -2458,7 +2458,7 @@ saveGeneralBrand=async function(){
 };
 
 // ===== v1.7: VERSIONAMENTO E MIGRAÇÕES DE DADOS =====
-const APP_VERSION='1.32.20';
+const APP_VERSION='1.32.23';
 const DATA_SCHEMA_VERSION=4;
 
 /*
@@ -9761,7 +9761,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.1: CONSOLIDAÇÃO DO GRANDE CONSERTO + AUDITORIA DE OVERRIDES =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.20';
+  window.PEDEVIA_VERSION='1.32.23';
 
   // 1) Placeholder da marca: uma frase única, legível e realmente centralizada.
   const st=document.createElement('style');
@@ -9945,7 +9945,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.2: CORREÇÃO DE FEEDBACK AO SALVAR PRODUTO =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.20';
+  window.PEDEVIA_VERSION='1.32.23';
 
   // O salvamento já podia concluir com sucesso, mas um elemento de feedback
   // podia desaparecer após a re-renderização e uma camada antiga tentava
@@ -10007,7 +10007,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.3: CONFIGURAÇÕES DE PEDIDOS TAMBÉM PARA ADMINISTRADORES DAS LOJAS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.20';
+  window.PEDEVIA_VERSION='1.32.23';
 
   // Abre a configuração pelo mesmo fluxo usado pelo painel principal.
   // Não depende de ser Point ou tenant; a persistência continua sendo roteada
@@ -10086,7 +10086,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.4: SESSÃO PERSISTENTE + ATUALIZAÇÃO DE PÁGINA SEM NOVO LOGIN =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.20';
+  window.PEDEVIA_VERSION='1.32.23';
 
   let restoringSessionV1324=false;
 
@@ -10165,7 +10165,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.5: ROTA DIRETA E DEFINITIVA PARA CONFIGURAÇÕES DE PEDIDOS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.20';
+  window.PEDEVIA_VERSION='1.32.23';
 
   // A tela profissional v1.30 recria o cabeçalho de Pedidos. Em tenants,
   // depender da cadeia histórica adminOrdersView -> adminOrders estava deixando
@@ -10277,7 +10277,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.6: NORMALIZAÇÃO REAL DAS CONFIGURAÇÕES DE PEDIDOS DOS TENANTS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.20';
+  window.PEDEVIA_VERSION='1.32.23';
 
   function normalizeTenantOrderConfigV1326(){
     cfg.store=cfg.store||{};
@@ -10437,7 +10437,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.13: REMOÇÃO DEFINITIVA DE ZONAS DE ENTREGA POR KM =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.20';
+  window.PEDEVIA_VERSION='1.32.23';
 
   function sanitizeDeliveryV13213(){
     if(!window.cfg || !cfg.store) return;
@@ -10514,7 +10514,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.14: ENTREGA SIMPLIFICADA + ENDEREÇO ÚNICO E CONSISTENTE =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.20';
+  window.PEDEVIA_VERSION='1.32.23';
 
   function clean(v){ return String(v??'').trim(); }
   function storeAddressV13214(){
@@ -10631,7 +10631,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.18: CHECKOUT RESPEITA O MODO DE TAXA =====
 (function(){
- window.PEDEVIA_VERSION='1.32.20';
+ window.PEDEVIA_VERSION='1.32.23';
  function normalize(){const s=window.cfg?.store,o=s?.orderConfig;if(!o)return;if(!['fixed','neighborhood'].includes(o.deliveryCalc))o.deliveryCalc='fixed';if(o.deliveryCalc==='fixed'){o.deliveryFixedFee=Number(o.deliveryFixedFee??s.deliveryFee??0)||0;s.deliveryFee=o.deliveryFixedFee;}}
  normalize();
  window.addEventListener('pageshow',()=>{normalize();try{renderShop()}catch(e){}});
@@ -10641,7 +10641,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.19: ENDEREÇO DE ENTREGA ESTRUTURADO =====
 (function(){
- window.PEDEVIA_VERSION='1.32.20';
+ window.PEDEVIA_VERSION='1.32.23';
 
  window.showDeliveryForm=function(){
    var o=(cfg.store&&cfg.store.orderConfig)||{};
@@ -10697,7 +10697,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.20: SAVE ROBUSTO + PIX + IMPRESSÃO =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.20';
+  window.PEDEVIA_VERSION='1.32.23';
 
   function saveButtonV13220(label){
     const modal=document.getElementById('modal');
@@ -10793,4 +10793,321 @@ initializeOnlineStateV13();
 })();
 </script>
 
+
+<style>
+/* v1.32.21 — ícone de ajustes sem invadir o texto */
+.otherSettingsIconV13221{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;font-size:23px;line-height:1;
+}
+</style>
+<script>
+// ===== v1.32.21: OUTRAS CONFIGURAÇÕES — SAVE ROBUSTO =====
+(function(){
+  window.PEDEVIA_VERSION='1.32.23';
+
+  async function saveOrderConfigOnlyV13221(){
+    try{
+      try{localStorage.setItem(KEY,JSON.stringify(cfg))}catch(e){}
+      const {data,error}=await supabaseClient.auth.getSession();
+      if(error)throw error;
+      if(!data?.session)throw new Error('Sessão administrativa expirada. Entre novamente no Admin.');
+
+      if(window.pedeviaTenantV121){
+        const ok=await saveTenantConfigV122();
+        if(ok===false)throw new Error('Não foi possível identificar a loja para salvar.');
+      }else{
+        const ok=await saveSiteConfigOnline();
+        if(ok===false)throw new Error('Não foi possível salvar a configuração da loja.');
+      }
+      try{setSyncStatusV15('ok')}catch(e){}
+      return true;
+    }catch(e){
+      console.error('Outras configurações v1.32.21:',e);
+      try{setSyncStatusV15('error',String(e?.message||e))}catch(_){}
+      alert('Não foi possível salvar no servidor: '+(e?.message||e));
+      return false;
+    }
+  }
+
+  window.editOtherOrderSettings=function(){
+    const o=cfg.store.orderConfig||(cfg.store.orderConfig={});
+    showModal(`
+      <div class="row"><h2>Outras configurações</h2><button class="ghost" onclick="closeModal()">✕</button></div>
+      <div class="cfgBlock"><label class="switchrow"><span><b>Solicitar CPF ou CNPJ do cliente na compra</b><small class="hint">Se habilitado, o preenchimento será obrigatório.</small></span>${toggleHTML('orCpf',!!o.requireCpf)}</label></div>
+      <div class="cfgBlock"><label class="switchrow"><span><b>Incluir código de referência nos produtos e complementos</b><small class="hint">Útil para identificar itens por código.</small></span>${toggleHTML('orRef',!!o.referenceCodes)}</label></div>
+      <div class="cfgBlock"><label class="switchrow"><span><b>Mostrar numeração dos pedidos</b><small class="hint">A numeração fica visível para o estabelecimento e cliente.</small></span>${toggleHTML('orNum',!!o.showOrderNumber)}</label></div>
+      <label class="cfgLabel">Prefixo dos pedidos</label>
+      <input id="orPrefix" class="field" value="${esc(o.orderPrefix||'PD')}">
+      <label class="cfgLabel">Próximo número</label>
+      <input id="orNext" type="number" min="1" class="field" value="${Math.max(1,+o.nextOrder||1)}">
+      <button id="otherSaveV13221" class="btn full" onclick="saveOtherOrderSettingsV13221()">Salvar</button>
+    `);
+  };
+
+  window.saveOtherOrderSettingsV13221=async function(){
+    const o=cfg.store.orderConfig||(cfg.store.orderConfig={});
+    const before={
+      requireCpf:o.requireCpf, referenceCodes:o.referenceCodes,
+      showOrderNumber:o.showOrderNumber, orderPrefix:o.orderPrefix, nextOrder:o.nextOrder
+    };
+    o.requireCpf=!!document.getElementById('orCpf')?.checked;
+    o.referenceCodes=!!document.getElementById('orRef')?.checked;
+    o.showOrderNumber=!!document.getElementById('orNum')?.checked;
+    o.orderPrefix=(document.getElementById('orPrefix')?.value||'').trim()||'PD';
+    o.nextOrder=Math.max(1,+(document.getElementById('orNext')?.value||1));
+
+    const btn=document.getElementById('otherSaveV13221');
+    if(btn){btn.disabled=true;btn.textContent='Salvando...';}
+    try{
+      const ok=await saveOrderConfigOnlyV13221();
+      if(!ok){Object.assign(o,before);return;}
+      closeModal();
+      adminOrderSettings();
+      renderShop();
+    }finally{
+      if(btn){btn.disabled=false;btn.textContent='Salvar';}
+    }
+  };
+  window.saveOtherOrderSettings=window.saveOtherOrderSettingsV13221;
+
+  // Mantém toda a tela existente e troca apenas o ícone problemático.
+  const baseAdminOrderSettingsV13221=window.adminOrderSettings;
+  window.adminOrderSettings=function(){
+    baseAdminOrderSettingsV13221();
+    const cards=[...document.querySelectorAll('.settingsList .settingCard, .settingsList button')];
+    const card=cards.find(el=>(el.textContent||'').includes('Outras configurações'));
+    if(card){
+      const icon=card.querySelector('.settingIc, .settingsIc, span');
+      if(icon && (icon.textContent||'').includes('•••')){
+        icon.innerHTML='<span class="otherSettingsIconV13221">⚙</span>';
+      }
+    }
+  };
+})();
+</script>
+
+
+<style>
+/* v1.32.22 — refinamento comercial */
+.settingCard .si{flex:0 0 42px;min-width:42px;text-align:center;overflow:hidden}
+.settingCard .si .otherSettingsIconV13221{width:100%;height:auto}
+</style>
+<script>
+// ===== v1.32.22: META-AUDITORIA / HARDENING COMERCIAL =====
+(function(){
+  window.PEDEVIA_VERSION='1.32.23';
+
+  // 1) Migração definitiva do modelo de entrega: somente FIXA ou BAIRROS.
+  function normalizeCommercialConfigV13222(){
+    if(!window.cfg?.store)return;
+    const s=cfg.store, o=s.orderConfig||(s.orderConfig={});
+    if(!['fixed','neighborhood'].includes(o.deliveryCalc))o.deliveryCalc='fixed';
+    if(o.deliveryCalc==='fixed'){
+      o.deliveryFixedFee=Math.max(0,Number(o.deliveryFixedFee??s.deliveryFee??0)||0);
+      s.deliveryFee=o.deliveryFixedFee;
+    }
+    if(!Array.isArray(o.neighborhoods))o.neighborhoods=[];
+    if(!Array.isArray(o.deliveryNeighborhoods))o.deliveryNeighborhoods=[];
+    // chaves experimentais aposentadas
+    ['deliveryZonesKm','deliveryDistanceZones','deliveryAreas','deliveryDistance','distanceRates','allowOutside','maxDeliveryFee']
+      .forEach(k=>{try{delete o[k]}catch(_){}});
+  }
+  window.normalizeCommercialConfigV13222=normalizeCommercialConfigV13222;
+  normalizeCommercialConfigV13222();
+
+  // 2) Registro de pedido usa a RPC auditada v1.27 (validação no servidor).
+  //    Compatibilidade: só cai para v1261 se a RPC v127 realmente não existir.
+  window.createOnlineOrderV125=async function(){
+    normalizeCommercialConfigV13222();
+    if(!storeAcceptingOrdersV125())throw new Error('O estabelecimento fechou antes da finalização. Tente novamente no próximo horário de funcionamento.');
+    const st=window.checkoutState||{};
+    const t=typeof checkoutTotalsV111==='function'?checkoutTotalsV111():{sub:sum(),total:sum()};
+    const text=typeof buildOrderTextV111==='function'?buildOrderTextV111():'';
+    const items=(cart||[]).map(i=>{
+      const p=(cfg.products||[]).find(x=>x.id===i.pid);
+      return {product_id:i.pid,name:p?.name||'Produto',variant:i.variantName||'',quantity:+i.qty||1,unit_price:+i.unit||0,groups:i.groups||[],note:i.obs||''};
+    });
+    const args={
+      p_store_key:currentStoreKeyV125(),
+      p_store_name:currentStoreNameV125(),
+      p_customer_name:String(st.customer||document.getElementById('coName')?.value||'').trim(),
+      p_customer_phone:String(st.phone||document.getElementById('coPhone')?.value||'').trim(),
+      p_order_mode:String(st.mode||''),
+      p_address:String(st.address||''),
+      p_neighborhood:String(st.neighborhood||''),
+      p_table_number:String(st.table||''),
+      p_payment_method:String(st.payment||''),
+      p_note:String(st.note||document.getElementById('coObs')?.value||'').trim(),
+      p_items:items,
+      p_subtotal:Number(t.sub||0),
+      p_discount:Number((t.promoDiscount||0)+(t.loyaltyDiscount||0)),
+      p_delivery_fee:Number(t.delivery||0),
+      p_payment_adjustment:Number(t.payAdj||0),
+      p_service_fee:Number(t.service||0),
+      p_total:Number(t.total||0),
+      p_whatsapp_text:text
+    };
+    let res=await supabaseClient.rpc('register_pedevia_order_v127',args);
+    if(res.error && (res.error.code==='PGRST202'||/function.*not found|schema cache/i.test(res.error.message||''))){
+      console.warn('RPC v127 ausente; usando compatibilidade v1261.');
+      res=await supabaseClient.rpc('register_pedevia_order_v1261',args);
+    }
+    if(res.error)throw res.error;
+    const row=Array.isArray(res.data)?res.data[0]:res.data;
+    if(!row)throw new Error('O pedido não retornou confirmação do servidor.');
+    return row;
+  };
+
+  // 3) Resumo da entrega no Admin passa a refletir o modo real.
+  const baseAdminV13222=window.adminOrderSettings;
+  window.adminOrderSettings=function(){
+    normalizeCommercialConfigV13222();
+    baseAdminV13222.apply(this,arguments);
+    const o=cfg.store.orderConfig||{};
+    const cards=[...document.querySelectorAll('.settingsList .settingCard')];
+    const delivery=cards.find(x=>(x.textContent||'').includes('Pedidos para entrega'));
+    if(delivery){
+      const sub=delivery.querySelector('small');
+      if(sub){
+        if(o.deliveryCalc==='fixed'){
+          const fee=Math.max(0,Number(o.deliveryFixedFee??cfg.store.deliveryFee??0)||0);
+          sub.textContent=fee>0?'Taxa fixa: '+brl(fee):'Entrega gratuita';
+        }else{
+          const n=(o.neighborhoods||[]).filter(x=>x&&x.enabled!==false).length;
+          sub.textContent=n+' '+(n===1?'bairro atendido':'bairros atendidos')+' · taxas individuais';
+        }
+      }
+    }
+    const other=cards.find(x=>(x.textContent||'').includes('Outras configurações'));
+    if(other){
+      const si=other.querySelector('.si');
+      if(si)si.innerHTML='<span class="otherSettingsIconV13221">⚙</span>';
+    }
+  };
+
+  // 4) Evita versões antigas reaparecendo no cabeçalho por timers de camadas históricas.
+  function enforceVersionV13222(){
+    document.querySelectorAll('.adminHead .hint').forEach(el=>{
+      if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.23');
+      }
+    });
+  }
+  [0,500,1300,2500].forEach(ms=>setTimeout(enforceVersionV13222,ms));
+
+  // 5) Diagnóstico local não destrutivo para suporte comercial.
+  window.pedeviaPreflightV13222=function(){
+    const issues=[];
+    try{
+      if(!window.supabaseClient)issues.push('Supabase client não inicializado');
+      if(!window.cfg?.store)issues.push('Configuração da loja ausente');
+      if(!Array.isArray(cfg?.products))issues.push('Catálogo inválido');
+      if(!['fixed','neighborhood'].includes(cfg?.store?.orderConfig?.deliveryCalc))issues.push('Modo de entrega inválido');
+      if(typeof saveTenantConfigV122!=='function')issues.push('Persistência de tenant indisponível');
+      if(typeof saveSiteConfigOnline!=='function')issues.push('Persistência do Point indisponível');
+      if(typeof fetchOrdersV125!=='function')issues.push('Leitura de pedidos indisponível');
+      if(typeof createOnlineOrderV125!=='function')issues.push('Registro de pedidos indisponível');
+    }catch(e){issues.push(String(e?.message||e))}
+    const result={ok:issues.length===0,version:'1.32.23',issues};
+    console.info('Pedevia preflight',result);
+    return result;
+  };
+  setTimeout(()=>window.pedeviaPreflightV13222(),1800);
+})();
+</script>
+
+
+
+<!-- v1.32.23 FINAL 13/09/2026 — hardening de publicação -->
+<style>
+/* Garante que opções aposentadas de entrega nunca ocupem espaço visual. */
+[data-pedevia-obsolete-delivery="1"],[data-pedevia-removed-km-zones="1"]{display:none!important}
+</style>
+<script>
+// ===== v1.32.23: FINAL DE PUBLICAÇÃO =====
+(function(){
+  window.PEDEVIA_VERSION='1.32.23';
+
+  // Mantém fechamento automático completamente separado dos pedidos existentes.
+  // Esta função SOMENTE informa se novos pedidos podem entrar.
+  window.pedeviaStoreCanReceiveNewOrdersV13223=function(){
+    try{return !!storeAcceptingOrdersV125()}catch(_){return false}
+  };
+
+  // A ação manual agora consulta primeiro os pedidos realmente afetados, informa
+  // a quantidade e atualiza somente os IDs encontrados para a loja atual.
+  window.finishTodayOrdersV126=async function(){
+    const key=currentStoreKeyV125();
+    const now=new Date();
+    const start=new Date(now.getFullYear(),now.getMonth(),now.getDate(),0,0,0,0);
+    const end=new Date(now.getFullYear(),now.getMonth(),now.getDate()+1,0,0,0,0);
+    try{
+      const {data,error}=await supabaseClient.from('pedevia_orders')
+        .select('id,status,created_at')
+        .eq('store_key',key)
+        .in('status',['new','accepted','preparing','ready'])
+        .gte('created_at',start.toISOString())
+        .lt('created_at',end.toISOString());
+      if(error)throw error;
+      const rows=Array.isArray(data)?data:[];
+      if(!rows.length){alert('Não há pedidos ativos de hoje para encerrar.');return;}
+      if(!confirm(`Encerrar ${rows.length} pedido${rows.length===1?'':'s'} ativo${rows.length===1?'':'s'} de hoje?\n\nEles serão marcados como Concluídos e continuarão no Histórico e nas Estatísticas.`))return;
+      const ids=rows.map(x=>x.id).filter(Boolean);
+      const iso=new Date().toISOString();
+      const res=await supabaseClient.from('pedevia_orders')
+        .update({status:'completed',completed_at:iso,updated_at:iso})
+        .eq('store_key',key)
+        .in('id',ids)
+        .in('status',['new','accepted','preparing','ready']);
+      if(res.error)throw res.error;
+      await loadOrdersPanelV126();
+    }catch(e){
+      console.error('Encerrar pedidos de hoje:',e);
+      alert('Não foi possível encerrar os pedidos: '+(e?.message||e));
+    }
+  };
+
+  // Sanitização final, sem apagar bairros válidos.
+  function finalNormalizeV13223(){
+    if(!window.cfg?.store)return;
+    const s=cfg.store,o=s.orderConfig||(s.orderConfig={});
+    if(!['fixed','neighborhood'].includes(o.deliveryCalc)){
+      o.deliveryCalc=(Array.isArray(o.neighborhoods)&&o.neighborhoods.length)?'neighborhood':'fixed';
+    }
+    if(!Array.isArray(o.neighborhoods))o.neighborhoods=[];
+    if(!Array.isArray(o.deliveryNeighborhoods))o.deliveryNeighborhoods=[];
+    ['deliveryZonesKm','deliveryDistanceZones','deliveryAreas','deliveryDistance','distanceRates','allowOutside','maxDeliveryFee']
+      .forEach(k=>{try{delete o[k]}catch(_){}});
+  }
+  finalNormalizeV13223();
+
+  // Centraliza a versão visível após timers de camadas antigas.
+  function finalVersionV13223(){
+    window.PEDEVIA_VERSION='1.32.23';
+    document.querySelectorAll('.adminHead .hint,.hero .hint,.panel .hint').forEach(el=>{
+      const t=el.textContent||'';
+      if(/Versão\s+1\.\d+(?:\.\d+)*/i.test(t))el.textContent=t.replace(/Versão\s+1\.\d+(?:\.\d+)*/i,'Versão 1.32.23');
+    });
+  }
+  [0,600,1400,2800,5000].forEach(ms=>setTimeout(finalVersionV13223,ms));
+
+  // Preflight final para suporte. Não grava nem altera pedidos.
+  window.pedeviaPreflightFinal=function(){
+    const issues=[];
+    try{
+      if(!window.supabaseClient)issues.push('Supabase não inicializado');
+      if(!window.cfg?.store)issues.push('Loja sem configuração');
+      if(!Array.isArray(window.cfg?.products))issues.push('Catálogo inválido');
+      const dc=window.cfg?.store?.orderConfig?.deliveryCalc;
+      if(!['fixed','neighborhood'].includes(dc))issues.push('Modo de entrega inválido');
+      ['createOnlineOrderV125','fetchOrdersV125','saveTenantConfigV122','saveSiteConfigOnline','persistAdminStateV15']
+        .forEach(n=>{if(typeof window[n]!=='function' && typeof globalThis[n]!=='function')issues.push('Função ausente: '+n)});
+    }catch(e){issues.push(String(e?.message||e))}
+    const result={ok:issues.length===0,version:'1.32.23',issues};
+    console.info('Pedevia preflight final',result);
+    return result;
+  };
+})();
+</script>
 </body></html>
