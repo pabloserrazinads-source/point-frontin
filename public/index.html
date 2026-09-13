@@ -2458,7 +2458,7 @@ saveGeneralBrand=async function(){
 };
 
 // ===== v1.7: VERSIONAMENTO E MIGRAÇÕES DE DADOS =====
-const APP_VERSION='1.32.19';
+const APP_VERSION='1.32.20';
 const DATA_SCHEMA_VERSION=4;
 
 /*
@@ -9761,7 +9761,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.1: CONSOLIDAÇÃO DO GRANDE CONSERTO + AUDITORIA DE OVERRIDES =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.19';
+  window.PEDEVIA_VERSION='1.32.20';
 
   // 1) Placeholder da marca: uma frase única, legível e realmente centralizada.
   const st=document.createElement('style');
@@ -9945,7 +9945,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.2: CORREÇÃO DE FEEDBACK AO SALVAR PRODUTO =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.19';
+  window.PEDEVIA_VERSION='1.32.20';
 
   // O salvamento já podia concluir com sucesso, mas um elemento de feedback
   // podia desaparecer após a re-renderização e uma camada antiga tentava
@@ -10007,7 +10007,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.3: CONFIGURAÇÕES DE PEDIDOS TAMBÉM PARA ADMINISTRADORES DAS LOJAS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.19';
+  window.PEDEVIA_VERSION='1.32.20';
 
   // Abre a configuração pelo mesmo fluxo usado pelo painel principal.
   // Não depende de ser Point ou tenant; a persistência continua sendo roteada
@@ -10086,7 +10086,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.4: SESSÃO PERSISTENTE + ATUALIZAÇÃO DE PÁGINA SEM NOVO LOGIN =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.19';
+  window.PEDEVIA_VERSION='1.32.20';
 
   let restoringSessionV1324=false;
 
@@ -10165,7 +10165,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.5: ROTA DIRETA E DEFINITIVA PARA CONFIGURAÇÕES DE PEDIDOS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.19';
+  window.PEDEVIA_VERSION='1.32.20';
 
   // A tela profissional v1.30 recria o cabeçalho de Pedidos. Em tenants,
   // depender da cadeia histórica adminOrdersView -> adminOrders estava deixando
@@ -10277,7 +10277,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.6: NORMALIZAÇÃO REAL DAS CONFIGURAÇÕES DE PEDIDOS DOS TENANTS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.19';
+  window.PEDEVIA_VERSION='1.32.20';
 
   function normalizeTenantOrderConfigV1326(){
     cfg.store=cfg.store||{};
@@ -10437,7 +10437,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.13: REMOÇÃO DEFINITIVA DE ZONAS DE ENTREGA POR KM =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.19';
+  window.PEDEVIA_VERSION='1.32.20';
 
   function sanitizeDeliveryV13213(){
     if(!window.cfg || !cfg.store) return;
@@ -10514,7 +10514,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.14: ENTREGA SIMPLIFICADA + ENDEREÇO ÚNICO E CONSISTENTE =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.19';
+  window.PEDEVIA_VERSION='1.32.20';
 
   function clean(v){ return String(v??'').trim(); }
   function storeAddressV13214(){
@@ -10631,7 +10631,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.18: CHECKOUT RESPEITA O MODO DE TAXA =====
 (function(){
- window.PEDEVIA_VERSION='1.32.19';
+ window.PEDEVIA_VERSION='1.32.20';
  function normalize(){const s=window.cfg?.store,o=s?.orderConfig;if(!o)return;if(!['fixed','neighborhood'].includes(o.deliveryCalc))o.deliveryCalc='fixed';if(o.deliveryCalc==='fixed'){o.deliveryFixedFee=Number(o.deliveryFixedFee??s.deliveryFee??0)||0;s.deliveryFee=o.deliveryFixedFee;}}
  normalize();
  window.addEventListener('pageshow',()=>{normalize();try{renderShop()}catch(e){}});
@@ -10641,7 +10641,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.19: ENDEREÇO DE ENTREGA ESTRUTURADO =====
 (function(){
- window.PEDEVIA_VERSION='1.32.19';
+ window.PEDEVIA_VERSION='1.32.20';
 
  window.showDeliveryForm=function(){
    var o=(cfg.store&&cfg.store.orderConfig)||{};
@@ -10690,6 +10690,106 @@ initializeOnlineStateV13();
    });
    showPaymentChoices();
  };
+})();
+</script>
+
+
+<script>
+// ===== v1.32.20: SAVE ROBUSTO + PIX + IMPRESSÃO =====
+(function(){
+  window.PEDEVIA_VERSION='1.32.20';
+
+  function saveButtonV13220(label){
+    const modal=document.getElementById('modal');
+    const btn=modal?.querySelector('.btn.full, .btn');
+    if(!btn)return null;
+    if(!btn.dataset.normalText)btn.dataset.normalText=btn.textContent.trim()||'Salvar';
+    btn.disabled=label==='Salvando...';
+    btn.textContent=label||btn.dataset.normalText;
+    return btn;
+  }
+  function releaseSaveButtonV13220(){
+    const modal=document.getElementById('modal');
+    const btn=modal?.querySelector('.btn.full, .btn');
+    if(btn){btn.disabled=false;btn.textContent=btn.dataset.normalText||'Salvar';}
+  }
+
+  // Salva apenas a configuração. Não sincroniza catálogo para alterações
+  // que não têm qualquer relação com produtos.
+  async function persistConfigOnlyV13220(message){
+    try{
+      try{localStorage.setItem(KEY,JSON.stringify(cfg))}catch(e){}
+      const {data,error}=await supabaseClient.auth.getSession();
+      if(error)throw error;
+      if(!data?.session)throw new Error('Sessão administrativa expirada. Entre novamente no Admin.');
+
+      // Em lojas clientes, client_sites.config é a fonte oficial.
+      if(window.pedeviaTenantV121){
+        const ok=await saveTenantConfigV122();
+        if(ok===false)throw new Error('Não foi possível identificar a loja para salvar.');
+      }else{
+        // Point: mantém o fluxo oficial da configuração, sem sync de produtos.
+        const ok=await saveSiteConfigOnline();
+        if(ok===false)throw new Error('Não foi possível salvar a configuração da loja.');
+      }
+      try{setSyncStatusV15('ok')}catch(e){}
+      if(message)alert(message);
+      return true;
+    }catch(e){
+      console.error('Config save v1.32.20:',e);
+      try{setSyncStatusV15('error',String(e?.message||e))}catch(_){}
+      alert('Não foi possível salvar no servidor: '+(e?.message||e));
+      return false;
+    }
+  }
+
+  window.editReceiptSettings=function(){
+    const o=cfg.store.orderConfig||(cfg.store.orderConfig={});
+    showModal(`
+      <div class="row"><h2>Impressão de recibos</h2><button class="ghost" onclick="closeModal()">✕</button></div>
+      <label class="switchrow"><span>Ativar impressão de recibos</span>
+      <input id="orReceipt" type="checkbox" ${o.receiptPrinting?'checked':''}></label>
+      <p class="hint">Ativa a opção de impressão dos pedidos no painel. A impressão usa o recurso de impressão disponível no dispositivo.</p>
+      <button id="receiptSaveV13220" class="btn full" onclick="saveReceiptSettingsV13220()">Salvar</button>
+    `);
+  };
+
+  window.saveReceiptSettingsV13220=async function(){
+    const o=cfg.store.orderConfig||(cfg.store.orderConfig={});
+    const old=!!o.receiptPrinting;
+    o.receiptPrinting=!!document.getElementById('orReceipt')?.checked;
+    saveButtonV13220('Salvando...');
+    try{
+      const ok=await persistConfigOnlyV13220('');
+      if(!ok){o.receiptPrinting=old;return;}
+      closeModal(); adminOrderSettings(); renderShop();
+    }finally{releaseSaveButtonV13220();}
+  };
+
+  // Substitui o save antigo de Pix/taxa de serviço. O botão sempre é liberado
+  // no finally, inclusive em erro de rede.
+  window.saveServiceAndPixV111=async function(){
+    normalizeOrderExtrasV111();
+    const o=cfg.store.orderConfig;
+    const before=JSON.parse(JSON.stringify(o));
+
+    o.serviceFeeEnabled=!!document.getElementById('svcEnabled')?.checked;
+    o.serviceFeeLabel=(document.getElementById('svcLabel')?.value||'').trim()||'Taxa de serviço';
+    o.serviceFeeType=document.getElementById('svcType')?.value==='fixed'?'fixed':'percent';
+    o.serviceFeeValue=Math.max(0,+(document.getElementById('svcValue')?.value||0));
+    o.pixKey=(document.getElementById('pixKeyCfg')?.value||'').trim();
+    o.pixHolder=(document.getElementById('pixHolderCfg')?.value||'').trim();
+
+    saveButtonV13220('Salvando...');
+    try{
+      const ok=await persistConfigOnlyV13220('');
+      if(!ok){
+        cfg.store.orderConfig=before;
+        return;
+      }
+      closeModal(); adminOrderSettings(); renderShop();
+    }finally{releaseSaveButtonV13220();}
+  };
 })();
 </script>
 
