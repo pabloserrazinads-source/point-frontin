@@ -2458,7 +2458,7 @@ saveGeneralBrand=async function(){
 };
 
 // ===== v1.7: VERSIONAMENTO E MIGRAÇÕES DE DADOS =====
-const APP_VERSION='1.32.18';
+const APP_VERSION='1.32.19';
 const DATA_SCHEMA_VERSION=4;
 
 /*
@@ -6622,7 +6622,46 @@ orderCopyTextV125=function(o){let txt=String(o?.whatsapp_text||'').trim();const 
 function orderTimelineV127(o){const rows=[['Recebido',o.created_at],['Aceito',o.accepted_at],['Preparando',o.preparing_at],['Pronto',o.ready_at],['Concluído',o.completed_at],['Cancelado',o.cancelled_at]].filter(x=>x[1]);return rows.length?`<div class="v127Timeline">${rows.map(([n,v])=>`<div class="v127Time"><b>${n}</b><span>${orderDateV125(v)}</span></div>`).join('')}</div>`:''}
 function customerWhatsAppUrlV127(o){let d=String(o?.customer_phone||'').replace(/\D/g,'');if(!d)return'';if(!d.startsWith('55'))d='55'+d;return`https://wa.me/${d}`}
 function openCustomerWhatsAppV127(id){const o=(window.pedeviaOrdersV125||[]).find(x=>String(x.id)===String(id));if(!o)return;const u=customerWhatsAppUrlV127(o);if(!u){alert('Este pedido não possui celular válido.');return}window.open(u+'?text='+encodeURIComponent(`Olá, ${o.customer_name||'cliente'}! Sobre o seu pedido ${orderNumberV125(o)} na ${o.store_name||currentStoreNameV125()}:`),'_blank')}
-function printOrderV127(id){const o=(window.pedeviaOrdersV125||[]).find(x=>String(x.id)===String(id));if(!o)return;const w=window.open('','_blank','width=420,height=650');if(!w){alert('Permita pop-ups para imprimir o pedido.');return}const items=(o.items||[]).map(i=>`<div><b>${i.quantity||1}x ${esc(i.name||'Produto')}</b><span>${brl((+i.unit_price||0)*(+i.quantity||1))}</span></div>${(i.groups||[]).map(g=>`<small>${esc(g.name||'Complementos')}: ${(g.items||[]).map(x=>esc(x.name||x)).join(', ')}</small>`).join('')}${i.note?`<small>Obs.: ${esc(i.note)}</small>`:''}`).join('');w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Pedido ${orderNumberV125(o)}</title><style>body{font:13px Arial;margin:10px;color:#000}h2{text-align:center;margin:0 0 4px}.muted{text-align:center;font-size:11px;margin-bottom:10px}.item>div,body>div.row{display:flex;justify-content:space-between;gap:8px}.item{border-top:1px dashed #000;padding:7px 0}.item small{display:block;margin-top:3px}.total{border-top:2px solid #000;margin-top:8px;padding-top:8px;font-size:17px;font-weight:bold;display:flex;justify-content:space-between}@media print{body{width:72mm;margin:3mm}}</style></head><body><h2>${esc(o.store_name||currentStoreNameV125())}</h2><div class="muted">Pedido ${orderNumberV125(o)} · ${orderDateV125(o.created_at)}</div><p><b>${esc(o.customer_name||'-')}</b><br>${esc(o.customer_phone||'')}<br>${esc(orderModeLabelV125(o.order_mode))}${o.address?'<br>'+esc(o.address):''}${o.neighborhood?' · '+esc(o.neighborhood):''}</p>${(o.items||[]).map(i=>`<div class="item"><div><b>${i.quantity||1}x ${esc(i.name||'Produto')}</b><span>${brl((+i.unit_price||0)*(+i.quantity||1))}</span></div>${(i.groups||[]).map(g=>`<small>${esc(g.name||'Complementos')}: ${(g.items||[]).map(x=>esc(x.name||x)).join(', ')}</small>`).join('')}${i.note?`<small>Obs.: ${esc(i.note)}</small>`:''}</div>`).join('')}<p>Pagamento: ${esc(paymentKeyLabel(o.payment_method))}${o.note?'<br>Obs.: '+esc(o.note):''}</p><div class="total"><span>TOTAL</span><span>${brl(+o.total||0)}</span></div><script>onload=()=>{print();setTimeout(()=>close(),300)}<\/script></body></html>`);w.document.close()}
+function printOrderV127(id){const o=(window.pedeviaOrdersV125||[]).find(x=>String(x.id)===String(id));if(!o)return;const w=window.open('','_blank','width=420,height=650');if(!w){alert('Permita pop-ups para imprimir o pedido.');return}const items=(o.items||[]).map(i=>`<div><b>${i.quantity||1}x ${esc(i.name||'Produto')}</b><span>${brl((+i.unit_price||0)*(+i.quantity||1))}</span></div>${(i.groups||[]).map(g=>`<small>${esc(g.name||'Complementos')}: ${(g.items||[]).map(x=>esc(x.name||x)).join(', ')}</small>`).join('')}${i.note?`<small>Obs.: ${esc(i.note)}</small>`:''}`).join('');w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Pedido ${orderNumberV125(o)}</title><style>body{font:13px Arial;margin:10px;color:#000}h2{text-align:center;margin:0 0 4px}.muted{text-align:center;font-size:11px;margin-bottom:10px}.item>div,body>div.row{display:flex;justify-content:space-between;gap:8px}.item{border-top:1px dashed #000;padding:7px 0}.item small{display:block;margin-top:3px}.total{border-top:2px solid #000;margin-top:8px;padding-top:8px;font-size:17px;font-weight:bold;display:flex;justify-content:space-between}@media print{body{width:72mm;margin:3mm}}</style></head><body><h2>${esc(o.store_name||currentStoreNameV125())}</h2><div class="muted">Pedido ${orderNumberV125(o)} · ${orderDateV125(o.created_at)}</div><p><b>${esc(o.customer_name||'-')}</b><br>${esc(o.customer_phone||'')}<br>${esc(orderModeLabelV125(o.order_mode))}${o.address?'<br>'+esc(o.address):''}${o.neighborhood?' · '+esc(o.neighborhood):''}</p>${(o.items||[]).map(i=>`<div class="item"><div><b>${i.quantity||1}x ${esc(i.name||'Produto')}</b><span>${brl((+i.unit_price||0)*(+i.quantity||1))}</span></div>${(i.groups||[]).map(g=>`<small>${esc(g.name||'Complementos')}: ${(g.items||[]).map(x=>esc(x.name||x)).join(', ')}</small>`).join('')}${i.note?`<small>Obs.: ${esc(i.note)}</small>`:''}</div>`).join('')}<p>Pagamento: ${esc(paymentKeyLabel(o.payment_method))}${o.note?'<br>Obs.: '+esc(o.note):''}</p><div class="total"><span>TOTAL</span><span>${brl(+o.total||0)}</span></div><script>onload=()=>{print();setTimeout(()=>close(),300)}<\/script>
+<script>
+// ===== v1.32.19: ENDEREÇO DE ENTREGA ESTRUTURADO =====
+(function(){
+ window.PEDEVIA_VERSION='1.32.19';
+ showDeliveryForm=function(){
+   var o=cfg.store.orderConfig||{}, mode=o.deliveryCalc==='neighborhood'?'neighborhood':'fixed';
+   var ne=(o.neighborhoods||[]).filter(function(n){return n.enabled!==false});
+   var opts=ne.map(function(n){return '<option value="'+esc(n.name)+'">'+esc(n.name)+' — '+brl(n.fee)+'</option>'}).join('');
+   var bairro=mode==='neighborhood'
+     ? '<select id="coNeigh" class="field">'+opts+'</select>'
+     : '<input id="coNeighText" class="field" placeholder="Ex.: Centro">';
+   var h='<div class="row"><h2 class="checkoutTitle">Endereço de entrega</h2><button class="ghost" onclick="showReceiveChoices()">‹</button></div>'
+     +'<label>Rua / Avenida *</label><input id="coStreet" class="field" placeholder="Ex.: Avenida João Batista Ferrini">'
+     +'<div class="two"><div><label>Número *</label><input id="coNumber" class="field" placeholder="Ex.: 136"></div><div><label>Bairro *</label>'+bairro+'</div></div>'
+     +'<label>Complemento</label><input id="coComplement" class="field" placeholder="Casa, apto, bloco...">'
+     +'<label>Referência *</label><input id="coRef" class="field" placeholder="Ex.: ao lado da farmácia">'
+     +'<div class="hint" style="margin-top:8px">Os campos com * são obrigatórios.</div>'
+     +'<div class="checkoutSticky"><button class="btn" onclick="saveDeliveryAndPay()">Continuar</button></div>';
+   showModal(h);
+ };
+ saveDeliveryAndPay=function(){
+   var mode=cfg.store.orderConfig?.deliveryCalc==='neighborhood'?'neighborhood':'fixed';
+   var street=document.getElementById('coStreet')?.value.trim()||'';
+   var number=document.getElementById('coNumber')?.value.trim()||'';
+   var neighborhood=mode==='neighborhood'?(document.getElementById('coNeigh')?.value||''):(document.getElementById('coNeighText')?.value.trim()||'');
+   var complement=document.getElementById('coComplement')?.value.trim()||'';
+   var reference=document.getElementById('coRef')?.value.trim()||'';
+   if(!street){alert('Informe a rua ou avenida.');return}
+   if(!number){alert('Informe o número.');return}
+   if(!neighborhood){alert('Informe o bairro.');return}
+   if(!reference){alert('Informe uma referência para facilitar a entrega.');return}
+   var address=street+', '+number+' - '+neighborhood+(complement?' · '+complement:'');
+   Object.assign(window.checkoutState,{street:street,number:number,neighborhood:neighborhood,complement:complement,reference:reference,address:address});
+   showPaymentChoices();
+ };
+})();
+</script>
+
+</body></html>`);w.document.close()}
 
 updateOrderStatusV126=async function(id){const status=document.getElementById('orderStatusV125')?.value||'new',now=new Date().toISOString(),patch={status,updated_at:now};if(status==='accepted')patch.accepted_at=now;if(status==='preparing')patch.preparing_at=now;if(status==='ready')patch.ready_at=now;if(status==='completed')patch.completed_at=now;if(status==='cancelled')patch.cancelled_at=now;const {error}=await supabaseClient.from('pedevia_orders').update(patch).eq('id',id).eq('store_key',currentStoreKeyV127());if(error){alert('Não foi possível atualizar o pedido: '+error.message);return}closeModal();await loadOrdersPanelV126()};
 updateOrderStatusV125=updateOrderStatusV126;
@@ -6885,7 +6924,46 @@ generalHours=function(){_generalHoursV130Base();setTimeout(()=>{const panel=docu
 adminHours=generalHours;
 
 // Impressão 58/80 mm.
-printOrderV127=function(id){const o=(window.pedeviaOrdersV125||[]).find(x=>String(x.id)===String(id));if(!o)return;const width=String(cfg.store?.orderConfig?.printWidth||'80')==='58'?'52mm':'72mm';const w=window.open('','_blank','width=420,height=650');if(!w){alert('Permita pop-ups para imprimir o pedido.');return}w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Pedido ${orderNumberV125(o)}</title><style>body{font:12px Arial;margin:3mm;color:#000}.c{text-align:center}.item{border-top:1px dashed #000;padding:6px 0}.item>div,.row{display:flex;justify-content:space-between;gap:6px}.item small{display:block;margin:2px 0}.total{border-top:2px solid #000;margin-top:7px;padding-top:7px;font-size:16px;font-weight:bold;display:flex;justify-content:space-between}@media print{body{width:${width};margin:2mm}}</style></head><body><h2 class="c">${esc(o.store_name||currentStoreNameV125())}</h2><div class="c">Pedido ${orderNumberV125(o)} · ${orderDateV125(o.created_at)}</div><p><b>${esc(o.customer_name||'-')}</b><br>${esc(o.customer_phone||'')}<br>${esc(orderModeLabelV125(o.order_mode))}${o.address?'<br>'+esc(o.address):''}${o.neighborhood?' · '+esc(o.neighborhood):''}</p>${(o.items||[]).map(i=>`<div class="item"><div><b>${i.quantity||1}x ${esc(i.name||'Produto')}</b><span>${brl((+i.unit_price||0)*(+i.quantity||1))}</span></div>${(i.groups||[]).map(g=>`<small>${esc(g.name||'Complementos')}: ${(g.items||[]).map(x=>esc(x.name||x)).join(', ')}</small>`).join('')}${i.note?`<small>Obs.: ${esc(i.note)}</small>`:''}</div>`).join('')}<p>Pagamento: ${esc(paymentKeyLabel(o.payment_method))}${o.note?'<br>Obs.: '+esc(o.note):''}</p><div class="total"><span>TOTAL</span><span>${brl(+o.total||0)}</span></div><script>onload=()=>{print();setTimeout(()=>close(),300)}<\/script></body></html>`);w.document.close()};
+printOrderV127=function(id){const o=(window.pedeviaOrdersV125||[]).find(x=>String(x.id)===String(id));if(!o)return;const width=String(cfg.store?.orderConfig?.printWidth||'80')==='58'?'52mm':'72mm';const w=window.open('','_blank','width=420,height=650');if(!w){alert('Permita pop-ups para imprimir o pedido.');return}w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Pedido ${orderNumberV125(o)}</title><style>body{font:12px Arial;margin:3mm;color:#000}.c{text-align:center}.item{border-top:1px dashed #000;padding:6px 0}.item>div,.row{display:flex;justify-content:space-between;gap:6px}.item small{display:block;margin:2px 0}.total{border-top:2px solid #000;margin-top:7px;padding-top:7px;font-size:16px;font-weight:bold;display:flex;justify-content:space-between}@media print{body{width:${width};margin:2mm}}</style></head><body><h2 class="c">${esc(o.store_name||currentStoreNameV125())}</h2><div class="c">Pedido ${orderNumberV125(o)} · ${orderDateV125(o.created_at)}</div><p><b>${esc(o.customer_name||'-')}</b><br>${esc(o.customer_phone||'')}<br>${esc(orderModeLabelV125(o.order_mode))}${o.address?'<br>'+esc(o.address):''}${o.neighborhood?' · '+esc(o.neighborhood):''}</p>${(o.items||[]).map(i=>`<div class="item"><div><b>${i.quantity||1}x ${esc(i.name||'Produto')}</b><span>${brl((+i.unit_price||0)*(+i.quantity||1))}</span></div>${(i.groups||[]).map(g=>`<small>${esc(g.name||'Complementos')}: ${(g.items||[]).map(x=>esc(x.name||x)).join(', ')}</small>`).join('')}${i.note?`<small>Obs.: ${esc(i.note)}</small>`:''}</div>`).join('')}<p>Pagamento: ${esc(paymentKeyLabel(o.payment_method))}${o.note?'<br>Obs.: '+esc(o.note):''}</p><div class="total"><span>TOTAL</span><span>${brl(+o.total||0)}</span></div><script>onload=()=>{print();setTimeout(()=>close(),300)}<\/script>
+<script>
+// ===== v1.32.19: ENDEREÇO DE ENTREGA ESTRUTURADO =====
+(function(){
+ window.PEDEVIA_VERSION='1.32.19';
+ showDeliveryForm=function(){
+   var o=cfg.store.orderConfig||{}, mode=o.deliveryCalc==='neighborhood'?'neighborhood':'fixed';
+   var ne=(o.neighborhoods||[]).filter(function(n){return n.enabled!==false});
+   var opts=ne.map(function(n){return '<option value="'+esc(n.name)+'">'+esc(n.name)+' — '+brl(n.fee)+'</option>'}).join('');
+   var bairro=mode==='neighborhood'
+     ? '<select id="coNeigh" class="field">'+opts+'</select>'
+     : '<input id="coNeighText" class="field" placeholder="Ex.: Centro">';
+   var h='<div class="row"><h2 class="checkoutTitle">Endereço de entrega</h2><button class="ghost" onclick="showReceiveChoices()">‹</button></div>'
+     +'<label>Rua / Avenida *</label><input id="coStreet" class="field" placeholder="Ex.: Avenida João Batista Ferrini">'
+     +'<div class="two"><div><label>Número *</label><input id="coNumber" class="field" placeholder="Ex.: 136"></div><div><label>Bairro *</label>'+bairro+'</div></div>'
+     +'<label>Complemento</label><input id="coComplement" class="field" placeholder="Casa, apto, bloco...">'
+     +'<label>Referência *</label><input id="coRef" class="field" placeholder="Ex.: ao lado da farmácia">'
+     +'<div class="hint" style="margin-top:8px">Os campos com * são obrigatórios.</div>'
+     +'<div class="checkoutSticky"><button class="btn" onclick="saveDeliveryAndPay()">Continuar</button></div>';
+   showModal(h);
+ };
+ saveDeliveryAndPay=function(){
+   var mode=cfg.store.orderConfig?.deliveryCalc==='neighborhood'?'neighborhood':'fixed';
+   var street=document.getElementById('coStreet')?.value.trim()||'';
+   var number=document.getElementById('coNumber')?.value.trim()||'';
+   var neighborhood=mode==='neighborhood'?(document.getElementById('coNeigh')?.value||''):(document.getElementById('coNeighText')?.value.trim()||'');
+   var complement=document.getElementById('coComplement')?.value.trim()||'';
+   var reference=document.getElementById('coRef')?.value.trim()||'';
+   if(!street){alert('Informe a rua ou avenida.');return}
+   if(!number){alert('Informe o número.');return}
+   if(!neighborhood){alert('Informe o bairro.');return}
+   if(!reference){alert('Informe uma referência para facilitar a entrega.');return}
+   var address=street+', '+number+' - '+neighborhood+(complement?' · '+complement:'');
+   Object.assign(window.checkoutState,{street:street,number:number,neighborhood:neighborhood,complement:complement,reference:reference,address:address});
+   showPaymentChoices();
+ };
+})();
+</script>
+
+</body></html>`);w.document.close()};
 
 // Cartão PWA em Mais.
 const _adminMoreV130Base=adminMore;
@@ -9761,7 +9839,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.1: CONSOLIDAÇÃO DO GRANDE CONSERTO + AUDITORIA DE OVERRIDES =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.18';
+  window.PEDEVIA_VERSION='1.32.19';
 
   // 1) Placeholder da marca: uma frase única, legível e realmente centralizada.
   const st=document.createElement('style');
@@ -9945,7 +10023,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.2: CORREÇÃO DE FEEDBACK AO SALVAR PRODUTO =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.18';
+  window.PEDEVIA_VERSION='1.32.19';
 
   // O salvamento já podia concluir com sucesso, mas um elemento de feedback
   // podia desaparecer após a re-renderização e uma camada antiga tentava
@@ -10007,7 +10085,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.3: CONFIGURAÇÕES DE PEDIDOS TAMBÉM PARA ADMINISTRADORES DAS LOJAS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.18';
+  window.PEDEVIA_VERSION='1.32.19';
 
   // Abre a configuração pelo mesmo fluxo usado pelo painel principal.
   // Não depende de ser Point ou tenant; a persistência continua sendo roteada
@@ -10086,7 +10164,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.4: SESSÃO PERSISTENTE + ATUALIZAÇÃO DE PÁGINA SEM NOVO LOGIN =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.18';
+  window.PEDEVIA_VERSION='1.32.19';
 
   let restoringSessionV1324=false;
 
@@ -10165,7 +10243,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.5: ROTA DIRETA E DEFINITIVA PARA CONFIGURAÇÕES DE PEDIDOS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.18';
+  window.PEDEVIA_VERSION='1.32.19';
 
   // A tela profissional v1.30 recria o cabeçalho de Pedidos. Em tenants,
   // depender da cadeia histórica adminOrdersView -> adminOrders estava deixando
@@ -10277,7 +10355,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.6: NORMALIZAÇÃO REAL DAS CONFIGURAÇÕES DE PEDIDOS DOS TENANTS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.18';
+  window.PEDEVIA_VERSION='1.32.19';
 
   function normalizeTenantOrderConfigV1326(){
     cfg.store=cfg.store||{};
@@ -10437,7 +10515,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.13: REMOÇÃO DEFINITIVA DE ZONAS DE ENTREGA POR KM =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.18';
+  window.PEDEVIA_VERSION='1.32.19';
 
   function sanitizeDeliveryV13213(){
     if(!window.cfg || !cfg.store) return;
@@ -10514,7 +10592,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.14: ENTREGA SIMPLIFICADA + ENDEREÇO ÚNICO E CONSISTENTE =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.18';
+  window.PEDEVIA_VERSION='1.32.19';
 
   function clean(v){ return String(v??'').trim(); }
   function storeAddressV13214(){
@@ -10631,10 +10709,49 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.18: CHECKOUT RESPEITA O MODO DE TAXA =====
 (function(){
- window.PEDEVIA_VERSION='1.32.18';
+ window.PEDEVIA_VERSION='1.32.19';
  function normalize(){const s=window.cfg?.store,o=s?.orderConfig;if(!o)return;if(!['fixed','neighborhood'].includes(o.deliveryCalc))o.deliveryCalc='fixed';if(o.deliveryCalc==='fixed'){o.deliveryFixedFee=Number(o.deliveryFixedFee??s.deliveryFee??0)||0;s.deliveryFee=o.deliveryFixedFee;}}
  normalize();
  window.addEventListener('pageshow',()=>{normalize();try{renderShop()}catch(e){}});
 })();
 </script>
+
+<script>
+// ===== v1.32.19: ENDEREÇO DE ENTREGA ESTRUTURADO =====
+(function(){
+ window.PEDEVIA_VERSION='1.32.19';
+ showDeliveryForm=function(){
+   var o=cfg.store.orderConfig||{}, mode=o.deliveryCalc==='neighborhood'?'neighborhood':'fixed';
+   var ne=(o.neighborhoods||[]).filter(function(n){return n.enabled!==false});
+   var opts=ne.map(function(n){return '<option value="'+esc(n.name)+'">'+esc(n.name)+' — '+brl(n.fee)+'</option>'}).join('');
+   var bairro=mode==='neighborhood'
+     ? '<select id="coNeigh" class="field">'+opts+'</select>'
+     : '<input id="coNeighText" class="field" placeholder="Ex.: Centro">';
+   var h='<div class="row"><h2 class="checkoutTitle">Endereço de entrega</h2><button class="ghost" onclick="showReceiveChoices()">‹</button></div>'
+     +'<label>Rua / Avenida *</label><input id="coStreet" class="field" placeholder="Ex.: Avenida João Batista Ferrini">'
+     +'<div class="two"><div><label>Número *</label><input id="coNumber" class="field" placeholder="Ex.: 136"></div><div><label>Bairro *</label>'+bairro+'</div></div>'
+     +'<label>Complemento</label><input id="coComplement" class="field" placeholder="Casa, apto, bloco...">'
+     +'<label>Referência *</label><input id="coRef" class="field" placeholder="Ex.: ao lado da farmácia">'
+     +'<div class="hint" style="margin-top:8px">Os campos com * são obrigatórios.</div>'
+     +'<div class="checkoutSticky"><button class="btn" onclick="saveDeliveryAndPay()">Continuar</button></div>';
+   showModal(h);
+ };
+ saveDeliveryAndPay=function(){
+   var mode=cfg.store.orderConfig?.deliveryCalc==='neighborhood'?'neighborhood':'fixed';
+   var street=document.getElementById('coStreet')?.value.trim()||'';
+   var number=document.getElementById('coNumber')?.value.trim()||'';
+   var neighborhood=mode==='neighborhood'?(document.getElementById('coNeigh')?.value||''):(document.getElementById('coNeighText')?.value.trim()||'');
+   var complement=document.getElementById('coComplement')?.value.trim()||'';
+   var reference=document.getElementById('coRef')?.value.trim()||'';
+   if(!street){alert('Informe a rua ou avenida.');return}
+   if(!number){alert('Informe o número.');return}
+   if(!neighborhood){alert('Informe o bairro.');return}
+   if(!reference){alert('Informe uma referência para facilitar a entrega.');return}
+   var address=street+', '+number+' - '+neighborhood+(complement?' · '+complement:'');
+   Object.assign(window.checkoutState,{street:street,number:number,neighborhood:neighborhood,complement:complement,reference:reference,address:address});
+   showPaymentChoices();
+ };
+})();
+</script>
+
 </body></html>
