@@ -685,7 +685,7 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{
 const adminTabs=[["home","⌂","Início"],["menu","▣","Cardápio"],["orders","🧺","Pedidos"],["offers","%","Ofertas"],["more","•••","Mais"]];
 function renderAdmin(){
  $("#adminBottomNav").innerHTML=adminTabs.map(([id,ic,n])=>`<button class="${adminTab===id?"on":""}" onclick="adminTab='${id}';renderAdmin()"><span class="navIcon">${ic}</span><span>${n}</span></button>`).join("");
- $("#adminContent").innerHTML='<div class="panel"><p class="hint">Carregando...</p></div>';
+ // v1.32.26: não apaga a tela com placeholder entre abas síncronas; evita flash visual.
  try{
   if(adminTab==="home")adminHome();
   else if(adminTab==="menu")adminMenu();
@@ -2458,7 +2458,7 @@ saveGeneralBrand=async function(){
 };
 
 // ===== v1.7: VERSIONAMENTO E MIGRAÇÕES DE DADOS =====
-const APP_VERSION='1.32.24';
+const APP_VERSION='1.32.26';
 const DATA_SCHEMA_VERSION=4;
 
 /*
@@ -6137,7 +6137,7 @@ maybeHandleInviteV122=async function(){
 
 // Exibe a versão nova no cabeçalho administrativo.
 setTimeout(()=>{
-  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9]/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.24.3')});
+  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9]/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.32.26')});
 },0);
 
 
@@ -6357,7 +6357,7 @@ finishWhatsApp=async function(){
 
 // Mostra a versão nova no cabeçalho administrativo.
 setTimeout(()=>{
-  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.25.0')});
+  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.32.26')});
 },0);
 
 
@@ -6508,7 +6508,7 @@ adminMore=function(){
 };
 
 // Versão exibida no Admin.
-setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.26.1')})},0);
+setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.32.26')})},0);
 
 
 // ===== v1.27.0: AUDITORIA GERAL PEDEVIA =====
@@ -6651,7 +6651,7 @@ const _renderAdminV127Clean=renderAdmin;
 renderAdmin=function(){_renderAdminV127Clean();setTimeout(cleanLegacyLabelsV127,0)};
 
 syncServerClockV127();setInterval(syncServerClockV127,10*60*1000);
-setTimeout(()=>{sanitizeTenantV127();cleanLegacyLabelsV127();document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.27.0')})},0);
+setTimeout(()=>{sanitizeTenantV127();cleanLegacyLabelsV127();document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.26')})},0);
 
 // --- Backups de configuração + resumo do painel mestre ---
 async function openConfigBackupsV127(){
@@ -6670,7 +6670,7 @@ renderClientSitesListV120=function(rows){_renderClientSitesListV127Base(rows);co
 
 /* ===== Pedevia v1.30.2 · Consolidação comercial ===== */
 window.PedeviaV130 = window.PedeviaV130 || {
-  version:'1.30.3',
+  version:'1.32.26',
   ensureDefaults(){
     cfg.store=cfg.store||{}; cfg.store.orderConfig=cfg.store.orderConfig||{};
     const o=cfg.store.orderConfig;
@@ -6896,7 +6896,7 @@ const _renderClientSitesListV130Base=renderClientSitesListV120;
 renderClientSitesListV120=function(rows){_renderClientSitesListV130Base(rows);const host=document.getElementById('clientSitesListV120');if(host&&!document.getElementById('masterSummaryV130')){const d=document.createElement('div');d.id='masterSummaryV130';d.className='v126StatsGrid';host.prepend(d);PedeviaV130.masterMetrics()}};
 
 // Versão.
-setTimeout(()=>{PedeviaV130.init();document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.30.1')});if(mode==='shop')renderShop()},600);
+setTimeout(()=>{PedeviaV130.init();document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.26')});if(mode==='shop')renderShop()},600);
 
 // ===== v1.30.1 extras: Storage de imagens + UX de checkout =====
 Object.assign(PedeviaV130,{
@@ -7144,7 +7144,7 @@ adminMore=function(){_adminMoreV130MediaBase();const list=document.querySelector
   };
 
   // Atualiza a versão visível sem interferir nas demais camadas.
-  setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.31.0')})},900);
+  setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.26')})},900);
 })();
 
 
@@ -7186,7 +7186,7 @@ adminMore=function(){_adminMoreV130MediaBase();const list=document.querySelector
   renderAdmin=function(){baseRender();if(window.pedeviaTenantV121)setTimeout(ownerBillingCardV1311,20)};
   const baseEnter=enterTenantAdminV122;
   enterTenantAdminV122=async function(){const ok=await baseEnter();setTimeout(ownerBillingCardV1311,30);return ok};
-  setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.31.1')})},1000);
+  setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.26')})},1000);
 })();
 
 // Inicializa somente depois de todas as camadas de compatibilidade do arquivo terem sido carregadas.
@@ -7248,7 +7248,7 @@ finishWhatsApp=async function(){
 setTimeout(()=>{
   document.querySelectorAll('.adminHead .hint').forEach(el=>{
     if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))
-      el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.31.2');
+      el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.26');
   });
 },1100);
 </script>
@@ -7350,7 +7350,7 @@ setTimeout(()=>{
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.31.3');
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.26');
       }
     });
   },1200);
@@ -7550,7 +7550,7 @@ setTimeout(()=>{
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.31.4');
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.26');
       }
     });
   },1200);
@@ -7706,7 +7706,7 @@ setTimeout(()=>{
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.31.5');
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.26');
       }
     });
   },1200);
@@ -7802,7 +7802,7 @@ setTimeout(()=>{
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.31.6');
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.26');
       }
     });
   },1200);
@@ -7970,7 +7970,7 @@ setTimeout(()=>{
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.31.7');
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.26');
       }
     });
   },1200);
@@ -8175,7 +8175,7 @@ setTimeout(()=>{
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.31.11');
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.26');
       }
     });
   },1200);
@@ -8416,7 +8416,7 @@ setTimeout(()=>{
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.31.12');
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.26');
       }
     });
   },1200);
@@ -8490,7 +8490,7 @@ setTimeout(()=>{
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.31.13');
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.26');
       }
     });
   },1200);
@@ -8595,7 +8595,7 @@ setTimeout(()=>{
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.31.14');
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.26');
       }
     });
   },1200);
@@ -8613,7 +8613,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.31.15: VERSÃO CENTRALIZADA =====
 (function(){
-  window.PEDEVIA_VERSION = '1.32.0';
+  window.PEDEVIA_VERSION='1.32.26';
   window.PEDEVIA_DATA_VERSION = 'v4';
 
   function applyPedeviaVersionV13115(){
@@ -9761,7 +9761,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.1: CONSOLIDAÇÃO DO GRANDE CONSERTO + AUDITORIA DE OVERRIDES =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.23';
+  window.PEDEVIA_VERSION='1.32.26';
 
   // 1) Placeholder da marca: uma frase única, legível e realmente centralizada.
   const st=document.createElement('style');
@@ -9945,7 +9945,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.2: CORREÇÃO DE FEEDBACK AO SALVAR PRODUTO =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.23';
+  window.PEDEVIA_VERSION='1.32.26';
 
   // O salvamento já podia concluir com sucesso, mas um elemento de feedback
   // podia desaparecer após a re-renderização e uma camada antiga tentava
@@ -10007,7 +10007,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.3: CONFIGURAÇÕES DE PEDIDOS TAMBÉM PARA ADMINISTRADORES DAS LOJAS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.23';
+  window.PEDEVIA_VERSION='1.32.26';
 
   // Abre a configuração pelo mesmo fluxo usado pelo painel principal.
   // Não depende de ser Point ou tenant; a persistência continua sendo roteada
@@ -10086,7 +10086,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.4: SESSÃO PERSISTENTE + ATUALIZAÇÃO DE PÁGINA SEM NOVO LOGIN =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.23';
+  window.PEDEVIA_VERSION='1.32.26';
 
   let restoringSessionV1324=false;
 
@@ -10165,7 +10165,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.5: ROTA DIRETA E DEFINITIVA PARA CONFIGURAÇÕES DE PEDIDOS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.23';
+  window.PEDEVIA_VERSION='1.32.26';
 
   // A tela profissional v1.30 recria o cabeçalho de Pedidos. Em tenants,
   // depender da cadeia histórica adminOrdersView -> adminOrders estava deixando
@@ -10277,7 +10277,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.6: NORMALIZAÇÃO REAL DAS CONFIGURAÇÕES DE PEDIDOS DOS TENANTS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.23';
+  window.PEDEVIA_VERSION='1.32.26';
 
   function normalizeTenantOrderConfigV1326(){
     cfg.store=cfg.store||{};
@@ -10437,7 +10437,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.13: REMOÇÃO DEFINITIVA DE ZONAS DE ENTREGA POR KM =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.23';
+  window.PEDEVIA_VERSION='1.32.26';
 
   function sanitizeDeliveryV13213(){
     if(!window.cfg || !cfg.store) return;
@@ -10514,7 +10514,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.14: ENTREGA SIMPLIFICADA + ENDEREÇO ÚNICO E CONSISTENTE =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.23';
+  window.PEDEVIA_VERSION='1.32.26';
 
   function clean(v){ return String(v??'').trim(); }
   function storeAddressV13214(){
@@ -10631,7 +10631,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.18: CHECKOUT RESPEITA O MODO DE TAXA =====
 (function(){
- window.PEDEVIA_VERSION='1.32.23';
+ window.PEDEVIA_VERSION='1.32.26';
  function normalize(){const s=window.cfg?.store,o=s?.orderConfig;if(!o)return;if(!['fixed','neighborhood'].includes(o.deliveryCalc))o.deliveryCalc='fixed';if(o.deliveryCalc==='fixed'){o.deliveryFixedFee=Number(o.deliveryFixedFee??s.deliveryFee??0)||0;s.deliveryFee=o.deliveryFixedFee;}}
  normalize();
  window.addEventListener('pageshow',()=>{normalize();try{renderShop()}catch(e){}});
@@ -10641,7 +10641,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.19: ENDEREÇO DE ENTREGA ESTRUTURADO =====
 (function(){
- window.PEDEVIA_VERSION='1.32.23';
+ window.PEDEVIA_VERSION='1.32.26';
 
  window.showDeliveryForm=function(){
    var o=(cfg.store&&cfg.store.orderConfig)||{};
@@ -10697,7 +10697,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.20: SAVE ROBUSTO + PIX + IMPRESSÃO =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.23';
+  window.PEDEVIA_VERSION='1.32.26';
 
   function saveButtonV13220(label){
     const modal=document.getElementById('modal');
@@ -10804,7 +10804,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.21: OUTRAS CONFIGURAÇÕES — SAVE ROBUSTO =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.23';
+  window.PEDEVIA_VERSION='1.32.26';
 
   async function saveOrderConfigOnlyV13221(){
     try{
@@ -10896,7 +10896,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.22: META-AUDITORIA / HARDENING COMERCIAL =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.23';
+  window.PEDEVIA_VERSION='1.32.26';
 
   // 1) Migração definitiva do modelo de entrega: somente FIXA ou BAIRROS.
   function normalizeCommercialConfigV13222(){
@@ -10990,7 +10990,7 @@ initializeOnlineStateV13();
   function enforceVersionV13222(){
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.23');
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.26');
       }
     });
   }
@@ -11009,7 +11009,7 @@ initializeOnlineStateV13();
       if(typeof fetchOrdersV125!=='function')issues.push('Leitura de pedidos indisponível');
       if(typeof createOnlineOrderV125!=='function')issues.push('Registro de pedidos indisponível');
     }catch(e){issues.push(String(e?.message||e))}
-    const result={ok:issues.length===0,version:'1.32.23',issues};
+    const result={ok:issues.length===0,version:'1.32.26',issues};
     console.info('Pedevia preflight',result);
     return result;
   };
@@ -11027,7 +11027,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.23: FINAL DE PUBLICAÇÃO =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.23';
+  window.PEDEVIA_VERSION='1.32.26';
 
   // Mantém fechamento automático completamente separado dos pedidos existentes.
   // Esta função SOMENTE informa se novos pedidos podem entrar.
@@ -11084,10 +11084,10 @@ initializeOnlineStateV13();
 
   // Centraliza a versão visível após timers de camadas antigas.
   function finalVersionV13223(){
-    window.PEDEVIA_VERSION='1.32.23';
+    window.PEDEVIA_VERSION='1.32.26';
     document.querySelectorAll('.adminHead .hint,.hero .hint,.panel .hint').forEach(el=>{
       const t=el.textContent||'';
-      if(/Versão\s+1\.\d+(?:\.\d+)*/i.test(t))el.textContent=t.replace(/Versão\s+1\.\d+(?:\.\d+)*/i,'Versão 1.32.23');
+      if(/Versão\s+1\.\d+(?:\.\d+)*/i.test(t))el.textContent=t.replace(/Versão\s+1\.\d+(?:\.\d+)*/i,'Versão 1.32.26');
     });
   }
   [0,600,1400,2800,5000].forEach(ms=>setTimeout(finalVersionV13223,ms));
@@ -11104,7 +11104,7 @@ initializeOnlineStateV13();
       ['createOnlineOrderV125','fetchOrdersV125','saveTenantConfigV122','saveSiteConfigOnline','persistAdminStateV15']
         .forEach(n=>{if(typeof window[n]!=='function' && typeof globalThis[n]!=='function')issues.push('Função ausente: '+n)});
     }catch(e){issues.push(String(e?.message||e))}
-    const result={ok:issues.length===0,version:'1.32.23',issues};
+    const result={ok:issues.length===0,version:'1.32.26',issues};
     console.info('Pedevia preflight final',result);
     return result;
   };
@@ -11116,7 +11116,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.24: CORREÇÃO DE NAVEGAÇÃO DO ADMIN =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.24';
+  window.PEDEVIA_VERSION='1.32.26';
 
   // Há camadas históricas que escreveram window.adminTab/window.adminOrdersView,
   // enquanto o núcleo usa bindings globais `let`. Esta camada usa diretamente
@@ -11208,14 +11208,53 @@ initializeOnlineStateV13();
   wireBottomNavV13224();
 
   function enforceVersionV13224(){
-    window.PEDEVIA_VERSION='1.32.24';
+    window.PEDEVIA_VERSION='1.32.26';
     document.querySelectorAll('.adminHead .hint,.hero .hint,.panel .hint').forEach(el=>{
       const t=el.textContent||'';
       if(/Versão\s+1\.\d+(?:\.\d+)*/i.test(t))
-        el.textContent=t.replace(/Versão\s+1\.\d+(?:\.\d+)*/i,'Versão 1.32.24');
+        el.textContent=t.replace(/Versão\s+1\.\d+(?:\.\d+)*/i,'Versão 1.32.26');
     });
   }
   [0,700,1600,3000,5200].forEach(ms=>setTimeout(enforceVersionV13224,ms));
+})();
+</script>
+
+
+<!-- v1.32.26 FINAL 13/09/2026 — versão visual unificada -->
+<script>
+// ===== v1.32.26: FONTE ÚNICA DE VERSÃO =====
+(function(){
+  const CURRENT_VERSION='1.32.26';
+  window.PEDEVIA_VERSION=CURRENT_VERSION;
+  window.getPedeviaVersion=function(){return CURRENT_VERSION};
+  window.applyPedeviaVersion=function(){
+    document.querySelectorAll('.adminHead .hint,.hero .hint,.panel .hint').forEach(el=>{
+      const t=el.textContent||'';
+      if(/Versão\s+1\.\d+(?:\.\d+)*/i.test(t)){
+        el.textContent=t.replace(/Versão\s+1\.\d+(?:\.\d+)*/i,'Versão '+CURRENT_VERSION);
+      }
+    });
+  };
+  window.applyPedeviaVersion();
+})();
+</script>
+
+
+<!-- v1.32.26 FINAL 13/09/2026 — troca de abas sem frame intermediário -->
+<script>
+// ===== v1.32.26: NAVEGAÇÃO SEM FLASH =====
+(function(){
+  const CURRENT_VERSION='1.32.26';
+  window.PEDEVIA_VERSION=CURRENT_VERSION;
+
+  // A navegação administrativa é síncrona. Não há motivo para substituir o
+  // conteúdo atual por "Carregando..." antes de desenhar a próxima aba.
+  // Mantemos o conteúdo anterior durante o mesmo frame e o novo painel o
+  // substitui diretamente, evitando o clarão observado Pedidos -> Ofertas.
+  document.documentElement.setAttribute('data-pedevia-admin-paint','stable');
+
+  // Reaplica apenas o texto canônico da versão, sem timers ou reconstrução.
+  if(typeof window.applyPedeviaVersion==='function') window.applyPedeviaVersion();
 })();
 </script>
 </body></html>
