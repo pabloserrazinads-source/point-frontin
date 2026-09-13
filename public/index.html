@@ -780,7 +780,7 @@ function editDeliverySettings(){let s=cfg.store,o=s.orderConfig;showModal(`<div 
  <div class="cfgBlock"><label class="switchrow"><b>Aceitar pedidos para entrega</b>${toggleHTML('odEnabled',s.modes.delivery)}</label></div>
  <label class="cfgLabel">Valor mínimo dos pedidos para entrega (R$)</label><input id="odMin" type="number" step=".01" class="field" value="${s.minimumOrder}">
  <label class="cfgLabel">Cálculo da taxa de entrega</label>
- ${[['fixed','Taxa gratuita ou valor fixo','Defina um valor único, independente do endereço'],['neighborhood','Taxa por lista de bairros','Defina a taxa de acordo com a lista de bairros atendidos'],['area','Taxa por áreas de entrega','Delimite regiões personalizadas diretamente no mapa'],['distance','Taxa por distância (km)','Defina as taxas de acordo com a distância de entrega']].map(([k,n,d])=>`<label class="radioCard ${o.deliveryCalc===k?'on':''}"><input type="radio" name="calc" value="${k}" ${o.deliveryCalc===k?'checked':''} onchange="refreshCalcCards()"><span><b>${n}</b><small>${d}</small></span></label>`).join('')}
+ ${[['fixed','Taxa gratuita ou valor fixo','Defina um valor único, independente do endereço'],['neighborhood','Taxa por lista de bairros','Defina a taxa de acordo com a lista de bairros atendidos']].map(([k,n,d])=>`<label class="radioCard ${o.deliveryCalc===k?'on':''}"><input type="radio" name="calc" value="${k}" ${o.deliveryCalc===k?'checked':''} onchange="refreshCalcCards()"><span><b>${n}</b><small>${d}</small></span></label>`).join('')}
  <div id="fixedFeeBox" class="cfgBlock ${o.deliveryCalc==='fixed'?'':'hide'}"><label>Valor fixo</label><input id="odFixed" type="number" step=".01" class="field" value="${o.deliveryFixedFee||0}"></div>
  <div class="cfgBlock"><div class="row"><div><b>Lista de bairros atendidos</b><div class="hint">${o.neighborhoods.filter(n=>n.enabled).length} bairros · taxas individuais</div></div><button class="ghost" onclick="editNeighborhoods()">Editar lista</button></div></div>
  <div class="cfgBlock"><label class="switchrow"><span><b>Permitir pedidos fora das áreas de entrega</b><small class="hint">A taxa ficará “A combinar”</small></span>${toggleHTML('odOutside',o.allowOutside)}</label><label class="cfgLabel">Valor máximo de taxa que poderá ser cobrado</label><input id="odOutsideMax" type="number" step=".01" class="field" value="${o.outsideMaxFee||0}"></div>
@@ -2456,7 +2456,7 @@ saveGeneralBrand=async function(){
 };
 
 // ===== v1.7: VERSIONAMENTO E MIGRAÇÕES DE DADOS =====
-const APP_VERSION='1.32.14';
+const APP_VERSION='1.32.15';
 const DATA_SCHEMA_VERSION=4;
 
 /*
@@ -9759,7 +9759,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.1: CONSOLIDAÇÃO DO GRANDE CONSERTO + AUDITORIA DE OVERRIDES =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.14';
+  window.PEDEVIA_VERSION='1.32.15';
 
   // 1) Placeholder da marca: uma frase única, legível e realmente centralizada.
   const st=document.createElement('style');
@@ -9943,7 +9943,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.2: CORREÇÃO DE FEEDBACK AO SALVAR PRODUTO =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.14';
+  window.PEDEVIA_VERSION='1.32.15';
 
   // O salvamento já podia concluir com sucesso, mas um elemento de feedback
   // podia desaparecer após a re-renderização e uma camada antiga tentava
@@ -10005,7 +10005,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.3: CONFIGURAÇÕES DE PEDIDOS TAMBÉM PARA ADMINISTRADORES DAS LOJAS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.14';
+  window.PEDEVIA_VERSION='1.32.15';
 
   // Abre a configuração pelo mesmo fluxo usado pelo painel principal.
   // Não depende de ser Point ou tenant; a persistência continua sendo roteada
@@ -10084,7 +10084,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.4: SESSÃO PERSISTENTE + ATUALIZAÇÃO DE PÁGINA SEM NOVO LOGIN =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.14';
+  window.PEDEVIA_VERSION='1.32.15';
 
   let restoringSessionV1324=false;
 
@@ -10163,7 +10163,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.5: ROTA DIRETA E DEFINITIVA PARA CONFIGURAÇÕES DE PEDIDOS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.14';
+  window.PEDEVIA_VERSION='1.32.15';
 
   // A tela profissional v1.30 recria o cabeçalho de Pedidos. Em tenants,
   // depender da cadeia histórica adminOrdersView -> adminOrders estava deixando
@@ -10275,7 +10275,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.6: NORMALIZAÇÃO REAL DAS CONFIGURAÇÕES DE PEDIDOS DOS TENANTS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.14';
+  window.PEDEVIA_VERSION='1.32.15';
 
   function normalizeTenantOrderConfigV1326(){
     cfg.store=cfg.store||{};
@@ -10435,7 +10435,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.13: REMOÇÃO DEFINITIVA DE ZONAS DE ENTREGA POR KM =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.14';
+  window.PEDEVIA_VERSION='1.32.15';
 
   function sanitizeDeliveryV13213(){
     if(!window.cfg || !cfg.store) return;
@@ -10512,7 +10512,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.14: ENTREGA SIMPLIFICADA + ENDEREÇO ÚNICO E CONSISTENTE =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.14';
+  window.PEDEVIA_VERSION='1.32.15';
 
   function clean(v){ return String(v??'').trim(); }
   function storeAddressV13214(){
@@ -10623,5 +10623,27 @@ initializeOnlineStateV13();
 })();
 </script>
 <!-- v1.32.14: removidas da UI taxa por áreas e taxa por distância; endereço salvo propagado nos cartões públicos/admin. -->
+
+
+<script>
+// ===== v1.32.15: MIGRAÇÃO DOS MODOS DE ENTREGA REMOVIDOS =====
+(function(){
+  window.PEDEVIA_VERSION='1.32.15';
+  function normalize(){
+    try{
+      const o=window.cfg?.store?.orderConfig;
+      if(!o)return;
+      const m=String(o.deliveryCalc||'').toLowerCase();
+      if(m==='area'||m==='distance'||m==='zones_km'){
+        o.deliveryCalc=(Array.isArray(o.deliveryNeighborhoods)&&o.deliveryNeighborhoods.length)?'neighborhood':'fixed';
+      }
+      delete o.deliveryAreas; delete o.deliveryDistance; delete o.distanceRates;
+      delete o.deliveryZonesKm; delete o.deliveryDistanceZones;
+    }catch(_){}
+  }
+  normalize();
+  document.addEventListener('click',normalize,true);
+})();
+</script>
 
 </body></html>
