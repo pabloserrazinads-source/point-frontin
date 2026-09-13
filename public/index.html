@@ -2456,7 +2456,7 @@ saveGeneralBrand=async function(){
 };
 
 // ===== v1.7: VERSIONAMENTO E MIGRAÇÕES DE DADOS =====
-const APP_VERSION='1.32.11';
+const APP_VERSION='1.32.12';
 const DATA_SCHEMA_VERSION=4;
 
 /*
@@ -9759,7 +9759,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.1: CONSOLIDAÇÃO DO GRANDE CONSERTO + AUDITORIA DE OVERRIDES =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.11';
+  window.PEDEVIA_VERSION='1.32.12';
 
   // 1) Placeholder da marca: uma frase única, legível e realmente centralizada.
   const st=document.createElement('style');
@@ -9943,7 +9943,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.2: CORREÇÃO DE FEEDBACK AO SALVAR PRODUTO =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.11';
+  window.PEDEVIA_VERSION='1.32.12';
 
   // O salvamento já podia concluir com sucesso, mas um elemento de feedback
   // podia desaparecer após a re-renderização e uma camada antiga tentava
@@ -10005,7 +10005,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.3: CONFIGURAÇÕES DE PEDIDOS TAMBÉM PARA ADMINISTRADORES DAS LOJAS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.11';
+  window.PEDEVIA_VERSION='1.32.12';
 
   // Abre a configuração pelo mesmo fluxo usado pelo painel principal.
   // Não depende de ser Point ou tenant; a persistência continua sendo roteada
@@ -10084,7 +10084,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.4: SESSÃO PERSISTENTE + ATUALIZAÇÃO DE PÁGINA SEM NOVO LOGIN =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.11';
+  window.PEDEVIA_VERSION='1.32.12';
 
   let restoringSessionV1324=false;
 
@@ -10163,7 +10163,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.5: ROTA DIRETA E DEFINITIVA PARA CONFIGURAÇÕES DE PEDIDOS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.11';
+  window.PEDEVIA_VERSION='1.32.12';
 
   // A tela profissional v1.30 recria o cabeçalho de Pedidos. Em tenants,
   // depender da cadeia histórica adminOrdersView -> adminOrders estava deixando
@@ -10275,7 +10275,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.6: NORMALIZAÇÃO REAL DAS CONFIGURAÇÕES DE PEDIDOS DOS TENANTS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.11';
+  window.PEDEVIA_VERSION='1.32.12';
 
   function normalizeTenantOrderConfigV1326(){
     cfg.store=cfg.store||{};
@@ -10422,7 +10422,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.7: CIDADE DO ENDEREÇO + ZONAS DE ENTREGA POR KM =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.11';
+  window.PEDEVIA_VERSION='1.32.12';
 
   function deliveryCityFromAddressV1327(){
     const raw=String(cfg.store?.address||'').trim();
@@ -10628,7 +10628,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.8: CHECKOUT AUTOMÁTICO DAS ZONAS DE ENTREGA =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.11';
+  window.PEDEVIA_VERSION='1.32.12';
 
   function zonesActiveV1328(){
     try{
@@ -10876,7 +10876,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.9: ENDEREÇO CONSISTENTE + LAYOUT DAS ZONAS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.11';
+  window.PEDEVIA_VERSION='1.32.12';
 
   function addressDisplayV1329(){
     const a=String(cfg.store?.address||'').trim();
@@ -11046,7 +11046,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.10: ENDEREÇO DE ENTREGA ESTRUTURADO + REFERÊNCIA OBRIGATÓRIA + CIDADE =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.11';
+  window.PEDEVIA_VERSION='1.32.12';
 
   function titleCaseV13210(v){
     return String(v||'').trim().replace(/\b([\p{L}])/gu,m=>m.toUpperCase());
@@ -11219,7 +11219,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.11: GEOCODIFICAÇÃO ROBUSTA SEM DUPLICAR CIDADE =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.11';
+  window.PEDEVIA_VERSION='1.32.12';
 
   async function fetchGeoV13211(url,timeout=12000){
     const c=new AbortController(),t=setTimeout(()=>c.abort(),timeout);
@@ -11383,5 +11383,195 @@ initializeOnlineStateV13();
 })();
 </script>
 <!-- v1.32.11: remove duplicação da cidade e adiciona buscas graduais + geocodificador reserva. -->
+
+
+<script>
+// ===== v1.32.12: ORIGEM FIXA + VALIDAÇÃO GEOGRÁFICA DAS ZONAS =====
+(function(){
+  window.PEDEVIA_VERSION='1.32.12';
+
+  function norm13212(v){
+    return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+      .toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+  }
+  function city13212(){
+    const raw=String(window.deliveryCityFromAddressV1327?.()||'').trim();
+    return (/^localiza/i.test(raw)||/^cidade não/i.test(raw))?'':raw;
+  }
+  function finiteCoord13212(v){ return Number.isFinite(Number(v)); }
+
+  function savedOrigin13212(){
+    // Prioriza coordenadas explicitamente salvas pelo mapa/endereço.
+    const candidates=[
+      cfg.store?.mapCoords,
+      cfg.store?.locationCoords,
+      cfg.store?.coordinates,
+      cfg.store?.coords,
+      cfg.store?.mapLocation,
+      cfg.store?.location,
+      cfg.store?.deliveryOriginCoords
+    ];
+    for(const c of candidates){
+      if(!c)continue;
+      const lat=c.lat ?? c.latitude, lon=c.lon ?? c.lng ?? c.longitude;
+      if(finiteCoord13212(lat)&&finiteCoord13212(lon)){
+        return {lat:Number(lat),lon:Number(lon),label:'Localização salva do estabelecimento',fixed:true};
+      }
+    }
+    const lat=cfg.store?.latitude ?? cfg.store?.lat;
+    const lon=cfg.store?.longitude ?? cfg.store?.lng ?? cfg.store?.lon;
+    if(finiteCoord13212(lat)&&finiteCoord13212(lon))
+      return {lat:Number(lat),lon:Number(lon),label:'Localização salva do estabelecimento',fixed:true};
+    return null;
+  }
+
+  async function getJson13212(url,timeout=12000){
+    const c=new AbortController(),t=setTimeout(()=>c.abort(),timeout);
+    try{
+      const r=await fetch(url,{signal:c.signal,headers:{Accept:'application/json'}});
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      return await r.json();
+    }finally{clearTimeout(t)}
+  }
+
+  function resultMeta13212(x){
+    const a=x?.address||{};
+    return {
+      city:a.city||a.town||a.village||a.municipality||a.city_district||'',
+      district:a.suburb||a.neighbourhood||a.quarter||a.city_district||'',
+      road:a.road||a.pedestrian||a.residential||'',
+      house:a.house_number||'',
+      state:a.state||'',
+      display:x?.display_name||''
+    };
+  }
+
+  function score13212(x, expected){
+    const m=resultMeta13212(x);
+    const city=norm13212(expected.city),district=norm13212(expected.district),
+          street=norm13212(expected.street),number=norm13212(expected.number);
+    let score=0;
+    if(city && (norm13212(m.city).includes(city)||norm13212(m.display).includes(city))) score+=50;
+    else if(city) score-=80;
+    if(street && (norm13212(m.road).includes(street)||norm13212(m.display).includes(street))) score+=30;
+    if(district && (norm13212(m.district).includes(district)||norm13212(m.display).includes(district))) score+=15;
+    if(number && (norm13212(m.house)===number||norm13212(m.display).includes(' '+number+' '))) score+=8;
+    if(/rio de janeiro|\brj\b/.test(norm13212(m.state+' '+m.display))) score+=4;
+    return {score,meta:m};
+  }
+
+  async function preciseDest13212(address){
+    const expected={
+      street:String(address.street||'').trim(),
+      number:String(address.number||'').trim(),
+      district:String(address.district||'').trim(),
+      city:city13212()
+    };
+    const structured=new URLSearchParams({
+      format:'jsonv2',addressdetails:'1',limit:'8',countrycodes:'br',
+      street:[expected.number,expected.street].filter(Boolean).join(' '),
+      city:expected.city||'',state:'Rio de Janeiro',country:'Brasil'
+    });
+    let rows=[];
+    try{ rows=await getJson13212('https://nominatim.openstreetmap.org/search?'+structured.toString()); }catch(_){}
+    if(!Array.isArray(rows))rows=[];
+
+    // Segunda busca inclui bairro, mas nunca cai para "só cidade".
+    if(!rows.length){
+      const q=[expected.street,expected.number,expected.district,expected.city,'RJ','Brasil'].filter(Boolean).join(', ');
+      try{
+        rows=await getJson13212('https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=8&countrycodes=br&q='+encodeURIComponent(q));
+      }catch(_){}
+      if(!Array.isArray(rows))rows=[];
+    }
+
+    const ranked=rows.map(x=>({x,...score13212(x,expected)})).sort((a,b)=>b.score-a.score);
+    const best=ranked[0];
+    // Cidade é obrigatória e rua precisa ter correspondência razoável.
+    if(!best || best.score<45) throw new Error('DESTINATION_NOT_PRECISE');
+    const lat=Number(best.x.lat),lon=Number(best.x.lon);
+    if(!Number.isFinite(lat)||!Number.isFinite(lon))throw new Error('DESTINATION_NOT_PRECISE');
+    return {lat,lon,label:best.meta.display,meta:best.meta,quality:best.score};
+  }
+
+  async function origin13212(){
+    const fixed=savedOrigin13212();
+    if(fixed)return fixed;
+
+    // Compatibilidade com lojas antigas sem coordenadas persistidas:
+    // geocodifica UMA VEZ o endereço configurado e grava o ponto.
+    const map=String(cfg.store?.mapQuery||'').trim();
+    const pub=String(cfg.store?.address||'').trim();
+    const city=city13212();
+    const q=map||pub;
+    if(!q)throw new Error('STORE_LOCATION_MISSING');
+    const full=[q, city && !norm13212(q).includes(norm13212(city)) ? city : '', 'RJ','Brasil'].filter(Boolean).join(', ');
+    const rows=await getJson13212('https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&countrycodes=br&q='+encodeURIComponent(full));
+    if(!Array.isArray(rows)||!rows.length)throw new Error('STORE_LOCATION_MISSING');
+    const ranked=rows.map(x=>({x,...score13212(x,{street:'',number:'',district:'',city})})).sort((a,b)=>b.score-a.score);
+    const b=ranked[0],lat=Number(b.x.lat),lon=Number(b.x.lon);
+    if(!Number.isFinite(lat)||!Number.isFinite(lon))throw new Error('STORE_LOCATION_MISSING');
+    cfg.store.deliveryOriginCoords={query:q,lat,lon,updatedAt:new Date().toISOString(),source:'geocoded-store-address-v13212'};
+    try{save()}catch(_){}
+    return {lat,lon,label:b.meta.display,fixed:false};
+  }
+
+  function rad13212(x){return x*Math.PI/180}
+  function straight13212(a,b){
+    const R=6371,dlat=rad13212(b.lat-a.lat),dlon=rad13212(b.lon-a.lon);
+    const h=Math.sin(dlat/2)**2+Math.cos(rad13212(a.lat))*Math.cos(rad13212(b.lat))*Math.sin(dlon/2)**2;
+    return 2*R*Math.asin(Math.sqrt(h));
+  }
+  async function route13212(a,b){
+    const d=await getJson13212(`https://router.project-osrm.org/route/v1/driving/${a.lon},${a.lat};${b.lon},${b.lat}?overview=false`,10000);
+    const meters=Number(d?.routes?.[0]?.distance);
+    if(!Number.isFinite(meters))throw new Error('ROUTE_FAILED');
+    return meters/1000;
+  }
+
+  window.calculateDeliveryZoneStructuredV13211=async function(address){
+    const st=window.checkoutState||(window.checkoutState={});
+    st.deliveryDistanceKm=null;st.deliveryZoneId='';st.deliveryZoneMaxKm=null;st.deliveryZoneFee=null;st.deliveryDistanceSource='';
+    const origin=await origin13212();
+    const dest=await preciseDest13212(address);
+
+    // Proteção contra resultado geográfico absurdo antes de consultar a rota.
+    const straight=straight13212(origin,dest);
+    if(!Number.isFinite(straight)||straight>100)throw new Error('DESTINATION_NOT_PRECISE');
+
+    let km;
+    try{ km=await route13212(origin,dest); }
+    catch(_){ km=straight; }
+    km=Math.round(km*10)/10;
+
+    const o=window.ensureDeliveryZonesV1327();
+    const zone=(o.deliveryZonesKm||[]).slice().sort((a,b)=>+a.maxKm-+b.maxKm).find(z=>km<=+z.maxKm)||null;
+    st.deliveryDistanceKm=km;
+    st.deliveryDistanceSource='validated-route';
+    st.deliveryGeocode={destination:dest.label,origin:origin.label,quality:dest.quality};
+    if(zone){st.deliveryZoneId=zone.id;st.deliveryZoneMaxKm=+zone.maxKm;st.deliveryZoneFee=+zone.fee||0}
+    return {km,zone,destination:dest,source:'validated-route'};
+  };
+
+  // Melhora a mensagem: nunca apresenta uma distância se a localização não foi validada.
+  const previousSave=window.saveDeliveryAndPay;
+  window.saveDeliveryAndPay=async function(){
+    try{
+      return await previousSave();
+    }catch(e){
+      console.error('Entrega v1.32.12:',e);
+      const status=document.getElementById('deliveryCalcStatusV1328');
+      if(status){
+        status.style.display='block';
+        status.className='notice deliveryZoneErrorV1328';
+        status.textContent=(String(e?.message||'').includes('STORE_LOCATION'))
+          ?'A localização exata do estabelecimento precisa ser salva em Mais → Endereço antes de calcular a entrega.'
+          :'Não conseguimos confirmar com precisão esse endereço. Confira rua/avenida, número e bairro. Nenhuma taxa foi calculada.';
+      }
+    }
+  };
+})();
+</script>
+<!-- v1.32.12: usa coordenadas salvas da loja, valida cidade/rua do destino e impede distância baseada em resultado genérico. -->
 
 </body></html>
