@@ -2456,7 +2456,7 @@ saveGeneralBrand=async function(){
 };
 
 // ===== v1.7: VERSIONAMENTO E MIGRAÇÕES DE DADOS =====
-const APP_VERSION='1.32.12';
+const APP_VERSION='1.32.13';
 const DATA_SCHEMA_VERSION=4;
 
 /*
@@ -9759,7 +9759,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.1: CONSOLIDAÇÃO DO GRANDE CONSERTO + AUDITORIA DE OVERRIDES =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.12';
+  window.PEDEVIA_VERSION='1.32.13';
 
   // 1) Placeholder da marca: uma frase única, legível e realmente centralizada.
   const st=document.createElement('style');
@@ -9943,7 +9943,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.2: CORREÇÃO DE FEEDBACK AO SALVAR PRODUTO =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.12';
+  window.PEDEVIA_VERSION='1.32.13';
 
   // O salvamento já podia concluir com sucesso, mas um elemento de feedback
   // podia desaparecer após a re-renderização e uma camada antiga tentava
@@ -10005,7 +10005,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.3: CONFIGURAÇÕES DE PEDIDOS TAMBÉM PARA ADMINISTRADORES DAS LOJAS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.12';
+  window.PEDEVIA_VERSION='1.32.13';
 
   // Abre a configuração pelo mesmo fluxo usado pelo painel principal.
   // Não depende de ser Point ou tenant; a persistência continua sendo roteada
@@ -10084,7 +10084,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.4: SESSÃO PERSISTENTE + ATUALIZAÇÃO DE PÁGINA SEM NOVO LOGIN =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.12';
+  window.PEDEVIA_VERSION='1.32.13';
 
   let restoringSessionV1324=false;
 
@@ -10163,7 +10163,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.5: ROTA DIRETA E DEFINITIVA PARA CONFIGURAÇÕES DE PEDIDOS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.12';
+  window.PEDEVIA_VERSION='1.32.13';
 
   // A tela profissional v1.30 recria o cabeçalho de Pedidos. Em tenants,
   // depender da cadeia histórica adminOrdersView -> adminOrders estava deixando
@@ -10275,7 +10275,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.6: NORMALIZAÇÃO REAL DAS CONFIGURAÇÕES DE PEDIDOS DOS TENANTS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.12';
+  window.PEDEVIA_VERSION='1.32.13';
 
   function normalizeTenantOrderConfigV1326(){
     cfg.store=cfg.store||{};
@@ -10419,1159 +10419,93 @@ initializeOnlineStateV13();
 <!-- v1.32.6: corrige causa raiz da tela de configurações em tenants: orderConfig incompleto. -->
 
 
-<script>
-// ===== v1.32.7: CIDADE DO ENDEREÇO + ZONAS DE ENTREGA POR KM =====
-(function(){
-  window.PEDEVIA_VERSION='1.32.12';
 
-  function deliveryCityFromAddressV1327(){
-    const raw=String(cfg.store?.address||'').trim();
-    if(!raw)return 'Cidade não informada';
+<!-- bloco histórico de zonas por km removido na v1.32.13 -->
 
-    // Formatos comuns: "... - Centro - Cidade, RJ" / "... - Cidade - RJ"
-    let parts=raw.split(/\s+-\s+/).map(x=>x.trim()).filter(Boolean);
-    let candidate=parts.length?parts[parts.length-1]:raw;
-    candidate=candidate
-      .replace(/\s*,\s*([A-Z]{2})(?:\s*[-–]\s*Brasil)?$/i,', $1')
-      .replace(/\s*[-–]\s*([A-Z]{2})(?:\s*[-–]\s*Brasil)?$/i,', $1')
-      .trim();
+<!-- bloco histórico de zonas por km removido na v1.32.13 -->
 
-    // Se o último trecho for só UF/CEP, tenta o anterior.
-    if(/^(?:[A-Z]{2}|\d{5}-?\d{3})$/i.test(candidate) && parts.length>1){
-      candidate=parts[parts.length-2]+(/^[A-Z]{2}$/i.test(parts.at(-1))?', '+parts.at(-1).toUpperCase():'');
-    }
-    return candidate||'Cidade não informada';
-  }
-  window.deliveryCityFromAddressV1327=deliveryCityFromAddressV1327;
-
-  function ensureDeliveryZonesV1327(){
-    const o=window.normalizeTenantOrderConfigV1326
-      ? window.normalizeTenantOrderConfigV1326()
-      : (cfg.store.orderConfig||(cfg.store.orderConfig={}));
-
-    if(!Array.isArray(o.deliveryZonesKm))o.deliveryZonesKm=[];
-    o.deliveryZonesKm=o.deliveryZonesKm.map((z,i)=>({
-      id:z?.id||('z'+Date.now()+i),
-      maxKm:Math.max(.1,Number(z?.maxKm||z?.km||1)),
-      fee:Math.max(0,Number(z?.fee||0))
-    })).sort((a,b)=>a.maxKm-b.maxKm);
-
-    // A opção antiga "distance" é a mesma ideia e passa a usar zonas.
-    if(o.deliveryCalc==='distance')o.deliveryCalc='area';
-    return o;
-  }
-  window.ensureDeliveryZonesV1327=ensureDeliveryZonesV1327;
-
-  function zoneRowsV1327(){
-    const o=ensureDeliveryZonesV1327();
-    const host=document.getElementById('zoneRowsV1327');
-    if(!host)return;
-    host.innerHTML=o.deliveryZonesKm.length
-      ? o.deliveryZonesKm.map((z,i)=>`
-        <div class="neigh">
-          <div style="min-width:0;flex:1">
-            <b>Até <span class="zoneKmLabelV1327">${Number(z.maxKm).toLocaleString('pt-BR')} km</span></b>
-            <div class="hint">Raio a partir do endereço do estabelecimento</div>
-          </div>
-          <input class="field zoneKmV1327" data-i="${i}" type="number" min=".1" step=".1" value="${z.maxKm}" aria-label="Limite da zona em quilômetros">
-          <input class="field zoneFeeV1327" data-i="${i}" type="number" min="0" step=".01" value="${z.fee}" aria-label="Taxa da zona">
-          <button class="xbtn" onclick="removeDeliveryZoneV1327(${i})">×</button>
-        </div>`).join('')
-      : '<div class="notice">Nenhuma zona criada. Adicione, por exemplo: até 1 km, até 3 km e até 5 km.</div>';
-  }
-  window.renderDeliveryZonesV1327=zoneRowsV1327;
-
-  window.addDeliveryZoneV1327=function(){
-    const o=ensureDeliveryZonesV1327();
-    const last=o.deliveryZonesKm.at(-1)?.maxKm||0;
-    o.deliveryZonesKm.push({id:'z'+Date.now(),maxKm:last?last+2:1,fee:0});
-    zoneRowsV1327();
-  };
-  window.removeDeliveryZoneV1327=function(i){
-    const o=ensureDeliveryZonesV1327();
-    o.deliveryZonesKm.splice(i,1);
-    zoneRowsV1327();
-  };
-  window.captureDeliveryZonesV1327=function(){
-    const o=ensureDeliveryZonesV1327();
-    document.querySelectorAll('.zoneKmV1327').forEach(el=>{
-      const i=+el.dataset.i;if(o.deliveryZonesKm[i])o.deliveryZonesKm[i].maxKm=Math.max(.1,+el.value||.1);
-    });
-    document.querySelectorAll('.zoneFeeV1327').forEach(el=>{
-      const i=+el.dataset.i;if(o.deliveryZonesKm[i])o.deliveryZonesKm[i].fee=Math.max(0,+el.value||0);
-    });
-    o.deliveryZonesKm.sort((a,b)=>a.maxKm-b.maxKm);
-  };
-
-  // Cidade/bairro: usa a cidade configurada em Mais > Endereço.
-  window.editNeighborhoods=function(){
-    ensureDeliveryZonesV1327();
-    const city=deliveryCityFromAddressV1327();
-    showModal(`<div class="row"><h2>Cidades e bairros atendidos</h2><button class="ghost" onclick="closeModal()">✕</button></div>
-      <p class="sectionNote">${esc(city)} · edite a taxa de cada bairro.</p>
-      <input id="neighSearch" class="field searchField" placeholder="Buscar bairro" oninput="renderNeighborhoodRows()">
-      <div id="neighRows" class="neighList"></div>
-      <button class="ghost full" onclick="addNeighborhood()">+ Adicionar bairro</button>
-      <div class="modalActions"><button class="ghost" onclick="closeModal()">Cancelar</button><button class="btn" onclick="saveNeighborhoods()">Concluir</button></div>`);
-    renderNeighborhoodRows();
-  };
-
-  // "Área" passa a ser zonas concêntricas por quilômetros.
-  window.editDeliveryZonesV1327=function(){
-    ensureDeliveryZonesV1327();
-    const city=deliveryCityFromAddressV1327();
-    const origin=String(cfg.store?.address||'').trim()||'Endereço ainda não configurado';
-    showModal(`<div class="row"><h2>Zonas de entrega por km</h2><button class="ghost" onclick="closeModal()">✕</button></div>
-      <p class="sectionNote">${esc(city)} · crie faixas de distância e defina a taxa de cada zona.</p>
-      <div class="cfgBlock"><b>📍 Ponto de partida</b><div class="hint">${esc(origin)}</div><div class="hint">A distância é considerada a partir da localização configurada em Mais → Endereço.</div></div>
-      <div class="notice">Exemplo: até 1 km = R$ 3,00 · até 3 km = R$ 5,00 · até 5 km = R$ 8,00.</div>
-      <div id="zoneRowsV1327" class="neighList"></div>
-      <button class="ghost full" onclick="addDeliveryZoneV1327()">+ Adicionar zona</button>
-      <div class="modalActions"><button class="ghost" onclick="closeModal()">Cancelar</button><button class="btn" onclick="saveDeliveryZonesV1327()">Concluir</button></div>`);
-    zoneRowsV1327();
-  };
-
-  window.saveDeliveryZonesV1327=async function(){
-    captureDeliveryZonesV1327();
-    const o=ensureDeliveryZonesV1327();
-    o.deliveryCalc='area';
-    if(typeof window.saveAdminNow==='function'){
-      const ok=await window.saveAdminNow({successMessage:'Zonas de entrega salvas online.'});
-      if(!ok)return;
-    }else{
-      await Promise.resolve(save());
-    }
-    closeModal();
-    editDeliverySettings();
-  };
-
-  // Substitui a tela antiga: remove "Taxa por distância" e define Área como zonas por km.
-  window.editDeliverySettings=function(){
-    const s=cfg.store,o=ensureDeliveryZonesV1327();
-    const calc=(o.deliveryCalc==='distance'?'area':o.deliveryCalc)||'neighborhood';
-    o.deliveryCalc=calc;
-    showModal(`<div class="row"><h2>Pedidos para entrega</h2><button class="ghost" onclick="closeModal()">✕</button></div>
-      <div class="cfgBlock"><label class="switchrow"><b>Aceitar pedidos para entrega</b>${toggleHTML('odEnabled',s.modes.delivery)}</label></div>
-      <label class="cfgLabel">Valor mínimo dos pedidos para entrega (R$)</label><input id="odMin" type="number" step=".01" class="field" value="${s.minimumOrder}">
-      <label class="cfgLabel">Cálculo da taxa de entrega</label>
-      ${[
-        ['fixed','Taxa gratuita ou valor fixo','Defina um valor único, independente do endereço'],
-        ['neighborhood','Taxa por lista de bairros','Defina a taxa de acordo com os bairros atendidos'],
-        ['area','Zonas de entrega por km','Crie faixas como até 1 km, 3 km, 5 km e defina o valor de cada zona']
-      ].map(([k,n,d])=>`<label class="radioCard ${calc===k?'on':''}"><input type="radio" name="calc" value="${k}" ${calc===k?'checked':''} onchange="refreshCalcCardsV1327()"><span><b>${n}</b><small>${d}</small></span></label>`).join('')}
-      <div id="fixedFeeBox" class="cfgBlock ${calc==='fixed'?'':'hide'}"><label>Valor fixo</label><input id="odFixed" type="number" step=".01" class="field" value="${o.deliveryFixedFee||0}"></div>
-      <div id="neighborhoodBoxV1327" class="cfgBlock ${calc==='neighborhood'?'':'hide'}"><div class="row"><div><b>Lista de bairros atendidos</b><div class="hint">${o.neighborhoods.filter(n=>n.enabled).length} bairros · taxas individuais</div></div><button class="ghost" onclick="editNeighborhoods()">Editar lista</button></div></div>
-      <div id="zonesBoxV1327" class="cfgBlock ${calc==='area'?'':'hide'}"><div class="row"><div><b>Zonas por distância</b><div class="hint">${o.deliveryZonesKm.length} zona(s) configurada(s) · origem: ${esc(deliveryCityFromAddressV1327())}</div></div><button class="ghost" onclick="editDeliveryZonesV1327()">Configurar zonas</button></div></div>
-      <div class="cfgBlock"><label class="switchrow"><span><b>Permitir pedidos fora das áreas de entrega</b><small class="hint">A taxa ficará “A combinar”</small></span>${toggleHTML('odOutside',o.allowOutside)}</label><label class="cfgLabel">Valor máximo de taxa que poderá ser cobrado</label><input id="odOutsideMax" type="number" step=".01" class="field" value="${o.outsideMaxFee||0}"></div>
-      <div class="modalActions"><button class="ghost" onclick="closeModal()">Cancelar</button><button class="btn" onclick="saveDeliverySettingsV1327()">Concluir</button></div>`);
-  };
-
-  window.refreshCalcCardsV1327=function(){
-    document.querySelectorAll('.radioCard').forEach(x=>x.classList.toggle('on',x.querySelector('input')?.checked));
-    const v=document.querySelector('input[name=calc]:checked')?.value;
-    document.getElementById('fixedFeeBox')?.classList.toggle('hide',v!=='fixed');
-    document.getElementById('neighborhoodBoxV1327')?.classList.toggle('hide',v!=='neighborhood');
-    document.getElementById('zonesBoxV1327')?.classList.toggle('hide',v!=='area');
-  };
-
-  window.saveDeliverySettingsV1327=async function(){
-    const s=cfg.store,o=ensureDeliveryZonesV1327();
-    s.modes.delivery=!!document.getElementById('odEnabled')?.checked;
-    s.minimumOrder=+document.getElementById('odMin')?.value||0;
-    o.deliveryCalc=document.querySelector('input[name=calc]:checked')?.value||'neighborhood';
-    o.deliveryFixedFee=+(document.getElementById('odFixed')?.value||o.deliveryFixedFee||0);
-    o.allowOutside=!!document.getElementById('odOutside')?.checked;
-    o.outsideMaxFee=+document.getElementById('odOutsideMax')?.value||0;
-    if(o.deliveryCalc==='fixed')s.deliveryFee=o.deliveryFixedFee;
-
-    if(typeof window.saveAdminNow==='function'){
-      const ok=await window.saveAdminNow({successMessage:'Configurações de entrega salvas online.'});
-      if(!ok)return;
-    }else{
-      await Promise.resolve(save());
-    }
-    closeModal();adminOrderSettings();renderShop();
-  };
-
-  // Base para o checkout: se a distância em km já tiver sido calculada por uma
-  // camada de mapa/geocodificação, aplica automaticamente a faixa configurada.
-  window.deliveryZoneFeeForKmV1327=function(km){
-    const o=ensureDeliveryZonesV1327();
-    const d=Number(km);
-    if(!Number.isFinite(d)||d<0)return null;
-    const z=o.deliveryZonesKm.find(x=>d<=Number(x.maxKm));
-    return z?Number(z.fee||0):null;
-  };
-
-  const baseCartDeliveryFeeV1327=window.cartDeliveryFee;
-  window.cartDeliveryFee=function(){
-    const o=ensureDeliveryZonesV1327(),st=window.checkoutState||{};
-    if(st.mode==='delivery' && o.deliveryCalc==='area'){
-      const fee=window.deliveryZoneFeeForKmV1327(st.deliveryDistanceKm);
-      if(fee!==null)return fee;
-    }
-    return baseCartDeliveryFeeV1327.apply(this,arguments);
-  };
-
-  ensureDeliveryZonesV1327();
-  window.PEDEVIA_DELIVERY_ZONES_V1327={
-    cityFromStoreAddress:true,
-    distanceOptionRemoved:true,
-    kmZones:true,
-    pointAndTenants:true
-  };
-})();
-</script>
-<!-- v1.32.7: cidade dinâmica no cadastro de bairros e zonas de entrega por km. -->
-
-
-<script>
-// ===== v1.32.8: CHECKOUT AUTOMÁTICO DAS ZONAS DE ENTREGA =====
-(function(){
-  window.PEDEVIA_VERSION='1.32.12';
-
-  function zonesActiveV1328(){
-    try{
-      const o=window.ensureDeliveryZonesV1327?window.ensureDeliveryZonesV1327():(cfg.store.orderConfig||{});
-      return o.deliveryCalc==='area' && Array.isArray(o.deliveryZonesKm) && o.deliveryZonesKm.length>0;
-    }catch(_){return false}
-  }
-
-  function radV1328(x){return x*Math.PI/180}
-  function straightKmV1328(a,b){
-    const R=6371,dLat=radV1328(b.lat-a.lat),dLon=radV1328(b.lon-a.lon);
-    const q=Math.sin(dLat/2)**2+Math.cos(radV1328(a.lat))*Math.cos(radV1328(b.lat))*Math.sin(dLon/2)**2;
-    return 2*R*Math.asin(Math.sqrt(q));
-  }
-
-  async function fetchJsonV1328(url,timeout=9000){
-    const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),timeout);
-    try{
-      const r=await fetch(url,{signal:ctl.signal,headers:{Accept:'application/json'}});
-      if(!r.ok)throw new Error('HTTP '+r.status);
-      return await r.json();
-    }finally{clearTimeout(tm)}
-  }
-
-  // Geocodificação pública sem chave. A busca sempre inclui cidade/UF da loja
-  // para reduzir endereços homônimos.
-  async function geocodeV1328(query){
-    const q=String(query||'').trim();
-    if(!q)throw new Error('Endereço vazio');
-    const url='https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&countrycodes=br&q='+encodeURIComponent(q);
-    const data=await fetchJsonV1328(url);
-    if(!Array.isArray(data)||!data.length)throw new Error('Endereço não localizado');
-    return {lat:Number(data[0].lat),lon:Number(data[0].lon),label:data[0].display_name||q};
-  }
-
-  async function routeKmV1328(origin,destination){
-    // Distância viária real quando o serviço de rota estiver disponível.
-    const url=`https://router.project-osrm.org/route/v1/driving/${origin.lon},${origin.lat};${destination.lon},${destination.lat}?overview=false&alternatives=false&steps=false`;
-    try{
-      const data=await fetchJsonV1328(url,9000);
-      const meters=Number(data?.routes?.[0]?.distance);
-      if(Number.isFinite(meters)&&meters>=0)return {km:meters/1000,source:'route'};
-    }catch(e){console.warn('Rota indisponível; usando distância geográfica como contingência.',e)}
-    return {km:straightKmV1328(origin,destination),source:'straight'};
-  }
-
-  function storeOriginTextV1328(){
-    return String(cfg.store?.mapQuery||cfg.store?.address||'').trim();
-  }
-
-  async function storeCoordsV1328(){
-    const text=storeOriginTextV1328();
-    if(!text)throw new Error('O estabelecimento ainda não configurou o endereço.');
-    const cache=cfg.store.deliveryOriginCoords;
-    if(cache && cache.query===text && Number.isFinite(+cache.lat) && Number.isFinite(+cache.lon)){
-      return {lat:+cache.lat,lon:+cache.lon,label:text};
-    }
-    const p=await geocodeV1328(text);
-    cfg.store.deliveryOriginCoords={query:text,lat:p.lat,lon:p.lon,updatedAt:new Date().toISOString()};
-    // cache local/config; não bloqueia o checkout se a persistência falhar.
-    try{save()}catch(_){}
-    return p;
-  }
-
-  function customerQueryV1328(address){
-    const city=window.deliveryCityFromAddressV1327?window.deliveryCityFromAddressV1327():'';
-    return [address,city,'Brasil'].filter(Boolean).join(', ');
-  }
-
-  function zoneForKmV1328(km){
-    const o=window.ensureDeliveryZonesV1327?window.ensureDeliveryZonesV1327():(cfg.store.orderConfig||{});
-    return (o.deliveryZonesKm||[]).slice().sort((a,b)=>+a.maxKm-+b.maxKm).find(z=>km<=+z.maxKm)||null;
-  }
-
-  async function calculateDeliveryZoneV1328(address){
-    const st=window.checkoutState||(window.checkoutState={});
-    st.deliveryDistanceKm=null;st.deliveryZoneId='';st.deliveryZoneMaxKm=null;st.deliveryZoneFee=null;st.deliveryDistanceSource='';
-    const origin=await storeCoordsV1328();
-    const dest=await geocodeV1328(customerQueryV1328(address));
-    const dist=await routeKmV1328(origin,dest);
-    const km=Math.round(dist.km*10)/10;
-    const zone=zoneForKmV1328(km);
-    st.deliveryDistanceKm=km;
-    st.deliveryDistanceSource=dist.source;
-    if(zone){
-      st.deliveryZoneId=zone.id;
-      st.deliveryZoneMaxKm=+zone.maxKm;
-      st.deliveryZoneFee=+zone.fee||0;
-    }
-    return {km,zone,destination:dest,source:dist.source};
-  }
-  window.calculateDeliveryZoneV1328=calculateDeliveryZoneV1328;
-
-  function setDeliveryCalcStatusV1328(text,type){
-    const el=document.getElementById('deliveryCalcStatusV1328');
-    if(!el)return;
-    el.textContent=text||'';
-    el.className='notice'+(type==='error'?' deliveryZoneErrorV1328':'');
-  }
-
-  window.showDeliveryForm=function(){
-    const o=window.ensureDeliveryZonesV1327?window.ensureDeliveryZonesV1327():(cfg.store.orderConfig||{});
-    if(zonesActiveV1328()){
-      const max=(o.deliveryZonesKm||[]).reduce((m,z)=>Math.max(m,+z.maxKm||0),0);
-      const city=window.deliveryCityFromAddressV1327?window.deliveryCityFromAddressV1327():'';
-      showModal(`<div class="row"><h2 class="checkoutTitle">Endereço de entrega</h2><button class="ghost" onclick="showReceiveChoices()">‹</button></div>
-        <div class="notice">Entregamos por zonas de distância a partir do estabelecimento${max?`, atualmente até ${max.toLocaleString('pt-BR')} km`:''}.</div>
-        <label>Endereço completo</label>
-        <input id="coAddr" class="field" autocomplete="street-address" placeholder="Rua, número, bairro">
-        <div class="hint">${city?`Cidade da loja: ${esc(city)}. `:''}Informe rua, número e bairro para calcular a entrega.</div>
-        <label>Referência (opcional)</label>
-        <input id="coRef" class="field" placeholder="Ex.: ao lado de...">
-        <div id="deliveryCalcStatusV1328" class="notice" style="display:none"></div>
-        <div class="checkoutSticky"><button id="deliveryContinueV1328" class="btn" onclick="saveDeliveryAndPay()">Calcular entrega e continuar</button></div>`);
-      return;
-    }
-
-    // Mantém exatamente o fluxo de bairros para quem escolheu lista de bairros.
-    const ne=(o.neighborhoods||[]).filter(n=>n.enabled!==false),
-      opts=ne.map(n=>`<option value="${esc(n.name)}">${esc(n.name)} — ${brl(n.fee)}</option>`).join('');
-    const h=`<div class="row"><h2 class="checkoutTitle">Endereço de entrega</h2><button class="ghost" onclick="showReceiveChoices()">‹</button></div>
-      <label>Bairro</label><select id="coNeigh" class="field" onchange="window.checkoutState.neighborhood=this.value">${opts}</select>
-      <label>Rua, número e complemento</label><input id="coAddr" class="field" placeholder="Ex.: Rua..., 136 - casa 2">
-      <label>Referência</label><input id="coRef" class="field" placeholder="Ex.: ao lado de...">
-      <div class="checkoutSticky"><button class="btn" onclick="saveDeliveryAndPay()">Continuar</button></div>`;
-    showModal(h);if(ne.length)window.checkoutState.neighborhood=ne[0].name;
-  };
-
-  window.saveDeliveryAndPay=async function(){
-    const addr=document.getElementById('coAddr')?.value.trim()||'';
-    const ref=document.getElementById('coRef')?.value.trim()||'';
-    if(!addr){alert('Informe o endereço de entrega.');return}
-
-    const st=window.checkoutState||(window.checkoutState={});
-    st.address=addr+(ref?' · '+ref:'');
-    st.reference=ref;
-
-    if(!zonesActiveV1328()){
-      st.neighborhood=document.getElementById('coNeigh')?.value||'';
-      return showPaymentChoices();
-    }
-
-    const btn=document.getElementById('deliveryContinueV1328');
-    if(btn){btn.disabled=true;btn.textContent='Calculando distância...'}
-    const status=document.getElementById('deliveryCalcStatusV1328');
-    if(status){status.style.display='block';setDeliveryCalcStatusV1328('Localizando o endereço e calculando a rota...')}
-
-    try{
-      const r=await calculateDeliveryZoneV1328(addr);
-      const o=window.ensureDeliveryZonesV1327();
-      if(!r.zone){
-        const max=(o.deliveryZonesKm||[]).reduce((m,z)=>Math.max(m,+z.maxKm||0),0);
-        if(o.allowOutside){
-          st.deliveryZoneFee=null;
-          st.deliveryOutsideZone=true;
-          setDeliveryCalcStatusV1328(`O endereço fica a aproximadamente ${r.km.toLocaleString('pt-BR')} km, fora das zonas configuradas. A taxa ficará a combinar.`);
-          await new Promise(res=>setTimeout(res,450));
-          return showPaymentChoices();
-        }
-        setDeliveryCalcStatusV1328(`Este endereço fica a aproximadamente ${r.km.toLocaleString('pt-BR')} km e está fora da área de entrega${max?` (até ${max.toLocaleString('pt-BR')} km)`:''}.`,'error');
-        return;
-      }
-      st.deliveryOutsideZone=false;
-      setDeliveryCalcStatusV1328(`Distância aproximada: ${r.km.toLocaleString('pt-BR')} km · zona até ${(+r.zone.maxKm).toLocaleString('pt-BR')} km · taxa ${brl(+r.zone.fee||0)}.`);
-      await new Promise(res=>setTimeout(res,450));
-      showPaymentChoices();
-    }catch(e){
-      console.error('Falha ao calcular zona de entrega:',e);
-      setDeliveryCalcStatusV1328('Não conseguimos localizar esse endereço. Confira rua, número e bairro e tente novamente.','error');
-    }finally{
-      const b=document.getElementById('deliveryContinueV1328');
-      if(b){b.disabled=false;b.textContent='Calcular entrega e continuar'}
-    }
-  };
-
-  // Taxa do checkout: a zona calculada tem prioridade. Fora da zona e permitido
-  // fica sem taxa automática ("a combinar"), sem herdar taxa fixa antiga.
-  const previousCartFeeV1328=window.cartDeliveryFee;
-  window.cartDeliveryFee=function(){
-    const st=window.checkoutState||{},o=window.ensureDeliveryZonesV1327?window.ensureDeliveryZonesV1327():(cfg.store.orderConfig||{});
-    if(st.mode==='delivery' && o.deliveryCalc==='area'){
-      if(st.deliveryOutsideZone)return 0;
-      if(Number.isFinite(Number(st.deliveryZoneFee)))return Number(st.deliveryZoneFee);
-      const f=window.deliveryZoneFeeForKmV1327?.(st.deliveryDistanceKm);
-      return f===null||f===undefined?0:Number(f);
-    }
-    return previousCartFeeV1328.apply(this,arguments);
-  };
-
-  // Exibe distância/zona também no resumo final.
-  const customerBaseV1328=window.showCustomerForm;
-  window.showCustomerForm=function(){
-    const r=customerBaseV1328.apply(this,arguments);
-    const st=window.checkoutState||{},o=cfg.store.orderConfig||{};
-    if(st.mode==='delivery' && o.deliveryCalc==='area' && Number.isFinite(Number(st.deliveryDistanceKm))){
-      const summary=document.querySelector('#sheet .summary');
-      if(summary && !document.getElementById('deliveryZoneSummaryV1328')){
-        const div=document.createElement('div');
-        div.id='deliveryZoneSummaryV1328';
-        div.className='hint';
-        div.style.marginTop='8px';
-        div.textContent=st.deliveryOutsideZone
-          ? `Distância aproximada: ${Number(st.deliveryDistanceKm).toLocaleString('pt-BR')} km · taxa a combinar`
-          : `Distância aproximada: ${Number(st.deliveryDistanceKm).toLocaleString('pt-BR')} km · zona até ${Number(st.deliveryZoneMaxKm).toLocaleString('pt-BR')} km`;
-        summary.appendChild(div);
-      }
-    }
-    return r;
-  };
-
-  // Informa a zona na comanda sem alterar o formato principal.
-  if(typeof window.buildOrderTextV111==='function'){
-    const buildBaseV1328=window.buildOrderTextV111;
-    window.buildOrderTextV111=function(){
-      let text=buildBaseV1328.apply(this,arguments);
-      const st=window.checkoutState||{},o=cfg.store.orderConfig||{};
-      if(st.mode!=='delivery'||o.deliveryCalc!=='area'||!Number.isFinite(Number(st.deliveryDistanceKm)))return text;
-      const extra=st.deliveryOutsideZone
-        ? `Distância: ${Number(st.deliveryDistanceKm).toLocaleString('pt-BR')} km · taxa a combinar`
-        : `Distância: ${Number(st.deliveryDistanceKm).toLocaleString('pt-BR')} km · zona até ${Number(st.deliveryZoneMaxKm).toLocaleString('pt-BR')} km`;
-      return text+`\n${extra}`;
-    };
-  }
-
-  // Se o estabelecimento mudar o endereço, invalida as coordenadas antigas.
-  if(typeof window.saveGeneralAddress==='function'){
-    const saveAddressBaseV1328=window.saveGeneralAddress;
-    window.saveGeneralAddress=async function(){
-      const before=String(cfg.store?.mapQuery||cfg.store?.address||'');
-      const r=await saveAddressBaseV1328.apply(this,arguments);
-      const after=String(cfg.store?.mapQuery||cfg.store?.address||'');
-      if(before!==after && cfg.store)delete cfg.store.deliveryOriginCoords;
-      return r;
-    };
-  }
-
-  const css=document.createElement('style');
-  css.textContent='.deliveryZoneErrorV1328{background:#ffe1e5!important;color:#9d2637!important}.checkoutSticky button:disabled{opacity:.65;cursor:wait}';
-  document.head.appendChild(css);
-})();
-</script>
 <!-- v1.32.8: endereço do cliente -> geocodificação -> rota -> zona -> taxa automática. -->
 
 
-<script>
-// ===== v1.32.9: ENDEREÇO CONSISTENTE + LAYOUT DAS ZONAS =====
-(function(){
-  window.PEDEVIA_VERSION='1.32.12';
 
-  function addressDisplayV1329(){
-    const a=String(cfg.store?.address||'').trim();
-    const q=String(cfg.store?.mapQuery||'').trim();
-    return a||q||'Adicionar endereço';
-  }
-  window.addressDisplayV1329=addressDisplayV1329;
+<!-- bloco histórico de zonas por km removido na v1.32.13 -->
 
-  // Cidade pode vir tanto do endereço exibido quanto da localização exata do mapa.
-  window.deliveryCityFromAddressV1327=function(){
-    const raw=String(cfg.store?.address||cfg.store?.mapQuery||'').trim();
-    if(!raw)return 'Cidade não informada';
-
-    // Coordenadas puras não possuem nome de cidade.
-    if(/^\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*$/.test(raw))return 'Localização definida no mapa';
-
-    const cleaned=raw.replace(/\s*,?\s*Brasil\s*$/i,'').trim();
-    const parts=cleaned.split(/\s+-\s+/).map(x=>x.trim()).filter(Boolean);
-
-    // "Rua..., bairro, Cidade - RJ" / "Rua..., bairro, Cidade, RJ"
-    const ufMatch=cleaned.match(/(?:-|,)\s*([A-Z]{2})\s*$/i);
-    const uf=ufMatch?ufMatch[1].toUpperCase():'';
-    let withoutUf=cleaned.replace(/(?:-|,)\s*[A-Z]{2}\s*$/i,'').trim();
-    const commaParts=withoutUf.split(',').map(x=>x.trim()).filter(Boolean);
-
-    let city='';
-    if(parts.length>=2 && /^[A-Z]{2}$/i.test(parts.at(-1))){
-      city=parts.at(-2).split(',').at(-1).trim();
-    }else if(commaParts.length>=2){
-      city=commaParts.at(-1);
-    }else if(parts.length>=2){
-      city=parts.at(-1);
-    }
-
-    // Evita apresentar número/CEP como cidade.
-    if(!city || /^\d|^\d{5}-?\d{3}$/.test(city))return uf?`Localização em ${uf}`:'Localização configurada';
-    return city+(uf?` - ${uf}`:'');
-  };
-
-  // Corrige a apresentação do card "Endereço" em qualquer composição histórica
-  // do menu Mais, sem depender de qual override antigo criou o card.
-  const adminMoreBaseV1329=window.adminMore;
-  window.adminMore=function(){
-    const r=adminMoreBaseV1329.apply(this,arguments);
-    const cards=[...document.querySelectorAll('#adminContent .moreCard')];
-    const card=cards.find(c=>c.querySelector('b')?.textContent?.trim()==='Endereço');
-    if(card){
-      const span=card.querySelectorAll(':scope > span')[1];
-      if(span){
-        let small=span.querySelector('small');
-        if(!small){small=document.createElement('small');span.appendChild(small)}
-        small.textContent=addressDisplayV1329();
-      }
-    }
-    return r;
-  };
-
-  // Salva os dois campos de modo independente, mas qualquer um deles já conta
-  // como localização configurada. A alteração da origem invalida coordenadas antigas
-  // antes da persistência, para não reaparecerem após atualizar a página.
-  window.saveGeneralAddress=async function(){
-    const oldOrigin=String(cfg.store?.mapQuery||cfg.store?.address||'').trim();
-    const newAddress=String(document.getElementById('gAddr')?.value||'').trim();
-    const newMap=String(document.getElementById('gMapQuery')?.value||'').trim();
-
-    cfg.store.address=newAddress;
-    cfg.store.mapQuery=newMap||newAddress;
-    const newOrigin=String(cfg.store.mapQuery||cfg.store.address||'').trim();
-    if(oldOrigin!==newOrigin)delete cfg.store.deliveryOriginCoords;
-
-    let ok=true;
-    if(typeof window.persistAdminStateV15==='function'){
-      ok=await window.persistAdminStateV15({products:false,notify:true,message:'Endereço salvo online.'});
-    }else if(typeof window.saveAdminNow==='function'){
-      ok=await window.saveAdminNow({successMessage:'Endereço salvo online.'});
-    }else{
-      try{await Promise.resolve(save())}catch(e){ok=false;console.error(e)}
-    }
-    if(ok){
-      renderShop();
-      generalAddress();
-    }
-  };
-
-  // A tela de endereço explica que a localização do mapa também será usada
-  // para zonas, mesmo se o endereço público ficar vazio.
-  const generalAddressBaseV1329=window.generalAddress;
-  window.generalAddress=function(){
-    const r=generalAddressBaseV1329.apply(this,arguments);
-    const map=document.getElementById('gMapQuery');
-    if(map){
-      const lab=map.previousElementSibling;
-      if(lab && /Localização exata do mapa/i.test(lab.textContent||'')){
-        let note=document.getElementById('mapDeliveryNoteV1329');
-        if(!note){
-          note=document.createElement('div');
-          note.id='mapDeliveryNoteV1329';
-          note.className='hint';
-          note.style.margin='-4px 0 10px';
-          note.textContent='Esta localização também será usada como ponto de partida das zonas de entrega.';
-          map.insertAdjacentElement('afterend',note);
-        }
-      }
-    }
-    return r;
-  };
-
-  // Recria as linhas de zonas com rótulos explícitos e layout responsivo.
-  window.renderDeliveryZonesV1327=function(){
-    const o=window.ensureDeliveryZonesV1327();
-    const host=document.getElementById('zoneRowsV1327');
-    if(!host)return;
-    host.innerHTML=o.deliveryZonesKm.length
-      ? o.deliveryZonesKm.map((z,i)=>`
-        <div class="deliveryZoneCardV1329">
-          <div class="deliveryZoneTitleV1329">
-            <b>Zona ${i+1}</b>
-            <button class="deliveryZoneRemoveV1329" type="button" onclick="removeDeliveryZoneV1327(${i})" aria-label="Excluir zona">×</button>
-          </div>
-          <div class="deliveryZoneFieldsV1329">
-            <label><span>Até quantos km</span><div class="deliveryZoneInputV1329"><input class="field zoneKmV1327" data-i="${i}" type="number" min=".1" step=".1" value="${z.maxKm}"><em>km</em></div></label>
-            <label><span>Taxa de entrega</span><div class="deliveryZoneInputV1329 deliveryZoneMoneyV1329"><em>R$</em><input class="field zoneFeeV1327" data-i="${i}" type="number" min="0" step=".01" value="${z.fee}"></div></label>
-          </div>
-          <div class="hint">Esta taxa vale para endereços dentro desta faixa de distância.</div>
-        </div>`).join('')
-      : '<div class="notice">Nenhuma zona criada. Adicione, por exemplo: até 1 km, até 3 km e até 5 km.</div>';
-  };
-
-  // O modal das zonas passa a usar endereço OU localização exata como origem.
-  window.editDeliveryZonesV1327=function(){
-    window.ensureDeliveryZonesV1327();
-    const city=window.deliveryCityFromAddressV1327();
-    const origin=String(cfg.store?.mapQuery||cfg.store?.address||'').trim()||'Endereço ainda não configurado';
-    showModal(`<div class="row"><h2>Zonas de entrega por km</h2><button class="ghost" onclick="closeModal()">✕</button></div>
-      <p class="sectionNote">${esc(city)} · crie faixas de distância e defina a taxa de cada zona.</p>
-      <div class="cfgBlock"><b>📍 Ponto de partida</b><div class="hint">${esc(origin)}</div><div class="hint">A distância é calculada a partir da localização configurada em Mais → Endereço.</div></div>
-      <div class="notice">Exemplo: até 1 km = R$ 3,00 · até 3 km = R$ 5,00 · até 5 km = R$ 8,00.</div>
-      <div id="zoneRowsV1327" class="neighList"></div>
-      <button class="ghost full" onclick="addDeliveryZoneV1327()">+ Adicionar zona</button>
-      <div class="modalActions"><button class="ghost" onclick="closeModal()">Cancelar</button><button class="btn" onclick="saveDeliveryZonesV1327()">Concluir</button></div>`);
-    window.renderDeliveryZonesV1327();
-  };
-
-  const style=document.createElement('style');
-  style.id='pedeviaV1329Styles';
-  style.textContent=`
-    .deliveryZoneCardV1329{background:rgba(0,0,0,.035);border:1px solid var(--line,#e8e1ea);border-radius:18px;padding:14px;margin:10px 0}
-    .deliveryZoneTitleV1329{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
-    .deliveryZoneTitleV1329>b{font-size:17px}
-    .deliveryZoneRemoveV1329{width:40px;height:40px;min-width:40px;border:0;border-radius:14px;background:#ffe1e1;color:#a33;font-size:23px;line-height:1}
-    .deliveryZoneFieldsV1329{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-    .deliveryZoneFieldsV1329 label>span{display:block;font-size:13px;font-weight:800;margin:0 0 6px;color:var(--muted,#6f6873)}
-    .deliveryZoneInputV1329{display:flex;align-items:center;min-width:0;border:1px solid var(--line,#d8d2da);border-radius:15px;background:var(--card,#fff);overflow:hidden}
-    .deliveryZoneInputV1329 .field{border:0!important;border-radius:0!important;margin:0!important;min-width:0;width:100%;background:transparent!important}
-    .deliveryZoneInputV1329 em{font-style:normal;font-weight:800;padding:0 11px;color:var(--muted,#6f6873);white-space:nowrap}
-    .deliveryZoneMoneyV1329 em{padding-right:0}
-    @media(max-width:430px){
-      .deliveryZoneFieldsV1329{grid-template-columns:1fr}
-      .deliveryZoneCardV1329{padding:13px}
-    }`;
-  document.head.appendChild(style);
-})();
-</script>
-<!-- v1.32.9: corrige resumo/persistência do endereço e campos responsivos das zonas. -->
-
+<!-- bloco histórico de zonas por km removido na v1.32.13 -->
 
 <script>
-// ===== v1.32.10: ENDEREÇO DE ENTREGA ESTRUTURADO + REFERÊNCIA OBRIGATÓRIA + CIDADE =====
+// ===== v1.32.13: REMOÇÃO DEFINITIVA DE ZONAS DE ENTREGA POR KM =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.12';
+  window.PEDEVIA_VERSION='1.32.13';
 
-  function titleCaseV13210(v){
-    return String(v||'').trim().replace(/\b([\p{L}])/gu,m=>m.toUpperCase());
-  }
+  function sanitizeDeliveryV13213(){
+    if(!window.cfg || !cfg.store) return;
+    const o=cfg.store.orderConfig||(cfg.store.orderConfig={});
 
-  // Leitura robusta da cidade cadastrada pela loja. Aceita:
-  // "Rua..., Bairro, Cidade, RJ", "Rua..., Bairro, Cidade - RJ" e endereço público.
-  window.deliveryCityFromAddressV1327=function(){
-    const sources=[cfg.store?.mapQuery,cfg.store?.address].map(v=>String(v||'').trim()).filter(Boolean);
-    for(const raw0 of sources){
-      if(/^-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?$/.test(raw0))continue;
-      let raw=raw0.replace(/\s*,?\s*Brasil\s*$/i,'').trim();
-      let uf='';
-      const um=raw.match(/(?:,|\s+-\s+)\s*([A-Z]{2})\s*$/i);
-      if(um){uf=um[1].toUpperCase();raw=raw.slice(0,um.index).trim()}
-      const bits=raw.split(',').map(x=>x.trim()).filter(Boolean);
-      let city='';
-      if(bits.length>=3) city=bits.at(-1);
-      else{
-        const dash=raw.split(/\s+-\s+/).map(x=>x.trim()).filter(Boolean);
-        if(dash.length>=2)city=dash.at(-1);
-      }
-      city=city.replace(/\b(?:cep)?\s*\d{5}-?\d{3}\b/ig,'').trim();
-      if(city && !/^\d/.test(city)){
-        city=titleCaseV13210(city);
-        return city+(uf?` - ${uf}`:'');
-      }
-    }
-    return 'Localização configurada';
-  };
-
-  function storeCityOnlyV13210(){
-    return window.deliveryCityFromAddressV1327().replace(/\s+-\s+[A-Z]{2}$/,'').trim();
-  }
-
-  function structuredAddressV13210(){
-    const street=document.getElementById('coStreet')?.value.trim()||'';
-    const number=document.getElementById('coNumber')?.value.trim()||'';
-    const neighborhood=document.getElementById('coDistrict')?.value.trim()||'';
-    const complement=document.getElementById('coComplement')?.value.trim()||'';
-    const city=storeCityOnlyV13210();
-    return {
-      street,number,neighborhood,complement,city,
-      geocode:[street,number,neighborhood,city,'Brasil'].filter(Boolean).join(', '),
-      display:[street,number&&`nº ${number}`,neighborhood,complement].filter(Boolean).join(', ')
-    };
-  }
-
-  // Checkout de zonas: campos separados para aumentar a precisão da geocodificação.
-  window.showDeliveryForm=function(){
-    const o=window.ensureDeliveryZonesV1327?window.ensureDeliveryZonesV1327():(cfg.store.orderConfig||{});
-    if(o.deliveryCalc==='area' && Array.isArray(o.deliveryZonesKm) && o.deliveryZonesKm.length){
-      const max=o.deliveryZonesKm.reduce((m,z)=>Math.max(m,+z.maxKm||0),0);
-      const city=window.deliveryCityFromAddressV1327();
-      showModal(`<div class="row"><h2 class="checkoutTitle">Endereço de entrega</h2><button class="ghost" onclick="showReceiveChoices()">‹</button></div>
-        <div class="notice">Entregamos por zonas de distância a partir do estabelecimento${max?`, atualmente até ${max.toLocaleString('pt-BR')} km`:''}.</div>
-        <div class="deliveryAddressGridV13210">
-          <label class="deliveryStreetV13210"><span>Rua / Avenida *</span><input id="coStreet" class="field" autocomplete="address-line1" placeholder="Ex.: Avenida João Batista Ferrini"></label>
-          <label><span>Número *</span><input id="coNumber" class="field" inputmode="numeric" autocomplete="address-line2" placeholder="136"></label>
-          <label><span>Bairro *</span><input id="coDistrict" class="field" autocomplete="address-level3" placeholder="Ex.: Centro"></label>
-          <label><span>Complemento</span><input id="coComplement" class="field" placeholder="Casa, apto, bloco..."></label>
-        </div>
-        <div class="hint">Cidade da loja: ${esc(city)}. Os campos com * são obrigatórios para localizar a entrega.</div>
-        <label class="deliveryReferenceV13210">Referência *</label>
-        <input id="coRef" class="field" placeholder="Ex.: ao lado da farmácia, portão azul">
-        <div class="hint">A referência é obrigatória para facilitar a entrega.</div>
-        <div id="deliveryCalcStatusV1328" class="notice" style="display:none"></div>
-        <div class="checkoutSticky"><button id="deliveryContinueV1328" class="btn" onclick="saveDeliveryAndPay()">Calcular entrega e continuar</button></div>`);
-      return;
+    // Migra automaticamente qualquer loja que estava em "área/km" para uma opção estável.
+    if(o.deliveryCalc==='area' || o.deliveryCalc==='distance' || o.deliveryCalc==='zones_km'){
+      o.deliveryCalc = (Array.isArray(o.deliveryNeighborhoods) && o.deliveryNeighborhoods.length) ? 'neighborhood' : 'fixed';
     }
 
-    // Fluxo por bairros também passa a exigir referência.
-    const ne=(o.neighborhoods||[]).filter(n=>n.enabled!==false),
-      opts=ne.map(n=>`<option value="${esc(n.name)}">${esc(n.name)} — ${brl(n.fee)}</option>`).join('');
-    showModal(`<div class="row"><h2 class="checkoutTitle">Endereço de entrega</h2><button class="ghost" onclick="showReceiveChoices()">‹</button></div>
-      <label>Bairro</label><select id="coNeigh" class="field" onchange="window.checkoutState.neighborhood=this.value">${opts}</select>
-      <label>Rua / Avenida *</label><input id="coStreet" class="field" placeholder="Ex.: Rua das Flores">
-      <label>Número *</label><input id="coNumber" class="field" inputmode="numeric" placeholder="136">
-      <label>Complemento</label><input id="coComplement" class="field" placeholder="Casa, apto, bloco...">
-      <label>Referência *</label><input id="coRef" class="field" placeholder="Ex.: portão azul, ao lado de...">
-      <div class="checkoutSticky"><button class="btn" onclick="saveDeliveryAndPay()">Continuar</button></div>`);
-    if(ne.length)window.checkoutState.neighborhood=ne[0].name;
-  };
+    // Campos experimentais de zona/km deixam de participar da configuração.
+    delete o.deliveryZonesKm;
+    delete o.deliveryDistanceZones;
+    delete o.allowOutside;
+    delete o.maxDeliveryFee;
 
-  window.saveDeliveryAndPay=async function(){
-    const o=window.ensureDeliveryZonesV1327?window.ensureDeliveryZonesV1327():(cfg.store.orderConfig||{});
-    const area=o.deliveryCalc==='area' && Array.isArray(o.deliveryZonesKm) && o.deliveryZonesKm.length;
-    const street=document.getElementById('coStreet')?.value.trim()||'';
-    const number=document.getElementById('coNumber')?.value.trim()||'';
-    const complement=document.getElementById('coComplement')?.value.trim()||'';
-    const ref=document.getElementById('coRef')?.value.trim()||'';
-    const district=area
-      ? (document.getElementById('coDistrict')?.value.trim()||'')
-      : (document.getElementById('coNeigh')?.value||'');
-
-    if(!street){alert('Informe a rua ou avenida para entrega.');return}
-    if(!number){alert('Informe o número do endereço.');return}
-    if(!district){alert('Informe o bairro para entrega.');return}
-    if(!ref){alert('Informe uma referência para a entrega.');return}
-
-    const st=window.checkoutState||(window.checkoutState={});
-    st.street=street; st.number=number; st.neighborhood=district;
-    st.complement=complement; st.reference=ref;
-    st.address=[street,`nº ${number}`,district,complement].filter(Boolean).join(', ')+` · Referência: ${ref}`;
-
-    if(!area)return showPaymentChoices();
-
-    const btn=document.getElementById('deliveryContinueV1328');
-    if(btn){btn.disabled=true;btn.textContent='Calculando distância...'}
-    const status=document.getElementById('deliveryCalcStatusV1328');
-    if(status){status.style.display='block';status.className='notice';status.textContent='Localizando o endereço e calculando a rota...'}
-
-    try{
-      // A função existente acrescentaria novamente a cidade. Enviamos aqui o
-      // endereço estruturado; a busca resultante fica rua+número+bairro+cidade.
-      const query=[street,number,district,storeCityOnlyV13210()].filter(Boolean).join(', ');
-      const r=await window.calculateDeliveryZoneV1328(query);
-      if(!r.zone){
-        const max=o.deliveryZonesKm.reduce((m,z)=>Math.max(m,+z.maxKm||0),0);
-        if(o.allowOutside){
-          st.deliveryZoneFee=null;st.deliveryOutsideZone=true;
-          status.textContent=`O endereço fica a aproximadamente ${r.km.toLocaleString('pt-BR')} km, fora das zonas configuradas. A taxa ficará a combinar.`;
-          await new Promise(res=>setTimeout(res,450));return showPaymentChoices();
-        }
-        status.className='notice deliveryZoneErrorV1328';
-        status.textContent=`Este endereço fica a aproximadamente ${r.km.toLocaleString('pt-BR')} km e está fora da área de entrega${max?` (até ${max.toLocaleString('pt-BR')} km)`:''}.`;
-        return;
-      }
-      st.deliveryOutsideZone=false;
-      status.textContent=`Distância aproximada: ${r.km.toLocaleString('pt-BR')} km · zona até ${(+r.zone.maxKm).toLocaleString('pt-BR')} km · taxa ${brl(+r.zone.fee||0)}.`;
-      await new Promise(res=>setTimeout(res,450));showPaymentChoices();
-    }catch(e){
-      console.error('Falha ao calcular zona de entrega:',e);
-      status.className='notice deliveryZoneErrorV1328';
-      status.textContent='Não conseguimos localizar esse endereço. Confira rua/avenida, número e bairro e tente novamente.';
-    }finally{
-      const b=document.getElementById('deliveryContinueV1328');
-      if(b){b.disabled=false;b.textContent='Calcular entrega e continuar'}
-    }
-  };
-
-  // Corrige também o resumo "origem: Cidade não informada" da configuração.
-  const editDeliverySettingsBaseV13210=window.editDeliverySettings;
-  window.editDeliverySettings=function(){
-    const r=editDeliverySettingsBaseV13210.apply(this,arguments);
-    const box=document.getElementById('zonesBoxV1327');
-    if(box){
-      const hint=box.querySelector('.hint');
-      const o=window.ensureDeliveryZonesV1327();
-      if(hint)hint.textContent=`${o.deliveryZonesKm.length} zona(s) configurada(s) · origem: ${window.deliveryCityFromAddressV1327()}`;
-    }
-    return r;
-  };
-
-  const css=document.createElement('style');
-  css.textContent=`
-    .deliveryAddressGridV13210{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-top:12px}
-    .deliveryAddressGridV13210 label>span{display:block;margin-bottom:6px;font-weight:700}
-    .deliveryAddressGridV13210 .field{margin:0}
-    .deliveryStreetV13210{grid-column:1/-1}
-    .deliveryReferenceV13210{display:block;margin-top:14px}
-    @media(max-width:430px){.deliveryAddressGridV13210{grid-template-columns:1fr 1fr}.deliveryStreetV13210{grid-column:1/-1}}
-  `;
-  document.head.appendChild(css);
-})();
-</script>
-<!-- v1.32.10: endereço de entrega em campos, referência obrigatória e origem da cidade corrigida. -->
-
-
-<script>
-// ===== v1.32.11: GEOCODIFICAÇÃO ROBUSTA SEM DUPLICAR CIDADE =====
-(function(){
-  window.PEDEVIA_VERSION='1.32.12';
-
-  async function fetchGeoV13211(url,timeout=12000){
-    const c=new AbortController(),t=setTimeout(()=>c.abort(),timeout);
-    try{
-      const r=await fetch(url,{signal:c.signal,headers:{Accept:'application/json'}});
-      if(!r.ok)throw new Error('HTTP '+r.status);
-      return await r.json();
-    }finally{clearTimeout(t)}
+    // Cache experimental de geocodificação/rota também é descartado.
+    delete cfg.store.deliveryOriginCoords;
   }
 
-  async function nominatimV13211(q){
-    const u='https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=3&countrycodes=br&q='+encodeURIComponent(q);
-    const d=await fetchGeoV13211(u);
-    if(!Array.isArray(d)||!d.length)return null;
-    const x=d[0],lat=Number(x.lat),lon=Number(x.lon);
-    return Number.isFinite(lat)&&Number.isFinite(lon)?{lat,lon,label:x.display_name||q}:null;
-  }
-
-  async function photonV13211(q){
-    const u='https://photon.komoot.io/api/?limit=3&lang=pt&q='+encodeURIComponent(q);
-    const d=await fetchGeoV13211(u);
-    const f=d?.features?.[0],c=f?.geometry?.coordinates;
-    if(!Array.isArray(c)||c.length<2)return null;
-    const lon=Number(c[0]),lat=Number(c[1]);
-    return Number.isFinite(lat)&&Number.isFinite(lon)?{lat,lon,label:f?.properties?.name||q}:null;
-  }
-
-  async function geocodeFlexibleV13211(queries){
-    const unique=[...new Set((queries||[]).map(q=>String(q||'').replace(/\s+/g,' ').trim()).filter(Boolean))];
-    let lastErr=null;
-    for(const q of unique){
-      try{const p=await nominatimV13211(q);if(p)return p}catch(e){lastErr=e}
-    }
-    for(const q of unique){
-      try{const p=await photonV13211(q);if(p)return p}catch(e){lastErr=e}
-    }
-    throw lastErr||new Error('Endereço não localizado');
-  }
-
-  function cleanCityV13211(){
-    let c=String(window.deliveryCityFromAddressV1327?.()||'').trim();
-    if(/^Localização/i.test(c)||/^Cidade não/i.test(c))return '';
-    return c;
-  }
-
-  function storeQueriesV13211(){
-    const map=String(cfg.store?.mapQuery||'').trim(),pub=String(cfg.store?.address||'').trim(),city=cleanCityV13211();
-    return [
-      map,
-      pub,
-      map&&city?`${map}, ${city}, RJ, Brasil`:'',
-      pub&&city?`${pub}, ${city}, RJ, Brasil`:'',
-      city?`${city}, RJ, Brasil`:''
+  function hideKmZoneUIV13213(root=document){
+    const needles=[
+      'zonas de entrega por km','zonas por distância','configurar zonas',
+      'crie faixas como até 1 km','faixas de distância','taxa por distância'
     ];
-  }
-
-  async function storeCoordsV13211(){
-    const key=String(cfg.store?.mapQuery||cfg.store?.address||'').trim();
-    if(!key)throw new Error('O estabelecimento ainda não configurou o endereço.');
-    const cache=cfg.store?.deliveryOriginCoords;
-    if(cache&&cache.query===key&&Number.isFinite(+cache.lat)&&Number.isFinite(+cache.lon))
-      return {lat:+cache.lat,lon:+cache.lon,label:key};
-
-    const p=await geocodeFlexibleV13211(storeQueriesV13211());
-    cfg.store.deliveryOriginCoords={query:key,lat:p.lat,lon:p.lon,updatedAt:new Date().toISOString()};
-    try{save()}catch(_){}
-    return p;
-  }
-
-  function radV13211(x){return x*Math.PI/180}
-  function airKmV13211(a,b){
-    const R=6371,d1=radV13211(b.lat-a.lat),d2=radV13211(b.lon-a.lon);
-    const h=Math.sin(d1/2)**2+Math.cos(radV13211(a.lat))*Math.cos(radV13211(b.lat))*Math.sin(d2/2)**2;
-    return 2*R*Math.asin(Math.sqrt(h));
-  }
-  async function routeV13211(a,b){
-    try{
-      const d=await fetchGeoV13211(`https://router.project-osrm.org/route/v1/driving/${a.lon},${a.lat};${b.lon},${b.lat}?overview=false`,10000);
-      const m=Number(d?.routes?.[0]?.distance);
-      if(Number.isFinite(m))return {km:m/1000,source:'route'};
-    }catch(e){console.warn('Rota OSRM indisponível',e)}
-    return {km:airKmV13211(a,b),source:'straight'};
-  }
-
-  function customerQueriesV13211(address){
-    const city=cleanCityV13211();
-    const street=String(address?.street||'').trim(),number=String(address?.number||'').trim(),
-          district=String(address?.district||address?.neighborhood||'').trim();
-    const base=[street,number,district].filter(Boolean).join(', ');
-    return [
-      [street,number,district,city,'RJ','Brasil'].filter(Boolean).join(', '),
-      [street,number,city,'RJ','Brasil'].filter(Boolean).join(', '),
-      [street,district,city,'RJ','Brasil'].filter(Boolean).join(', '),
-      [street,city,'RJ','Brasil'].filter(Boolean).join(', '),
-      base
-    ];
-  }
-
-  window.calculateDeliveryZoneStructuredV13211=async function(address){
-    const st=window.checkoutState||(window.checkoutState={});
-    st.deliveryDistanceKm=null;st.deliveryZoneId='';st.deliveryZoneMaxKm=null;st.deliveryZoneFee=null;st.deliveryDistanceSource='';
-    const origin=await storeCoordsV13211();
-    const dest=await geocodeFlexibleV13211(customerQueriesV13211(address));
-    const dist=await routeV13211(origin,dest);
-    const km=Math.round(dist.km*10)/10;
-    const o=window.ensureDeliveryZonesV1327();
-    const zone=(o.deliveryZonesKm||[]).slice().sort((a,b)=>+a.maxKm-+b.maxKm).find(z=>km<=+z.maxKm)||null;
-    st.deliveryDistanceKm=km;st.deliveryDistanceSource=dist.source;
-    if(zone){st.deliveryZoneId=zone.id;st.deliveryZoneMaxKm=+zone.maxKm;st.deliveryZoneFee=+zone.fee||0}
-    return {km,zone,destination:dest,source:dist.source};
-  };
-
-  // Substitui somente a ação do botão criada na v1.32.10.
-  window.saveDeliveryAndPay=async function(){
-    const o=window.ensureDeliveryZonesV1327?window.ensureDeliveryZonesV1327():(cfg.store.orderConfig||{});
-    const area=o.deliveryCalc==='area'&&Array.isArray(o.deliveryZonesKm)&&o.deliveryZonesKm.length;
-    const street=document.getElementById('coStreet')?.value.trim()||'',
-          number=document.getElementById('coNumber')?.value.trim()||'',
-          complement=document.getElementById('coComplement')?.value.trim()||'',
-          ref=document.getElementById('coRef')?.value.trim()||'',
-          district=area?(document.getElementById('coDistrict')?.value.trim()||''):(document.getElementById('coNeigh')?.value||'');
-    if(!street){alert('Informe a rua ou avenida para entrega.');return}
-    if(!number){alert('Informe o número do endereço.');return}
-    if(!district){alert('Informe o bairro para entrega.');return}
-    if(!ref){alert('Informe uma referência para a entrega.');return}
-
-    const st=window.checkoutState||(window.checkoutState={});
-    Object.assign(st,{street,number,neighborhood:district,complement,reference:ref});
-    st.address=[street,`nº ${number}`,district,complement].filter(Boolean).join(', ')+` · Referência: ${ref}`;
-    if(!area)return showPaymentChoices();
-
-    const btn=document.getElementById('deliveryContinueV1328'),status=document.getElementById('deliveryCalcStatusV1328');
-    if(btn){btn.disabled=true;btn.textContent='Localizando endereço...'}
-    if(status){status.style.display='block';status.className='notice';status.textContent='Localizando rua, número e bairro...'}
-
-    try{
-      const r=await window.calculateDeliveryZoneStructuredV13211({street,number,district});
-      if(!r.zone){
-        const max=o.deliveryZonesKm.reduce((m,z)=>Math.max(m,+z.maxKm||0),0);
-        if(o.allowOutside){
-          st.deliveryZoneFee=null;st.deliveryOutsideZone=true;
-          status.textContent=`Endereço localizado a aproximadamente ${r.km.toLocaleString('pt-BR')} km. Está fora das zonas configuradas; taxa a combinar.`;
-          await new Promise(x=>setTimeout(x,450));return showPaymentChoices();
-        }
-        status.className='notice deliveryZoneErrorV1328';
-        status.textContent=`Endereço localizado, mas fica a aproximadamente ${r.km.toLocaleString('pt-BR')} km e está fora da área de entrega${max?` (até ${max.toLocaleString('pt-BR')} km)`:''}.`;
-        return;
+    root.querySelectorAll('label,button,.card,.settingCard,.adminCard,.choice,.option,.row,div').forEach(el=>{
+      const t=(el.innerText||'').trim().toLowerCase();
+      if(!t || t.length>500) return;
+      if(needles.some(n=>t.includes(n))){
+        const candidate=el.closest('label,.card,.settingCard,.adminCard,.choice,.option')||el;
+        candidate.style.display='none';
+        candidate.setAttribute('data-pedevia-removed-km-zones','1');
       }
-      st.deliveryOutsideZone=false;
-      status.textContent=`Endereço localizado · ${r.km.toLocaleString('pt-BR')} km · zona até ${(+r.zone.maxKm).toLocaleString('pt-BR')} km · taxa ${brl(+r.zone.fee||0)}.`;
-      await new Promise(x=>setTimeout(x,450));showPaymentChoices();
-    }catch(e){
-      console.error('Geocodificação v1.32.11:',e);
-      status.className='notice deliveryZoneErrorV1328';
-      status.textContent='Não foi possível localizar automaticamente. Confira os dados ou tente escrever o nome oficial da rua/avenida.';
-    }finally{
-      const b=document.getElementById('deliveryContinueV1328');
-      if(b){b.disabled=false;b.textContent='Calcular entrega e continuar'}
-    }
-  };
-})();
-</script>
-<!-- v1.32.11: remove duplicação da cidade e adiciona buscas graduais + geocodificador reserva. -->
-
-
-<script>
-// ===== v1.32.12: ORIGEM FIXA + VALIDAÇÃO GEOGRÁFICA DAS ZONAS =====
-(function(){
-  window.PEDEVIA_VERSION='1.32.12';
-
-  function norm13212(v){
-    return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
-      .toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
-  }
-  function city13212(){
-    const raw=String(window.deliveryCityFromAddressV1327?.()||'').trim();
-    return (/^localiza/i.test(raw)||/^cidade não/i.test(raw))?'':raw;
-  }
-  function finiteCoord13212(v){ return Number.isFinite(Number(v)); }
-
-  function savedOrigin13212(){
-    // Prioriza coordenadas explicitamente salvas pelo mapa/endereço.
-    const candidates=[
-      cfg.store?.mapCoords,
-      cfg.store?.locationCoords,
-      cfg.store?.coordinates,
-      cfg.store?.coords,
-      cfg.store?.mapLocation,
-      cfg.store?.location,
-      cfg.store?.deliveryOriginCoords
-    ];
-    for(const c of candidates){
-      if(!c)continue;
-      const lat=c.lat ?? c.latitude, lon=c.lon ?? c.lng ?? c.longitude;
-      if(finiteCoord13212(lat)&&finiteCoord13212(lon)){
-        return {lat:Number(lat),lon:Number(lon),label:'Localização salva do estabelecimento',fixed:true};
-      }
-    }
-    const lat=cfg.store?.latitude ?? cfg.store?.lat;
-    const lon=cfg.store?.longitude ?? cfg.store?.lng ?? cfg.store?.lon;
-    if(finiteCoord13212(lat)&&finiteCoord13212(lon))
-      return {lat:Number(lat),lon:Number(lon),label:'Localização salva do estabelecimento',fixed:true};
-    return null;
-  }
-
-  async function getJson13212(url,timeout=12000){
-    const c=new AbortController(),t=setTimeout(()=>c.abort(),timeout);
-    try{
-      const r=await fetch(url,{signal:c.signal,headers:{Accept:'application/json'}});
-      if(!r.ok)throw new Error('HTTP '+r.status);
-      return await r.json();
-    }finally{clearTimeout(t)}
-  }
-
-  function resultMeta13212(x){
-    const a=x?.address||{};
-    return {
-      city:a.city||a.town||a.village||a.municipality||a.city_district||'',
-      district:a.suburb||a.neighbourhood||a.quarter||a.city_district||'',
-      road:a.road||a.pedestrian||a.residential||'',
-      house:a.house_number||'',
-      state:a.state||'',
-      display:x?.display_name||''
-    };
-  }
-
-  function score13212(x, expected){
-    const m=resultMeta13212(x);
-    const city=norm13212(expected.city),district=norm13212(expected.district),
-          street=norm13212(expected.street),number=norm13212(expected.number);
-    let score=0;
-    if(city && (norm13212(m.city).includes(city)||norm13212(m.display).includes(city))) score+=50;
-    else if(city) score-=80;
-    if(street && (norm13212(m.road).includes(street)||norm13212(m.display).includes(street))) score+=30;
-    if(district && (norm13212(m.district).includes(district)||norm13212(m.display).includes(district))) score+=15;
-    if(number && (norm13212(m.house)===number||norm13212(m.display).includes(' '+number+' '))) score+=8;
-    if(/rio de janeiro|\brj\b/.test(norm13212(m.state+' '+m.display))) score+=4;
-    return {score,meta:m};
-  }
-
-  async function preciseDest13212(address){
-    const expected={
-      street:String(address.street||'').trim(),
-      number:String(address.number||'').trim(),
-      district:String(address.district||'').trim(),
-      city:city13212()
-    };
-    const structured=new URLSearchParams({
-      format:'jsonv2',addressdetails:'1',limit:'8',countrycodes:'br',
-      street:[expected.number,expected.street].filter(Boolean).join(' '),
-      city:expected.city||'',state:'Rio de Janeiro',country:'Brasil'
     });
-    let rows=[];
-    try{ rows=await getJson13212('https://nominatim.openstreetmap.org/search?'+structured.toString()); }catch(_){}
-    if(!Array.isArray(rows))rows=[];
-
-    // Segunda busca inclui bairro, mas nunca cai para "só cidade".
-    if(!rows.length){
-      const q=[expected.street,expected.number,expected.district,expected.city,'RJ','Brasil'].filter(Boolean).join(', ');
-      try{
-        rows=await getJson13212('https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=8&countrycodes=br&q='+encodeURIComponent(q));
-      }catch(_){}
-      if(!Array.isArray(rows))rows=[];
-    }
-
-    const ranked=rows.map(x=>({x,...score13212(x,expected)})).sort((a,b)=>b.score-a.score);
-    const best=ranked[0];
-    // Cidade é obrigatória e rua precisa ter correspondência razoável.
-    if(!best || best.score<45) throw new Error('DESTINATION_NOT_PRECISE');
-    const lat=Number(best.x.lat),lon=Number(best.x.lon);
-    if(!Number.isFinite(lat)||!Number.isFinite(lon))throw new Error('DESTINATION_NOT_PRECISE');
-    return {lat,lon,label:best.meta.display,meta:best.meta,quality:best.score};
   }
 
-  async function origin13212(){
-    const fixed=savedOrigin13212();
-    if(fixed)return fixed;
-
-    // Compatibilidade com lojas antigas sem coordenadas persistidas:
-    // geocodifica UMA VEZ o endereço configurado e grava o ponto.
-    const map=String(cfg.store?.mapQuery||'').trim();
-    const pub=String(cfg.store?.address||'').trim();
-    const city=city13212();
-    const q=map||pub;
-    if(!q)throw new Error('STORE_LOCATION_MISSING');
-    const full=[q, city && !norm13212(q).includes(norm13212(city)) ? city : '', 'RJ','Brasil'].filter(Boolean).join(', ');
-    const rows=await getJson13212('https://nominatim.openstreetmap.org/search?format=jsonv2&addressdetails=1&limit=5&countrycodes=br&q='+encodeURIComponent(full));
-    if(!Array.isArray(rows)||!rows.length)throw new Error('STORE_LOCATION_MISSING');
-    const ranked=rows.map(x=>({x,...score13212(x,{street:'',number:'',district:'',city})})).sort((a,b)=>b.score-a.score);
-    const b=ranked[0],lat=Number(b.x.lat),lon=Number(b.x.lon);
-    if(!Number.isFinite(lat)||!Number.isFinite(lon))throw new Error('STORE_LOCATION_MISSING');
-    cfg.store.deliveryOriginCoords={query:q,lat,lon,updatedAt:new Date().toISOString(),source:'geocoded-store-address-v13212'};
-    try{save()}catch(_){}
-    return {lat,lon,label:b.meta.display,fixed:false};
-  }
-
-  function rad13212(x){return x*Math.PI/180}
-  function straight13212(a,b){
-    const R=6371,dlat=rad13212(b.lat-a.lat),dlon=rad13212(b.lon-a.lon);
-    const h=Math.sin(dlat/2)**2+Math.cos(rad13212(a.lat))*Math.cos(rad13212(b.lat))*Math.sin(dlon/2)**2;
-    return 2*R*Math.asin(Math.sqrt(h));
-  }
-  async function route13212(a,b){
-    const d=await getJson13212(`https://router.project-osrm.org/route/v1/driving/${a.lon},${a.lat};${b.lon},${b.lat}?overview=false`,10000);
-    const meters=Number(d?.routes?.[0]?.distance);
-    if(!Number.isFinite(meters))throw new Error('ROUTE_FAILED');
-    return meters/1000;
-  }
-
-  window.calculateDeliveryZoneStructuredV13211=async function(address){
-    const st=window.checkoutState||(window.checkoutState={});
-    st.deliveryDistanceKm=null;st.deliveryZoneId='';st.deliveryZoneMaxKm=null;st.deliveryZoneFee=null;st.deliveryDistanceSource='';
-    const origin=await origin13212();
-    const dest=await preciseDest13212(address);
-
-    // Proteção contra resultado geográfico absurdo antes de consultar a rota.
-    const straight=straight13212(origin,dest);
-    if(!Number.isFinite(straight)||straight>100)throw new Error('DESTINATION_NOT_PRECISE');
-
-    let km;
-    try{ km=await route13212(origin,dest); }
-    catch(_){ km=straight; }
-    km=Math.round(km*10)/10;
-
-    const o=window.ensureDeliveryZonesV1327();
-    const zone=(o.deliveryZonesKm||[]).slice().sort((a,b)=>+a.maxKm-+b.maxKm).find(z=>km<=+z.maxKm)||null;
-    st.deliveryDistanceKm=km;
-    st.deliveryDistanceSource='validated-route';
-    st.deliveryGeocode={destination:dest.label,origin:origin.label,quality:dest.quality};
-    if(zone){st.deliveryZoneId=zone.id;st.deliveryZoneMaxKm=+zone.maxKm;st.deliveryZoneFee=+zone.fee||0}
-    return {km,zone,destination:dest,source:'validated-route'};
+  const oldEnsure=window.ensureDeliveryZonesV1327;
+  window.ensureDeliveryZonesV1327=function(){
+    sanitizeDeliveryV13213();
+    const o=cfg.store.orderConfig||(cfg.store.orderConfig={});
+    return o;
   };
 
-  // Melhora a mensagem: nunca apresenta uma distância se a localização não foi validada.
-  const previousSave=window.saveDeliveryAndPay;
+  // Se alguma camada histórica tentar abrir o configurador por km, não executa.
+  window.openDeliveryZonesV1327=function(){
+    sanitizeDeliveryV13213();
+    if(typeof window.openOrderSettings==='function') return window.openOrderSettings();
+  };
+  window.renderDeliveryZonesV1327=function(){ return ''; };
+  window.saveDeliveryZonesV1327=function(){ sanitizeDeliveryV13213(); try{save()}catch(_){} };
+
+  // O checkout volta aos modos estáveis já existentes: taxa fixa ou lista de bairros.
+  const previousDelivery=window.saveDeliveryAndPay;
   window.saveDeliveryAndPay=async function(){
-    try{
-      return await previousSave();
-    }catch(e){
-      console.error('Entrega v1.32.12:',e);
-      const status=document.getElementById('deliveryCalcStatusV1328');
-      if(status){
-        status.style.display='block';
-        status.className='notice deliveryZoneErrorV1328';
-        status.textContent=(String(e?.message||'').includes('STORE_LOCATION'))
-          ?'A localização exata do estabelecimento precisa ser salva em Mais → Endereço antes de calcular a entrega.'
-          :'Não conseguimos confirmar com precisão esse endereço. Confira rua/avenida, número e bairro. Nenhuma taxa foi calculada.';
-      }
-    }
+    sanitizeDeliveryV13213();
+    return previousDelivery();
   };
+
+  // Evita reaparecimento da opção quando telas administrativas são renderizadas novamente.
+  const obs=new MutationObserver(()=>hideKmZoneUIV13213());
+  function boot(){
+    sanitizeDeliveryV13213();
+    hideKmZoneUIV13213();
+    if(document.body)obs.observe(document.body,{childList:true,subtree:true});
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true}); else boot();
+
+  // Persistência da migração ocorre no próximo salvamento normal da loja.
 })();
 </script>
-<!-- v1.32.12: usa coordenadas salvas da loja, valida cidade/rua do destino e impede distância baseada em resultado genérico. -->
+<!-- v1.32.13: zonas por km/geocodificação/roteamento retirados do fluxo; taxa fixa e bairros permanecem. -->
 
 </body></html>
