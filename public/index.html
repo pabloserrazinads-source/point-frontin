@@ -2456,7 +2456,7 @@ saveGeneralBrand=async function(){
 };
 
 // ===== v1.7: VERSIONAMENTO E MIGRAÇÕES DE DADOS =====
-const APP_VERSION='1.32.8';
+const APP_VERSION='1.32.9';
 const DATA_SCHEMA_VERSION=4;
 
 /*
@@ -9759,7 +9759,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.1: CONSOLIDAÇÃO DO GRANDE CONSERTO + AUDITORIA DE OVERRIDES =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.8';
+  window.PEDEVIA_VERSION='1.32.9';
 
   // 1) Placeholder da marca: uma frase única, legível e realmente centralizada.
   const st=document.createElement('style');
@@ -9943,7 +9943,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.2: CORREÇÃO DE FEEDBACK AO SALVAR PRODUTO =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.8';
+  window.PEDEVIA_VERSION='1.32.9';
 
   // O salvamento já podia concluir com sucesso, mas um elemento de feedback
   // podia desaparecer após a re-renderização e uma camada antiga tentava
@@ -10005,7 +10005,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.3: CONFIGURAÇÕES DE PEDIDOS TAMBÉM PARA ADMINISTRADORES DAS LOJAS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.8';
+  window.PEDEVIA_VERSION='1.32.9';
 
   // Abre a configuração pelo mesmo fluxo usado pelo painel principal.
   // Não depende de ser Point ou tenant; a persistência continua sendo roteada
@@ -10084,7 +10084,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.4: SESSÃO PERSISTENTE + ATUALIZAÇÃO DE PÁGINA SEM NOVO LOGIN =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.8';
+  window.PEDEVIA_VERSION='1.32.9';
 
   let restoringSessionV1324=false;
 
@@ -10163,7 +10163,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.5: ROTA DIRETA E DEFINITIVA PARA CONFIGURAÇÕES DE PEDIDOS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.8';
+  window.PEDEVIA_VERSION='1.32.9';
 
   // A tela profissional v1.30 recria o cabeçalho de Pedidos. Em tenants,
   // depender da cadeia histórica adminOrdersView -> adminOrders estava deixando
@@ -10275,7 +10275,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.6: NORMALIZAÇÃO REAL DAS CONFIGURAÇÕES DE PEDIDOS DOS TENANTS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.8';
+  window.PEDEVIA_VERSION='1.32.9';
 
   function normalizeTenantOrderConfigV1326(){
     cfg.store=cfg.store||{};
@@ -10422,7 +10422,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.7: CIDADE DO ENDEREÇO + ZONAS DE ENTREGA POR KM =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.8';
+  window.PEDEVIA_VERSION='1.32.9';
 
   function deliveryCityFromAddressV1327(){
     const raw=String(cfg.store?.address||'').trim();
@@ -10628,7 +10628,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.8: CHECKOUT AUTOMÁTICO DAS ZONAS DE ENTREGA =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.8';
+  window.PEDEVIA_VERSION='1.32.9';
 
   function zonesActiveV1328(){
     try{
@@ -10871,5 +10871,175 @@ initializeOnlineStateV13();
 })();
 </script>
 <!-- v1.32.8: endereço do cliente -> geocodificação -> rota -> zona -> taxa automática. -->
+
+
+<script>
+// ===== v1.32.9: ENDEREÇO CONSISTENTE + LAYOUT DAS ZONAS =====
+(function(){
+  window.PEDEVIA_VERSION='1.32.9';
+
+  function addressDisplayV1329(){
+    const a=String(cfg.store?.address||'').trim();
+    const q=String(cfg.store?.mapQuery||'').trim();
+    return a||q||'Adicionar endereço';
+  }
+  window.addressDisplayV1329=addressDisplayV1329;
+
+  // Cidade pode vir tanto do endereço exibido quanto da localização exata do mapa.
+  window.deliveryCityFromAddressV1327=function(){
+    const raw=String(cfg.store?.address||cfg.store?.mapQuery||'').trim();
+    if(!raw)return 'Cidade não informada';
+
+    // Coordenadas puras não possuem nome de cidade.
+    if(/^\s*-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?\s*$/.test(raw))return 'Localização definida no mapa';
+
+    const cleaned=raw.replace(/\s*,?\s*Brasil\s*$/i,'').trim();
+    const parts=cleaned.split(/\s+-\s+/).map(x=>x.trim()).filter(Boolean);
+
+    // "Rua..., bairro, Cidade - RJ" / "Rua..., bairro, Cidade, RJ"
+    const ufMatch=cleaned.match(/(?:-|,)\s*([A-Z]{2})\s*$/i);
+    const uf=ufMatch?ufMatch[1].toUpperCase():'';
+    let withoutUf=cleaned.replace(/(?:-|,)\s*[A-Z]{2}\s*$/i,'').trim();
+    const commaParts=withoutUf.split(',').map(x=>x.trim()).filter(Boolean);
+
+    let city='';
+    if(parts.length>=2 && /^[A-Z]{2}$/i.test(parts.at(-1))){
+      city=parts.at(-2).split(',').at(-1).trim();
+    }else if(commaParts.length>=2){
+      city=commaParts.at(-1);
+    }else if(parts.length>=2){
+      city=parts.at(-1);
+    }
+
+    // Evita apresentar número/CEP como cidade.
+    if(!city || /^\d|^\d{5}-?\d{3}$/.test(city))return uf?`Localização em ${uf}`:'Localização configurada';
+    return city+(uf?` - ${uf}`:'');
+  };
+
+  // Corrige a apresentação do card "Endereço" em qualquer composição histórica
+  // do menu Mais, sem depender de qual override antigo criou o card.
+  const adminMoreBaseV1329=window.adminMore;
+  window.adminMore=function(){
+    const r=adminMoreBaseV1329.apply(this,arguments);
+    const cards=[...document.querySelectorAll('#adminContent .moreCard')];
+    const card=cards.find(c=>c.querySelector('b')?.textContent?.trim()==='Endereço');
+    if(card){
+      const span=card.querySelectorAll(':scope > span')[1];
+      if(span){
+        let small=span.querySelector('small');
+        if(!small){small=document.createElement('small');span.appendChild(small)}
+        small.textContent=addressDisplayV1329();
+      }
+    }
+    return r;
+  };
+
+  // Salva os dois campos de modo independente, mas qualquer um deles já conta
+  // como localização configurada. A alteração da origem invalida coordenadas antigas
+  // antes da persistência, para não reaparecerem após atualizar a página.
+  window.saveGeneralAddress=async function(){
+    const oldOrigin=String(cfg.store?.mapQuery||cfg.store?.address||'').trim();
+    const newAddress=String(document.getElementById('gAddr')?.value||'').trim();
+    const newMap=String(document.getElementById('gMapQuery')?.value||'').trim();
+
+    cfg.store.address=newAddress;
+    cfg.store.mapQuery=newMap||newAddress;
+    const newOrigin=String(cfg.store.mapQuery||cfg.store.address||'').trim();
+    if(oldOrigin!==newOrigin)delete cfg.store.deliveryOriginCoords;
+
+    let ok=true;
+    if(typeof window.persistAdminStateV15==='function'){
+      ok=await window.persistAdminStateV15({products:false,notify:true,message:'Endereço salvo online.'});
+    }else if(typeof window.saveAdminNow==='function'){
+      ok=await window.saveAdminNow({successMessage:'Endereço salvo online.'});
+    }else{
+      try{await Promise.resolve(save())}catch(e){ok=false;console.error(e)}
+    }
+    if(ok){
+      renderShop();
+      generalAddress();
+    }
+  };
+
+  // A tela de endereço explica que a localização do mapa também será usada
+  // para zonas, mesmo se o endereço público ficar vazio.
+  const generalAddressBaseV1329=window.generalAddress;
+  window.generalAddress=function(){
+    const r=generalAddressBaseV1329.apply(this,arguments);
+    const map=document.getElementById('gMapQuery');
+    if(map){
+      const lab=map.previousElementSibling;
+      if(lab && /Localização exata do mapa/i.test(lab.textContent||'')){
+        let note=document.getElementById('mapDeliveryNoteV1329');
+        if(!note){
+          note=document.createElement('div');
+          note.id='mapDeliveryNoteV1329';
+          note.className='hint';
+          note.style.margin='-4px 0 10px';
+          note.textContent='Esta localização também será usada como ponto de partida das zonas de entrega.';
+          map.insertAdjacentElement('afterend',note);
+        }
+      }
+    }
+    return r;
+  };
+
+  // Recria as linhas de zonas com rótulos explícitos e layout responsivo.
+  window.renderDeliveryZonesV1327=function(){
+    const o=window.ensureDeliveryZonesV1327();
+    const host=document.getElementById('zoneRowsV1327');
+    if(!host)return;
+    host.innerHTML=o.deliveryZonesKm.length
+      ? o.deliveryZonesKm.map((z,i)=>`
+        <div class="deliveryZoneCardV1329">
+          <div class="deliveryZoneTitleV1329">
+            <b>Zona ${i+1}</b>
+            <button class="deliveryZoneRemoveV1329" type="button" onclick="removeDeliveryZoneV1327(${i})" aria-label="Excluir zona">×</button>
+          </div>
+          <div class="deliveryZoneFieldsV1329">
+            <label><span>Até quantos km</span><div class="deliveryZoneInputV1329"><input class="field zoneKmV1327" data-i="${i}" type="number" min=".1" step=".1" value="${z.maxKm}"><em>km</em></div></label>
+            <label><span>Taxa de entrega</span><div class="deliveryZoneInputV1329 deliveryZoneMoneyV1329"><em>R$</em><input class="field zoneFeeV1327" data-i="${i}" type="number" min="0" step=".01" value="${z.fee}"></div></label>
+          </div>
+          <div class="hint">Esta taxa vale para endereços dentro desta faixa de distância.</div>
+        </div>`).join('')
+      : '<div class="notice">Nenhuma zona criada. Adicione, por exemplo: até 1 km, até 3 km e até 5 km.</div>';
+  };
+
+  // O modal das zonas passa a usar endereço OU localização exata como origem.
+  window.editDeliveryZonesV1327=function(){
+    window.ensureDeliveryZonesV1327();
+    const city=window.deliveryCityFromAddressV1327();
+    const origin=String(cfg.store?.mapQuery||cfg.store?.address||'').trim()||'Endereço ainda não configurado';
+    showModal(`<div class="row"><h2>Zonas de entrega por km</h2><button class="ghost" onclick="closeModal()">✕</button></div>
+      <p class="sectionNote">${esc(city)} · crie faixas de distância e defina a taxa de cada zona.</p>
+      <div class="cfgBlock"><b>📍 Ponto de partida</b><div class="hint">${esc(origin)}</div><div class="hint">A distância é calculada a partir da localização configurada em Mais → Endereço.</div></div>
+      <div class="notice">Exemplo: até 1 km = R$ 3,00 · até 3 km = R$ 5,00 · até 5 km = R$ 8,00.</div>
+      <div id="zoneRowsV1327" class="neighList"></div>
+      <button class="ghost full" onclick="addDeliveryZoneV1327()">+ Adicionar zona</button>
+      <div class="modalActions"><button class="ghost" onclick="closeModal()">Cancelar</button><button class="btn" onclick="saveDeliveryZonesV1327()">Concluir</button></div>`);
+    window.renderDeliveryZonesV1327();
+  };
+
+  const style=document.createElement('style');
+  style.id='pedeviaV1329Styles';
+  style.textContent=`
+    .deliveryZoneCardV1329{background:rgba(0,0,0,.035);border:1px solid var(--line,#e8e1ea);border-radius:18px;padding:14px;margin:10px 0}
+    .deliveryZoneTitleV1329{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+    .deliveryZoneTitleV1329>b{font-size:17px}
+    .deliveryZoneRemoveV1329{width:40px;height:40px;min-width:40px;border:0;border-radius:14px;background:#ffe1e1;color:#a33;font-size:23px;line-height:1}
+    .deliveryZoneFieldsV1329{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .deliveryZoneFieldsV1329 label>span{display:block;font-size:13px;font-weight:800;margin:0 0 6px;color:var(--muted,#6f6873)}
+    .deliveryZoneInputV1329{display:flex;align-items:center;min-width:0;border:1px solid var(--line,#d8d2da);border-radius:15px;background:var(--card,#fff);overflow:hidden}
+    .deliveryZoneInputV1329 .field{border:0!important;border-radius:0!important;margin:0!important;min-width:0;width:100%;background:transparent!important}
+    .deliveryZoneInputV1329 em{font-style:normal;font-weight:800;padding:0 11px;color:var(--muted,#6f6873);white-space:nowrap}
+    .deliveryZoneMoneyV1329 em{padding-right:0}
+    @media(max-width:430px){
+      .deliveryZoneFieldsV1329{grid-template-columns:1fr}
+      .deliveryZoneCardV1329{padding:13px}
+    }`;
+  document.head.appendChild(style);
+})();
+</script>
+<!-- v1.32.9: corrige resumo/persistência do endereço e campos responsivos das zonas. -->
 
 </body></html>
