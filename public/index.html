@@ -685,7 +685,7 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{
 const adminTabs=[["home","⌂","Início"],["menu","▣","Cardápio"],["orders","🧺","Pedidos"],["offers","%","Ofertas"],["more","•••","Mais"]];
 function renderAdmin(){
  $("#adminBottomNav").innerHTML=adminTabs.map(([id,ic,n])=>`<button class="${adminTab===id?"on":""}" onclick="adminTab='${id}';renderAdmin()"><span class="navIcon">${ic}</span><span>${n}</span></button>`).join("");
- // v1.32.27: não apaga a tela com placeholder entre abas síncronas; evita flash visual.
+ // v1.32.28: não apaga a tela com placeholder entre abas síncronas; evita flash visual.
  try{
   if(adminTab==="home")adminHome();
   else if(adminTab==="menu")adminMenu();
@@ -2458,7 +2458,7 @@ saveGeneralBrand=async function(){
 };
 
 // ===== v1.7: VERSIONAMENTO E MIGRAÇÕES DE DADOS =====
-const APP_VERSION='1.32.27';
+const APP_VERSION='1.32.28';
 const DATA_SCHEMA_VERSION=4;
 
 /*
@@ -6137,7 +6137,7 @@ maybeHandleInviteV122=async function(){
 
 // Exibe a versão nova no cabeçalho administrativo.
 setTimeout(()=>{
-  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9]/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.32.27')});
+  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9]/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.32.28')});
 },0);
 
 
@@ -6357,7 +6357,7 @@ finishWhatsApp=async function(){
 
 // Mostra a versão nova no cabeçalho administrativo.
 setTimeout(()=>{
-  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.32.27')});
+  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.32.28')});
 },0);
 
 
@@ -6508,7 +6508,7 @@ adminMore=function(){
 };
 
 // Versão exibida no Admin.
-setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.32.27')})},0);
+setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.32.28')})},0);
 
 
 // ===== v1.27.0: AUDITORIA GERAL PEDEVIA =====
@@ -6651,7 +6651,7 @@ const _renderAdminV127Clean=renderAdmin;
 renderAdmin=function(){_renderAdminV127Clean();setTimeout(cleanLegacyLabelsV127,0)};
 
 syncServerClockV127();setInterval(syncServerClockV127,10*60*1000);
-setTimeout(()=>{sanitizeTenantV127();cleanLegacyLabelsV127();document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.27')})},0);
+setTimeout(()=>{sanitizeTenantV127();cleanLegacyLabelsV127();document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.28')})},0);
 
 // --- Backups de configuração + resumo do painel mestre ---
 async function openConfigBackupsV127(){
@@ -6670,7 +6670,7 @@ renderClientSitesListV120=function(rows){_renderClientSitesListV127Base(rows);co
 
 /* ===== Pedevia v1.30.2 · Consolidação comercial ===== */
 window.PedeviaV130 = window.PedeviaV130 || {
-  version:'1.32.27',
+  version:'1.32.28',
   ensureDefaults(){
     cfg.store=cfg.store||{}; cfg.store.orderConfig=cfg.store.orderConfig||{};
     const o=cfg.store.orderConfig;
@@ -6896,7 +6896,7 @@ const _renderClientSitesListV130Base=renderClientSitesListV120;
 renderClientSitesListV120=function(rows){_renderClientSitesListV130Base(rows);const host=document.getElementById('clientSitesListV120');if(host&&!document.getElementById('masterSummaryV130')){const d=document.createElement('div');d.id='masterSummaryV130';d.className='v126StatsGrid';host.prepend(d);PedeviaV130.masterMetrics()}};
 
 // Versão.
-setTimeout(()=>{PedeviaV130.init();document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.27')});if(mode==='shop')renderShop()},600);
+setTimeout(()=>{PedeviaV130.init();document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.28')});if(mode==='shop')renderShop()},600);
 
 // ===== v1.30.1 extras: Storage de imagens + UX de checkout =====
 Object.assign(PedeviaV130,{
@@ -7144,7 +7144,7 @@ adminMore=function(){_adminMoreV130MediaBase();const list=document.querySelector
   };
 
   // Atualiza a versão visível sem interferir nas demais camadas.
-  setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.27')})},900);
+  setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.28')})},900);
 })();
 
 
@@ -7186,7 +7186,7 @@ adminMore=function(){_adminMoreV130MediaBase();const list=document.querySelector
   renderAdmin=function(){baseRender();if(window.pedeviaTenantV121)ownerBillingCardV1311()};
   const baseEnter=enterTenantAdminV122;
   enterTenantAdminV122=async function(){const ok=await baseEnter();if(window.pedeviaTenantV121)ownerBillingCardV1311();return ok};
-  setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.27')})},1000);
+  setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.28')})},1000);
 })();
 
 // Inicializa somente depois de todas as camadas de compatibilidade do arquivo terem sido carregadas.
@@ -7248,7 +7248,7 @@ finishWhatsApp=async function(){
 setTimeout(()=>{
   document.querySelectorAll('.adminHead .hint').forEach(el=>{
     if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))
-      el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.27');
+      el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.28');
   });
 },1100);
 </script>
@@ -7350,7 +7350,7 @@ setTimeout(()=>{
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.27');
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.28');
       }
     });
   },1200);
@@ -7550,7 +7550,7 @@ setTimeout(()=>{
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.27');
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.28');
       }
     });
   },1200);
@@ -7706,7 +7706,7 @@ setTimeout(()=>{
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.27');
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.28');
       }
     });
   },1200);
@@ -7802,7 +7802,7 @@ setTimeout(()=>{
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.27');
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.28');
       }
     });
   },1200);
@@ -7970,7 +7970,7 @@ setTimeout(()=>{
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.27');
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.28');
       }
     });
   },1200);
@@ -8175,7 +8175,7 @@ setTimeout(()=>{
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.27');
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.28');
       }
     });
   },1200);
@@ -8416,7 +8416,7 @@ setTimeout(()=>{
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.27');
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.28');
       }
     });
   },1200);
@@ -8490,7 +8490,7 @@ setTimeout(()=>{
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.27');
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.28');
       }
     });
   },1200);
@@ -8595,7 +8595,7 @@ setTimeout(()=>{
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.27');
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.28');
       }
     });
   },1200);
@@ -8613,7 +8613,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.31.15: VERSÃO CENTRALIZADA =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.27';
+  window.PEDEVIA_VERSION='1.32.28';
   window.PEDEVIA_DATA_VERSION = 'v4';
 
   function applyPedeviaVersionV13115(){
@@ -9761,7 +9761,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.1: CONSOLIDAÇÃO DO GRANDE CONSERTO + AUDITORIA DE OVERRIDES =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.27';
+  window.PEDEVIA_VERSION='1.32.28';
 
   // 1) Placeholder da marca: uma frase única, legível e realmente centralizada.
   const st=document.createElement('style');
@@ -9945,7 +9945,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.2: CORREÇÃO DE FEEDBACK AO SALVAR PRODUTO =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.27';
+  window.PEDEVIA_VERSION='1.32.28';
 
   // O salvamento já podia concluir com sucesso, mas um elemento de feedback
   // podia desaparecer após a re-renderização e uma camada antiga tentava
@@ -10007,7 +10007,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.3: CONFIGURAÇÕES DE PEDIDOS TAMBÉM PARA ADMINISTRADORES DAS LOJAS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.27';
+  window.PEDEVIA_VERSION='1.32.28';
 
   // Abre a configuração pelo mesmo fluxo usado pelo painel principal.
   // Não depende de ser Point ou tenant; a persistência continua sendo roteada
@@ -10086,7 +10086,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.4: SESSÃO PERSISTENTE + ATUALIZAÇÃO DE PÁGINA SEM NOVO LOGIN =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.27';
+  window.PEDEVIA_VERSION='1.32.28';
 
   let restoringSessionV1324=false;
 
@@ -10165,7 +10165,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.5: ROTA DIRETA E DEFINITIVA PARA CONFIGURAÇÕES DE PEDIDOS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.27';
+  window.PEDEVIA_VERSION='1.32.28';
 
   // A tela profissional v1.30 recria o cabeçalho de Pedidos. Em tenants,
   // depender da cadeia histórica adminOrdersView -> adminOrders estava deixando
@@ -10277,7 +10277,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.6: NORMALIZAÇÃO REAL DAS CONFIGURAÇÕES DE PEDIDOS DOS TENANTS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.27';
+  window.PEDEVIA_VERSION='1.32.28';
 
   function normalizeTenantOrderConfigV1326(){
     cfg.store=cfg.store||{};
@@ -10437,7 +10437,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.13: REMOÇÃO DEFINITIVA DE ZONAS DE ENTREGA POR KM =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.27';
+  window.PEDEVIA_VERSION='1.32.28';
 
   function sanitizeDeliveryV13213(){
     if(!window.cfg || !cfg.store) return;
@@ -10514,7 +10514,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.14: ENTREGA SIMPLIFICADA + ENDEREÇO ÚNICO E CONSISTENTE =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.27';
+  window.PEDEVIA_VERSION='1.32.28';
 
   function clean(v){ return String(v??'').trim(); }
   function storeAddressV13214(){
@@ -10631,7 +10631,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.18: CHECKOUT RESPEITA O MODO DE TAXA =====
 (function(){
- window.PEDEVIA_VERSION='1.32.27';
+ window.PEDEVIA_VERSION='1.32.28';
  function normalize(){const s=window.cfg?.store,o=s?.orderConfig;if(!o)return;if(!['fixed','neighborhood'].includes(o.deliveryCalc))o.deliveryCalc='fixed';if(o.deliveryCalc==='fixed'){o.deliveryFixedFee=Number(o.deliveryFixedFee??s.deliveryFee??0)||0;s.deliveryFee=o.deliveryFixedFee;}}
  normalize();
  window.addEventListener('pageshow',()=>{normalize();try{renderShop()}catch(e){}});
@@ -10641,7 +10641,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.19: ENDEREÇO DE ENTREGA ESTRUTURADO =====
 (function(){
- window.PEDEVIA_VERSION='1.32.27';
+ window.PEDEVIA_VERSION='1.32.28';
 
  window.showDeliveryForm=function(){
    var o=(cfg.store&&cfg.store.orderConfig)||{};
@@ -10697,7 +10697,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.20: SAVE ROBUSTO + PIX + IMPRESSÃO =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.27';
+  window.PEDEVIA_VERSION='1.32.28';
 
   function saveButtonV13220(label){
     const modal=document.getElementById('modal');
@@ -10804,7 +10804,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.21: OUTRAS CONFIGURAÇÕES — SAVE ROBUSTO =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.27';
+  window.PEDEVIA_VERSION='1.32.28';
 
   async function saveOrderConfigOnlyV13221(){
     try{
@@ -10896,7 +10896,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.22: META-AUDITORIA / HARDENING COMERCIAL =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.27';
+  window.PEDEVIA_VERSION='1.32.28';
 
   // 1) Migração definitiva do modelo de entrega: somente FIXA ou BAIRROS.
   function normalizeCommercialConfigV13222(){
@@ -10990,7 +10990,7 @@ initializeOnlineStateV13();
   function enforceVersionV13222(){
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.27');
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.28');
       }
     });
   }
@@ -11009,7 +11009,7 @@ initializeOnlineStateV13();
       if(typeof fetchOrdersV125!=='function')issues.push('Leitura de pedidos indisponível');
       if(typeof createOnlineOrderV125!=='function')issues.push('Registro de pedidos indisponível');
     }catch(e){issues.push(String(e?.message||e))}
-    const result={ok:issues.length===0,version:'1.32.27',issues};
+    const result={ok:issues.length===0,version:'1.32.28',issues};
     console.info('Pedevia preflight',result);
     return result;
   };
@@ -11027,7 +11027,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.23: FINAL DE PUBLICAÇÃO =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.27';
+  window.PEDEVIA_VERSION='1.32.28';
 
   // Mantém fechamento automático completamente separado dos pedidos existentes.
   // Esta função SOMENTE informa se novos pedidos podem entrar.
@@ -11084,10 +11084,10 @@ initializeOnlineStateV13();
 
   // Centraliza a versão visível após timers de camadas antigas.
   function finalVersionV13223(){
-    window.PEDEVIA_VERSION='1.32.27';
+    window.PEDEVIA_VERSION='1.32.28';
     document.querySelectorAll('.adminHead .hint,.hero .hint,.panel .hint').forEach(el=>{
       const t=el.textContent||'';
-      if(/Versão\s+1\.\d+(?:\.\d+)*/i.test(t))el.textContent=t.replace(/Versão\s+1\.\d+(?:\.\d+)*/i,'Versão 1.32.27');
+      if(/Versão\s+1\.\d+(?:\.\d+)*/i.test(t))el.textContent=t.replace(/Versão\s+1\.\d+(?:\.\d+)*/i,'Versão 1.32.28');
     });
   }
   [0,600,1400,2800,5000].forEach(ms=>setTimeout(finalVersionV13223,ms));
@@ -11104,7 +11104,7 @@ initializeOnlineStateV13();
       ['createOnlineOrderV125','fetchOrdersV125','saveTenantConfigV122','saveSiteConfigOnline','persistAdminStateV15']
         .forEach(n=>{if(typeof window[n]!=='function' && typeof globalThis[n]!=='function')issues.push('Função ausente: '+n)});
     }catch(e){issues.push(String(e?.message||e))}
-    const result={ok:issues.length===0,version:'1.32.27',issues};
+    const result={ok:issues.length===0,version:'1.32.28',issues};
     console.info('Pedevia preflight final',result);
     return result;
   };
@@ -11116,7 +11116,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.24: CORREÇÃO DE NAVEGAÇÃO DO ADMIN =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.27';
+  window.PEDEVIA_VERSION='1.32.28';
 
   // Há camadas históricas que escreveram window.adminTab/window.adminOrdersView,
   // enquanto o núcleo usa bindings globais `let`. Esta camada usa diretamente
@@ -11208,11 +11208,11 @@ initializeOnlineStateV13();
   wireBottomNavV13224();
 
   function enforceVersionV13224(){
-    window.PEDEVIA_VERSION='1.32.27';
+    window.PEDEVIA_VERSION='1.32.28';
     document.querySelectorAll('.adminHead .hint,.hero .hint,.panel .hint').forEach(el=>{
       const t=el.textContent||'';
       if(/Versão\s+1\.\d+(?:\.\d+)*/i.test(t))
-        el.textContent=t.replace(/Versão\s+1\.\d+(?:\.\d+)*/i,'Versão 1.32.27');
+        el.textContent=t.replace(/Versão\s+1\.\d+(?:\.\d+)*/i,'Versão 1.32.28');
     });
   }
   [0,700,1600,3000,5200].forEach(ms=>setTimeout(enforceVersionV13224,ms));
@@ -11220,11 +11220,11 @@ initializeOnlineStateV13();
 </script>
 
 
-<!-- v1.32.27 FINAL 13/09/2026 — versão visual unificada -->
+<!-- v1.32.28 FINAL 13/09/2026 — versão visual unificada -->
 <script>
-// ===== v1.32.27: FONTE ÚNICA DE VERSÃO =====
+// ===== v1.32.28: FONTE ÚNICA DE VERSÃO =====
 (function(){
-  const CURRENT_VERSION='1.32.27';
+  const CURRENT_VERSION='1.32.28';
   window.PEDEVIA_VERSION=CURRENT_VERSION;
   window.getPedeviaVersion=function(){return CURRENT_VERSION};
   window.applyPedeviaVersion=function(){
@@ -11240,11 +11240,11 @@ initializeOnlineStateV13();
 </script>
 
 
-<!-- v1.32.27 FINAL 13/09/2026 — troca de abas sem frame intermediário -->
+<!-- v1.32.28 FINAL 13/09/2026 — troca de abas sem frame intermediário -->
 <script>
-// ===== v1.32.27: NAVEGAÇÃO SEM FLASH =====
+// ===== v1.32.28: NAVEGAÇÃO SEM FLASH =====
 (function(){
-  const CURRENT_VERSION='1.32.27';
+  const CURRENT_VERSION='1.32.28';
   window.PEDEVIA_VERSION=CURRENT_VERSION;
 
   // A navegação administrativa é síncrona. Não há motivo para substituir o
@@ -11258,5 +11258,81 @@ initializeOnlineStateV13();
 })();
 </script>
 
-<!-- v1.32.27 FINAL 13/09/2026 — tenant billing card rendered synchronously to prevent navigation layout flash -->
+<!-- v1.32.28 FINAL 13/09/2026 — tenant billing card rendered synchronously to prevent navigation layout flash -->
+
+<!-- v1.32.28 FINAL 13/09/2026 — compartilhamento e QR Code funcionais -->
+<style id="pedeviaShareQrV13228Css">
+.pv-share-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.pv-share-actions .fullrow{grid-column:1/-1}
+.pv-share-preview{border:1px solid #ddd;border-radius:20px;overflow:hidden;background:#fff;margin:12px 0 18px}
+.pv-share-preview .media{height:170px;display:grid;place-items:center;background:#f4f1f6;overflow:hidden}
+.pv-share-preview .media img{width:100%;height:100%;object-fit:cover}
+.pv-share-preview .copy{padding:14px 16px}.pv-share-preview .copy b{display:block;font-size:20px}.pv-share-preview .copy small{display:block;margin-top:4px;color:#6e6872;line-height:1.35}
+.pv-urlbox{padding:13px;border-radius:14px;background:#f3f3f3;word-break:break-all;margin:8px 0 12px;font-size:14px}
+.pv-qr-wrap{display:grid;place-items:center;background:#fff;border:1px solid #e4e0e5;border-radius:22px;padding:18px;margin:14px 0}
+#pvQrCanvasV13228 canvas,#pvQrCanvasV13228 img{max-width:100%;height:auto!important;border-radius:4px}
+.pv-qr-options{display:grid;grid-template-columns:1fr 1fr;gap:10px}.pv-qr-options label{margin:0}.pv-qr-options .field{margin-top:5px}
+@media(max-width:430px){.pv-share-actions{grid-template-columns:1fr}.pv-share-actions .fullrow{grid-column:auto}.pv-qr-options{grid-template-columns:1fr 1fr}}
+</style>
+<script id="pedeviaShareQrV13228">
+// ===== v1.32.28: DIVULGAÇÃO REAL DA LOJA =====
+(function(){
+  const V='1.32.28'; window.PEDEVIA_VERSION=V;
+  function publicUrl(){
+    const custom=String(cfg?.store?.customDomain||'').trim();
+    if(custom){return /^https?:\/\//i.test(custom)?custom:'https://'+custom}
+    const slug=String(window.pedeviaTenantV121?.slug||tenantSlugFromLocationV121?.()||'').trim();
+    return slug?`${PEDEVIA_PUBLIC_BASE}/${encodeURIComponent(slug)}`:PEDEVIA_PUBLIC_BASE;
+  }
+  window.pedeviaPublicStoreUrlV13228=publicUrl;
+  function shareImage(s){return String(s.shareImage||s.brandImage||'').trim()}
+  function shareMessage(){const s=cfg.store||{},title=String(s.shareTitle||s.name||'Confira nosso cardápio').trim(),desc=String(s.shareDescription||'Confira nosso cardápio online.').trim();return `${title}\n${desc}\n${publicUrl()}`}
+  async function persist(msg){
+    if(typeof saveAdminNow==='function')return await saveAdminNow({successMessage:msg});
+    if(window.PedeviaV130?.persist)return await PedeviaV130.persist(false,msg);
+    save(); return true;
+  }
+  window.saveSharingV13228=async function(){
+    const s=cfg.store||{}; s.shareTitle=String(document.getElementById('gShareTitle')?.value||'').trim()||s.name||'Estabelecimento'; s.shareDescription=String(document.getElementById('gShareDesc')?.value||'').trim();
+    const b=document.getElementById('pvSaveShareV13228'),old=b?.textContent;if(b){b.disabled=true;b.textContent='Salvando...'}
+    try{const ok=await persist('Compartilhamento salvo online.');if(ok!==false)generalSharing();else if(b){b.disabled=false;b.textContent=old}}catch(e){console.error(e);if(b){b.disabled=false;b.textContent=old}alert('Não foi possível salvar o compartilhamento.')}
+  };
+  window.resetSharingV13228=function(){const s=cfg.store||{};const t=document.getElementById('gShareTitle'),d=document.getElementById('gShareDesc');if(t)t.value=s.name||'Estabelecimento';if(d)d.value='Confira nosso cardápio online.';updateSharingPreviewV13228()};
+  window.updateSharingPreviewV13228=function(){const t=document.getElementById('gShareTitle')?.value||'',d=document.getElementById('gShareDesc')?.value||'';const a=document.getElementById('pvSharePrevTitleV13228'),b=document.getElementById('pvSharePrevDescV13228');if(a)a.textContent=t;if(b)b.textContent=d};
+  window.copyStoreLinkV13228=async function(){await PedeviaV130.copyText(encodeURIComponent(publicUrl()),'Link do cardápio copiado.')};
+  window.shareWhatsV13228=function(){window.open('https://wa.me/?text='+encodeURIComponent(shareMessage()),'_blank','noopener')};
+  window.shareFacebookV13228=function(){window.open('https://www.facebook.com/sharer/sharer.php?u='+encodeURIComponent(publicUrl()),'_blank','noopener')};
+  window.nativeShareV13228=async function(){const s=cfg.store||{},data={title:s.shareTitle||s.name||'Cardápio',text:s.shareDescription||'Confira nosso cardápio online.',url:publicUrl()};try{if(navigator.share)await navigator.share(data);else await copyStoreLinkV13228()}catch(e){if(e?.name!=='AbortError')console.warn(e)}};
+  window.generalSharing=function(){
+    const s=cfg.store||{},img=shareImage(s),url=publicUrl();
+    generalShell('Compartilhamento em Redes Sociais',`<p class="hint">Configure a mensagem e divulgue seu cardápio diretamente. O link usado abaixo é o endereço público real da sua loja.</p>
+      <div class="pv-share-preview"><div class="media">${img?`<img src="${esc(img)}" alt="Imagem da loja">`:'<div style="font-size:54px">🔗</div>'}</div><div class="copy"><b id="pvSharePrevTitleV13228">${esc(s.shareTitle||s.name||'Estabelecimento')}</b><small id="pvSharePrevDescV13228">${esc(s.shareDescription||'Confira nosso cardápio online.')}</small></div></div>
+      <label>Título da divulgação</label><input id="gShareTitle" class="field" maxlength="80" value="${esc(s.shareTitle||s.name||'')}" oninput="updateSharingPreviewV13228()">
+      <label>Descrição / chamada</label><textarea id="gShareDesc" class="field" rows="3" maxlength="180" oninput="updateSharingPreviewV13228()">${esc(s.shareDescription||'')}</textarea>
+      <label>Link que será compartilhado</label><div class="pv-urlbox">${esc(url)}</div>
+      <div class="pv-share-actions"><button type="button" class="ghost" onclick="nativeShareV13228()">↗ Compartilhar agora</button><button type="button" class="ghost" onclick="shareWhatsV13228()">WhatsApp</button><button type="button" class="ghost" onclick="shareFacebookV13228()">Facebook</button><button type="button" class="ghost" onclick="copyStoreLinkV13228()">Copiar link</button><button type="button" class="ghost fullrow" onclick="resetSharingV13228()">Restaurar texto padrão</button></div>
+      <p class="hint" style="margin-top:12px">A imagem acima usa a identidade visual cadastrada da loja. A miniatura exibida por WhatsApp, Facebook e outras redes também depende da leitura que cada plataforma faz do link público.</p>
+      <button id="pvSaveShareV13228" type="button" class="btn full" onclick="saveSharingV13228()">Salvar título e descrição</button>`);
+  };
+  function qrSettings(){const s=cfg.store||(cfg.store={});return s.qrSettings||(s.qrSettings={size:260,dark:'#211d23',light:'#ffffff'})}
+  window.renderQrV13228=async function(){
+    const host=document.getElementById('pvQrCanvasV13228');if(!host)return;host.innerHTML='<div class="hint">Gerando QR Code...</div>';
+    try{await PedeviaV130.loadQrLib();const q=qrSettings(),size=Math.max(180,Math.min(360,+q.size||260));host.innerHTML='';new QRCode(host,{text:publicUrl(),width:size,height:size,colorDark:q.dark||'#211d23',colorLight:q.light||'#ffffff',correctLevel:QRCode.CorrectLevel.H})}catch(e){console.error(e);host.innerHTML='<div class="hint">Não foi possível gerar o QR Code agora.</div>'}
+  };
+  window.updateQrV13228=function(){const q=qrSettings();q.size=+document.getElementById('pvQrSizeV13228')?.value||260;q.dark=document.getElementById('pvQrDarkV13228')?.value||'#211d23';q.light=document.getElementById('pvQrLightV13228')?.value||'#ffffff';renderQrV13228()};
+  window.saveQrSettingsV13228=async function(){updateQrV13228();const b=document.getElementById('pvSaveQrV13228'),old=b?.textContent;if(b){b.disabled=true;b.textContent='Salvando...'}try{const ok=await persist('Preferências do QR Code salvas.');if(ok!==false)generalQr();else if(b){b.disabled=false;b.textContent=old}}catch(e){console.error(e);if(b){b.disabled=false;b.textContent=old}}};
+  window.downloadQrV13228=function(){const host=document.getElementById('pvQrCanvasV13228'),canvas=host?.querySelector('canvas'),img=host?.querySelector('img');let data='';try{data=canvas?.toDataURL('image/png')||img?.src||''}catch(e){}if(!data){alert('Aguarde o QR Code ser gerado.');return}const a=document.createElement('a');a.href=data;a.download=`qr-code-${String(cfg.store?.hubSlug||'cardapio').replace(/[^a-z0-9_-]/gi,'-')}.png`;document.body.appendChild(a);a.click();a.remove()};
+  window.printQrV13228=function(){const host=document.getElementById('pvQrCanvasV13228'),canvas=host?.querySelector('canvas'),img=host?.querySelector('img');let data='';try{data=canvas?.toDataURL('image/png')||img?.src||''}catch(e){}if(!data)return;const w=window.open('','_blank','width=520,height=700');if(!w){alert('Permita pop-ups para imprimir o QR Code.');return}w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>QR Code</title><style>body{font-family:Arial;text-align:center;padding:30px}img{width:320px;max-width:90%}h2{margin-bottom:8px}p{word-break:break-all}</style></head><body><h2>${esc(cfg.store?.name||'Cardápio')}</h2><img src="${data}"><p>${esc(publicUrl())}</p><script>onload=()=>print()<\/script></body></html>`);w.document.close()};
+  window.generalQr=function(){
+    const q=qrSettings(),url=publicUrl();
+    generalShell('QR Code do Cardápio',`<p class="hint">Gere o QR Code real da sua loja para balcão, mesas, embalagens, cartões e redes sociais.</p>
+      <div class="pv-qr-wrap"><div id="pvQrCanvasV13228"></div></div><div class="pv-urlbox">${esc(url)}</div>
+      <div class="pv-qr-options"><label>Tamanho<select id="pvQrSizeV13228" class="field" onchange="updateQrV13228()"><option value="200">Pequeno</option><option value="260">Médio</option><option value="340">Grande</option></select></label><label>Cor do QR<input id="pvQrDarkV13228" type="color" class="field" value="${esc(q.dark||'#211d23')}" onchange="updateQrV13228()"></label><label>Fundo<input id="pvQrLightV13228" type="color" class="field" value="${esc(q.light||'#ffffff')}" onchange="updateQrV13228()"></label></div>
+      <div class="pv-share-actions"><button type="button" class="ghost" onclick="downloadQrV13228()">⬇ Baixar PNG</button><button type="button" class="ghost" onclick="printQrV13228()">🖨 Imprimir</button><button type="button" class="ghost" onclick="copyStoreLinkV13228()">Copiar link</button><button type="button" class="ghost" onclick="nativeShareV13228()">↗ Compartilhar link</button></div>
+      <button id="pvSaveQrV13228" type="button" class="btn full" onclick="saveQrSettingsV13228()">Salvar preferências do QR Code</button>`);
+    const sel=document.getElementById('pvQrSizeV13228');if(sel)sel.value=String(q.size||260);renderQrV13228();
+  };
+  if(typeof window.applyPedeviaVersion==='function')window.applyPedeviaVersion();
+})();
+</script>
 </body></html>
