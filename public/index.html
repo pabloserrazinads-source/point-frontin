@@ -2456,7 +2456,7 @@ saveGeneralBrand=async function(){
 };
 
 // ===== v1.7: VERSIONAMENTO E MIGRAÇÕES DE DADOS =====
-const APP_VERSION='1.32.9';
+const APP_VERSION='1.32.10';
 const DATA_SCHEMA_VERSION=4;
 
 /*
@@ -9759,7 +9759,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.1: CONSOLIDAÇÃO DO GRANDE CONSERTO + AUDITORIA DE OVERRIDES =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.9';
+  window.PEDEVIA_VERSION='1.32.10';
 
   // 1) Placeholder da marca: uma frase única, legível e realmente centralizada.
   const st=document.createElement('style');
@@ -9943,7 +9943,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.2: CORREÇÃO DE FEEDBACK AO SALVAR PRODUTO =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.9';
+  window.PEDEVIA_VERSION='1.32.10';
 
   // O salvamento já podia concluir com sucesso, mas um elemento de feedback
   // podia desaparecer após a re-renderização e uma camada antiga tentava
@@ -10005,7 +10005,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.3: CONFIGURAÇÕES DE PEDIDOS TAMBÉM PARA ADMINISTRADORES DAS LOJAS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.9';
+  window.PEDEVIA_VERSION='1.32.10';
 
   // Abre a configuração pelo mesmo fluxo usado pelo painel principal.
   // Não depende de ser Point ou tenant; a persistência continua sendo roteada
@@ -10084,7 +10084,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.4: SESSÃO PERSISTENTE + ATUALIZAÇÃO DE PÁGINA SEM NOVO LOGIN =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.9';
+  window.PEDEVIA_VERSION='1.32.10';
 
   let restoringSessionV1324=false;
 
@@ -10163,7 +10163,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.5: ROTA DIRETA E DEFINITIVA PARA CONFIGURAÇÕES DE PEDIDOS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.9';
+  window.PEDEVIA_VERSION='1.32.10';
 
   // A tela profissional v1.30 recria o cabeçalho de Pedidos. Em tenants,
   // depender da cadeia histórica adminOrdersView -> adminOrders estava deixando
@@ -10275,7 +10275,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.6: NORMALIZAÇÃO REAL DAS CONFIGURAÇÕES DE PEDIDOS DOS TENANTS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.9';
+  window.PEDEVIA_VERSION='1.32.10';
 
   function normalizeTenantOrderConfigV1326(){
     cfg.store=cfg.store||{};
@@ -10422,7 +10422,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.7: CIDADE DO ENDEREÇO + ZONAS DE ENTREGA POR KM =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.9';
+  window.PEDEVIA_VERSION='1.32.10';
 
   function deliveryCityFromAddressV1327(){
     const raw=String(cfg.store?.address||'').trim();
@@ -10628,7 +10628,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.8: CHECKOUT AUTOMÁTICO DAS ZONAS DE ENTREGA =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.9';
+  window.PEDEVIA_VERSION='1.32.10';
 
   function zonesActiveV1328(){
     try{
@@ -10876,7 +10876,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.9: ENDEREÇO CONSISTENTE + LAYOUT DAS ZONAS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.9';
+  window.PEDEVIA_VERSION='1.32.10';
 
   function addressDisplayV1329(){
     const a=String(cfg.store?.address||'').trim();
@@ -11041,5 +11041,178 @@ initializeOnlineStateV13();
 })();
 </script>
 <!-- v1.32.9: corrige resumo/persistência do endereço e campos responsivos das zonas. -->
+
+
+<script>
+// ===== v1.32.10: ENDEREÇO DE ENTREGA ESTRUTURADO + REFERÊNCIA OBRIGATÓRIA + CIDADE =====
+(function(){
+  window.PEDEVIA_VERSION='1.32.10';
+
+  function titleCaseV13210(v){
+    return String(v||'').trim().replace(/\b([\p{L}])/gu,m=>m.toUpperCase());
+  }
+
+  // Leitura robusta da cidade cadastrada pela loja. Aceita:
+  // "Rua..., Bairro, Cidade, RJ", "Rua..., Bairro, Cidade - RJ" e endereço público.
+  window.deliveryCityFromAddressV1327=function(){
+    const sources=[cfg.store?.mapQuery,cfg.store?.address].map(v=>String(v||'').trim()).filter(Boolean);
+    for(const raw0 of sources){
+      if(/^-?\d+(?:\.\d+)?\s*,\s*-?\d+(?:\.\d+)?$/.test(raw0))continue;
+      let raw=raw0.replace(/\s*,?\s*Brasil\s*$/i,'').trim();
+      let uf='';
+      const um=raw.match(/(?:,|\s+-\s+)\s*([A-Z]{2})\s*$/i);
+      if(um){uf=um[1].toUpperCase();raw=raw.slice(0,um.index).trim()}
+      const bits=raw.split(',').map(x=>x.trim()).filter(Boolean);
+      let city='';
+      if(bits.length>=3) city=bits.at(-1);
+      else{
+        const dash=raw.split(/\s+-\s+/).map(x=>x.trim()).filter(Boolean);
+        if(dash.length>=2)city=dash.at(-1);
+      }
+      city=city.replace(/\b(?:cep)?\s*\d{5}-?\d{3}\b/ig,'').trim();
+      if(city && !/^\d/.test(city)){
+        city=titleCaseV13210(city);
+        return city+(uf?` - ${uf}`:'');
+      }
+    }
+    return 'Localização configurada';
+  };
+
+  function storeCityOnlyV13210(){
+    return window.deliveryCityFromAddressV1327().replace(/\s+-\s+[A-Z]{2}$/,'').trim();
+  }
+
+  function structuredAddressV13210(){
+    const street=document.getElementById('coStreet')?.value.trim()||'';
+    const number=document.getElementById('coNumber')?.value.trim()||'';
+    const neighborhood=document.getElementById('coDistrict')?.value.trim()||'';
+    const complement=document.getElementById('coComplement')?.value.trim()||'';
+    const city=storeCityOnlyV13210();
+    return {
+      street,number,neighborhood,complement,city,
+      geocode:[street,number,neighborhood,city,'Brasil'].filter(Boolean).join(', '),
+      display:[street,number&&`nº ${number}`,neighborhood,complement].filter(Boolean).join(', ')
+    };
+  }
+
+  // Checkout de zonas: campos separados para aumentar a precisão da geocodificação.
+  window.showDeliveryForm=function(){
+    const o=window.ensureDeliveryZonesV1327?window.ensureDeliveryZonesV1327():(cfg.store.orderConfig||{});
+    if(o.deliveryCalc==='area' && Array.isArray(o.deliveryZonesKm) && o.deliveryZonesKm.length){
+      const max=o.deliveryZonesKm.reduce((m,z)=>Math.max(m,+z.maxKm||0),0);
+      const city=window.deliveryCityFromAddressV1327();
+      showModal(`<div class="row"><h2 class="checkoutTitle">Endereço de entrega</h2><button class="ghost" onclick="showReceiveChoices()">‹</button></div>
+        <div class="notice">Entregamos por zonas de distância a partir do estabelecimento${max?`, atualmente até ${max.toLocaleString('pt-BR')} km`:''}.</div>
+        <div class="deliveryAddressGridV13210">
+          <label class="deliveryStreetV13210"><span>Rua / Avenida *</span><input id="coStreet" class="field" autocomplete="address-line1" placeholder="Ex.: Avenida João Batista Ferrini"></label>
+          <label><span>Número *</span><input id="coNumber" class="field" inputmode="numeric" autocomplete="address-line2" placeholder="136"></label>
+          <label><span>Bairro *</span><input id="coDistrict" class="field" autocomplete="address-level3" placeholder="Ex.: Centro"></label>
+          <label><span>Complemento</span><input id="coComplement" class="field" placeholder="Casa, apto, bloco..."></label>
+        </div>
+        <div class="hint">Cidade da loja: ${esc(city)}. Os campos com * são obrigatórios para localizar a entrega.</div>
+        <label class="deliveryReferenceV13210">Referência *</label>
+        <input id="coRef" class="field" placeholder="Ex.: ao lado da farmácia, portão azul">
+        <div class="hint">A referência é obrigatória para facilitar a entrega.</div>
+        <div id="deliveryCalcStatusV1328" class="notice" style="display:none"></div>
+        <div class="checkoutSticky"><button id="deliveryContinueV1328" class="btn" onclick="saveDeliveryAndPay()">Calcular entrega e continuar</button></div>`);
+      return;
+    }
+
+    // Fluxo por bairros também passa a exigir referência.
+    const ne=(o.neighborhoods||[]).filter(n=>n.enabled!==false),
+      opts=ne.map(n=>`<option value="${esc(n.name)}">${esc(n.name)} — ${brl(n.fee)}</option>`).join('');
+    showModal(`<div class="row"><h2 class="checkoutTitle">Endereço de entrega</h2><button class="ghost" onclick="showReceiveChoices()">‹</button></div>
+      <label>Bairro</label><select id="coNeigh" class="field" onchange="window.checkoutState.neighborhood=this.value">${opts}</select>
+      <label>Rua / Avenida *</label><input id="coStreet" class="field" placeholder="Ex.: Rua das Flores">
+      <label>Número *</label><input id="coNumber" class="field" inputmode="numeric" placeholder="136">
+      <label>Complemento</label><input id="coComplement" class="field" placeholder="Casa, apto, bloco...">
+      <label>Referência *</label><input id="coRef" class="field" placeholder="Ex.: portão azul, ao lado de...">
+      <div class="checkoutSticky"><button class="btn" onclick="saveDeliveryAndPay()">Continuar</button></div>`);
+    if(ne.length)window.checkoutState.neighborhood=ne[0].name;
+  };
+
+  window.saveDeliveryAndPay=async function(){
+    const o=window.ensureDeliveryZonesV1327?window.ensureDeliveryZonesV1327():(cfg.store.orderConfig||{});
+    const area=o.deliveryCalc==='area' && Array.isArray(o.deliveryZonesKm) && o.deliveryZonesKm.length;
+    const street=document.getElementById('coStreet')?.value.trim()||'';
+    const number=document.getElementById('coNumber')?.value.trim()||'';
+    const complement=document.getElementById('coComplement')?.value.trim()||'';
+    const ref=document.getElementById('coRef')?.value.trim()||'';
+    const district=area
+      ? (document.getElementById('coDistrict')?.value.trim()||'')
+      : (document.getElementById('coNeigh')?.value||'');
+
+    if(!street){alert('Informe a rua ou avenida para entrega.');return}
+    if(!number){alert('Informe o número do endereço.');return}
+    if(!district){alert('Informe o bairro para entrega.');return}
+    if(!ref){alert('Informe uma referência para a entrega.');return}
+
+    const st=window.checkoutState||(window.checkoutState={});
+    st.street=street; st.number=number; st.neighborhood=district;
+    st.complement=complement; st.reference=ref;
+    st.address=[street,`nº ${number}`,district,complement].filter(Boolean).join(', ')+` · Referência: ${ref}`;
+
+    if(!area)return showPaymentChoices();
+
+    const btn=document.getElementById('deliveryContinueV1328');
+    if(btn){btn.disabled=true;btn.textContent='Calculando distância...'}
+    const status=document.getElementById('deliveryCalcStatusV1328');
+    if(status){status.style.display='block';status.className='notice';status.textContent='Localizando o endereço e calculando a rota...'}
+
+    try{
+      // A função existente acrescentaria novamente a cidade. Enviamos aqui o
+      // endereço estruturado; a busca resultante fica rua+número+bairro+cidade.
+      const query=[street,number,district,storeCityOnlyV13210()].filter(Boolean).join(', ');
+      const r=await window.calculateDeliveryZoneV1328(query);
+      if(!r.zone){
+        const max=o.deliveryZonesKm.reduce((m,z)=>Math.max(m,+z.maxKm||0),0);
+        if(o.allowOutside){
+          st.deliveryZoneFee=null;st.deliveryOutsideZone=true;
+          status.textContent=`O endereço fica a aproximadamente ${r.km.toLocaleString('pt-BR')} km, fora das zonas configuradas. A taxa ficará a combinar.`;
+          await new Promise(res=>setTimeout(res,450));return showPaymentChoices();
+        }
+        status.className='notice deliveryZoneErrorV1328';
+        status.textContent=`Este endereço fica a aproximadamente ${r.km.toLocaleString('pt-BR')} km e está fora da área de entrega${max?` (até ${max.toLocaleString('pt-BR')} km)`:''}.`;
+        return;
+      }
+      st.deliveryOutsideZone=false;
+      status.textContent=`Distância aproximada: ${r.km.toLocaleString('pt-BR')} km · zona até ${(+r.zone.maxKm).toLocaleString('pt-BR')} km · taxa ${brl(+r.zone.fee||0)}.`;
+      await new Promise(res=>setTimeout(res,450));showPaymentChoices();
+    }catch(e){
+      console.error('Falha ao calcular zona de entrega:',e);
+      status.className='notice deliveryZoneErrorV1328';
+      status.textContent='Não conseguimos localizar esse endereço. Confira rua/avenida, número e bairro e tente novamente.';
+    }finally{
+      const b=document.getElementById('deliveryContinueV1328');
+      if(b){b.disabled=false;b.textContent='Calcular entrega e continuar'}
+    }
+  };
+
+  // Corrige também o resumo "origem: Cidade não informada" da configuração.
+  const editDeliverySettingsBaseV13210=window.editDeliverySettings;
+  window.editDeliverySettings=function(){
+    const r=editDeliverySettingsBaseV13210.apply(this,arguments);
+    const box=document.getElementById('zonesBoxV1327');
+    if(box){
+      const hint=box.querySelector('.hint');
+      const o=window.ensureDeliveryZonesV1327();
+      if(hint)hint.textContent=`${o.deliveryZonesKm.length} zona(s) configurada(s) · origem: ${window.deliveryCityFromAddressV1327()}`;
+    }
+    return r;
+  };
+
+  const css=document.createElement('style');
+  css.textContent=`
+    .deliveryAddressGridV13210{display:grid;grid-template-columns:2fr 1fr;gap:10px;margin-top:12px}
+    .deliveryAddressGridV13210 label>span{display:block;margin-bottom:6px;font-weight:700}
+    .deliveryAddressGridV13210 .field{margin:0}
+    .deliveryStreetV13210{grid-column:1/-1}
+    .deliveryReferenceV13210{display:block;margin-top:14px}
+    @media(max-width:430px){.deliveryAddressGridV13210{grid-template-columns:1fr 1fr}.deliveryStreetV13210{grid-column:1/-1}}
+  `;
+  document.head.appendChild(css);
+})();
+</script>
+<!-- v1.32.10: endereço de entrega em campos, referência obrigatória e origem da cidade corrigida. -->
 
 </body></html>
