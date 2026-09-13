@@ -11887,4 +11887,93 @@ initializeOnlineStateV13();
 })();
 </script>
 
+<!-- v1.32.46: footer seguro do editor no celular / evita salvar encostado na barra do Android -->
+<style id="pedeviaV13246ProductFooterFix">
+  /* Mantém a ação principal sempre acima dos botões auxiliares e longe da barra do Android. */
+  #sheet .stickySave{
+    bottom:0!important;
+    z-index:30!important;
+    margin-top:14px!important;
+    padding:12px 0 calc(14px + env(safe-area-inset-bottom))!important;
+    background:var(--modal-bg,#fff)!important;
+    box-shadow:0 -12px 24px rgba(0,0,0,.07)!important;
+    flex-wrap:wrap!important;
+    align-items:stretch!important;
+  }
+  #sheet .stickySave > .btn{
+    order:-10!important;
+    flex:1 0 100%!important;
+    width:100%!important;
+    min-height:54px!important;
+    position:relative!important;
+    z-index:2!important;
+  }
+  #sheet .stickySave > .ghost,
+  #sheet .stickySave > .dangerBtn,
+  #sheet .stickySave > .duplicateProductBtn{
+    order:1!important;
+    min-height:48px!important;
+  }
+  #sheet{scroll-padding-bottom:190px!important;}
+  @media(max-width:520px){
+    #sheet .stickySave{gap:8px!important;}
+    #sheet .stickySave > .ghost,
+    #sheet .stickySave > .dangerBtn,
+    #sheet .stickySave > .duplicateProductBtn{
+      flex:1 1 calc(33.333% - 8px)!important;
+      min-width:0!important;
+    }
+  }
+</style>
+<script>
+// ===== v1.32.46: AÇÃO PRINCIPAL DO PRODUTO SEMPRE ACESSÍVEL =====
+(function(){
+  window.PEDEVIA_VERSION='1.32.46';
+
+  function normalizeStickySaveV13246(){
+    const sheet=document.getElementById('sheet');
+    if(!sheet)return;
+    sheet.querySelectorAll('.stickySave').forEach(footer=>{
+      const primary=footer.querySelector('.btn');
+      if(!primary)return;
+      primary.dataset.noAutoBusy='1';
+      if(/salvar\s+produto/i.test(primary.textContent||'')){
+        primary.id='saveProductBtnV132';
+        primary.dataset.pedeviaProductSave='1';
+      }
+    });
+  }
+
+  // Toda reabertura do editor (inclusive depois de editar Caldas/Complementos/Adicionais)
+  // recebe novamente o botão principal no topo do rodapé.
+  const baseEditProductV13246=window.editProduct;
+  if(typeof baseEditProductV13246==='function'){
+    window.editProduct=function(id){
+      const r=baseEditProductV13246.apply(this,arguments);
+      requestAnimationFrame(()=>{
+        normalizeStickySaveV13246();
+        const sheet=document.getElementById('sheet');
+        if(sheet) sheet.style.scrollPaddingBottom='190px';
+      });
+      return r;
+    };
+  }
+
+  // Também cobre os editores internos de grupos, cujo botão "Concluir edição"
+  // antes podia terminar exatamente na região da barra de navegação do Android.
+  const obs=new MutationObserver(()=>normalizeStickySaveV13246());
+  const start=()=>{
+    const sheet=document.getElementById('sheet');
+    if(sheet){
+      obs.observe(sheet,{childList:true,subtree:true});
+      normalizeStickySaveV13246();
+    }
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
+  else start();
+
+  try{ if(typeof window.applyPedeviaVersion==='function')window.applyPedeviaVersion(); }catch(e){}
+})();
+</script>
+<!-- /v1.32.46 -->
 </body></html>
