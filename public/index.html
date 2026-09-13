@@ -2456,7 +2456,7 @@ saveGeneralBrand=async function(){
 };
 
 // ===== v1.7: VERSIONAMENTO E MIGRAÇÕES DE DADOS =====
-const APP_VERSION='1.32.15';
+const APP_VERSION='1.32.16';
 const DATA_SCHEMA_VERSION=4;
 
 /*
@@ -9759,7 +9759,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.1: CONSOLIDAÇÃO DO GRANDE CONSERTO + AUDITORIA DE OVERRIDES =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.15';
+  window.PEDEVIA_VERSION='1.32.16';
 
   // 1) Placeholder da marca: uma frase única, legível e realmente centralizada.
   const st=document.createElement('style');
@@ -9943,7 +9943,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.2: CORREÇÃO DE FEEDBACK AO SALVAR PRODUTO =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.15';
+  window.PEDEVIA_VERSION='1.32.16';
 
   // O salvamento já podia concluir com sucesso, mas um elemento de feedback
   // podia desaparecer após a re-renderização e uma camada antiga tentava
@@ -10005,7 +10005,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.3: CONFIGURAÇÕES DE PEDIDOS TAMBÉM PARA ADMINISTRADORES DAS LOJAS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.15';
+  window.PEDEVIA_VERSION='1.32.16';
 
   // Abre a configuração pelo mesmo fluxo usado pelo painel principal.
   // Não depende de ser Point ou tenant; a persistência continua sendo roteada
@@ -10084,7 +10084,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.4: SESSÃO PERSISTENTE + ATUALIZAÇÃO DE PÁGINA SEM NOVO LOGIN =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.15';
+  window.PEDEVIA_VERSION='1.32.16';
 
   let restoringSessionV1324=false;
 
@@ -10163,7 +10163,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.5: ROTA DIRETA E DEFINITIVA PARA CONFIGURAÇÕES DE PEDIDOS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.15';
+  window.PEDEVIA_VERSION='1.32.16';
 
   // A tela profissional v1.30 recria o cabeçalho de Pedidos. Em tenants,
   // depender da cadeia histórica adminOrdersView -> adminOrders estava deixando
@@ -10275,7 +10275,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.6: NORMALIZAÇÃO REAL DAS CONFIGURAÇÕES DE PEDIDOS DOS TENANTS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.15';
+  window.PEDEVIA_VERSION='1.32.16';
 
   function normalizeTenantOrderConfigV1326(){
     cfg.store=cfg.store||{};
@@ -10435,7 +10435,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.13: REMOÇÃO DEFINITIVA DE ZONAS DE ENTREGA POR KM =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.15';
+  window.PEDEVIA_VERSION='1.32.16';
 
   function sanitizeDeliveryV13213(){
     if(!window.cfg || !cfg.store) return;
@@ -10512,7 +10512,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.14: ENTREGA SIMPLIFICADA + ENDEREÇO ÚNICO E CONSISTENTE =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.15';
+  window.PEDEVIA_VERSION='1.32.16';
 
   function clean(v){ return String(v??'').trim(); }
   function storeAddressV13214(){
@@ -10625,24 +10625,63 @@ initializeOnlineStateV13();
 <!-- v1.32.14: removidas da UI taxa por áreas e taxa por distância; endereço salvo propagado nos cartões públicos/admin. -->
 
 
+
 <script>
-// ===== v1.32.15: MIGRAÇÃO DOS MODOS DE ENTREGA REMOVIDOS =====
+// ===== v1.32.16: SALVAMENTO DE ENTREGA + CÁLCULO DO CLIENTE CONSISTENTES =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.15';
-  function normalize(){
-    try{
-      const o=window.cfg?.store?.orderConfig;
-      if(!o)return;
-      const m=String(o.deliveryCalc||'').toLowerCase();
-      if(m==='area'||m==='distance'||m==='zones_km'){
-        o.deliveryCalc=(Array.isArray(o.deliveryNeighborhoods)&&o.deliveryNeighborhoods.length)?'neighborhood':'fixed';
-      }
-      delete o.deliveryAreas; delete o.deliveryDistance; delete o.distanceRates;
-      delete o.deliveryZonesKm; delete o.deliveryDistanceZones;
-    }catch(_){}
+  window.PEDEVIA_VERSION='1.32.16';
+  const norm=v=>String(v??'').trim().toLowerCase();
+
+  function selectedDeliveryMode(){
+    const r=document.querySelector('input[name="calc"]:checked');
+    return r ? norm(r.value) : norm(window.cfg?.store?.orderConfig?.deliveryCalc||'fixed');
   }
-  normalize();
-  document.addEventListener('click',normalize,true);
+
+  function normalizeDeliveryConfig(mode){
+    const o=window.cfg?.store?.orderConfig;
+    if(!o)return;
+    mode=norm(mode||o.deliveryCalc||'fixed');
+    if(!['fixed','neighborhood'].includes(mode)) mode='fixed';
+    o.deliveryCalc=mode;
+    // Campos obsoletos não participam mais de nenhum cálculo.
+    delete o.deliveryAreas; delete o.deliveryDistance; delete o.distanceRates;
+    delete o.deliveryZonesKm; delete o.deliveryDistanceZones;
+  }
+
+  // Antes do botão Concluir executar o salvamento nativo, grava apenas o modo realmente selecionado.
+  document.addEventListener('click',function(e){
+    const b=e.target.closest('button');
+    if(!b)return;
+    const t=norm(b.innerText);
+    if(t==='concluir' && b.closest('.sheet,.modal,.bottomSheet,[role="dialog"]')){
+      normalizeDeliveryConfig(selectedDeliveryMode());
+    }
+  },true);
+
+  // Compatibilidade no cliente: se a loja está em taxa fixa, bairros antigos jamais devem comandar a taxa.
+  window.pedeviaDeliveryModeV13216=function(){
+    const o=window.cfg?.store?.orderConfig||{};
+    const m=norm(o.deliveryCalc||'fixed');
+    return ['fixed','neighborhood'].includes(m)?m:'fixed';
+  };
+
+  // Corrige visualizações antigas que ainda descrevam cobrança por bairros quando o modo atual é fixo.
+  function refreshCustomerDeliveryCopy(){
+    if(window.pedeviaDeliveryModeV13216()!=='fixed')return;
+    const o=window.cfg?.store?.orderConfig||{};
+    const fee=Number(o.deliveryFee ?? window.cfg?.store?.deliveryFee ?? 0);
+    document.querySelectorAll('*').forEach(el=>{
+      if(el.children.length)return;
+      const t=norm(el.textContent);
+      if(t.includes('taxa por bairro')||t.includes('taxa de acordo com o bairro')){
+        el.textContent=fee>0?`Taxa fixa de entrega: R$ ${fee.toFixed(2).replace('.',',')}`:'Entrega grátis';
+      }
+    });
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',refreshCustomerDeliveryCopy,{once:true});
+  else refreshCustomerDeliveryCopy();
+  new MutationObserver(()=>requestAnimationFrame(refreshCustomerDeliveryCopy))
+    .observe(document.documentElement,{subtree:true,childList:true});
 })();
 </script>
 
