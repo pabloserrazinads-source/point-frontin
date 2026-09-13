@@ -1171,11 +1171,20 @@ function showReceiveChoices(){
 }
 function selectReceive(m){window.checkoutState.mode=m;if(m==='delivery')showDeliveryForm();else if(m==='dinein')showDineinForm();else showPaymentChoices()}
 function showDeliveryForm(){
- let o=cfg.store.orderConfig||{},ne=(o.neighborhoods||[]).filter(n=>n.enabled!==false),opts=ne.map(n=>`<option value="${esc(n.name)}">${esc(n.name)} — ${brl(n.fee)}</option>`).join('');
- let h=`<div class="row"><h2 class="checkoutTitle">Endereço de entrega</h2><button class="ghost" onclick="showReceiveChoices()">‹</button></div><label>Bairro</label><select id="coNeigh" class="field" onchange="window.checkoutState.neighborhood=this.value">${opts}</select><label>Rua, número e complemento</label><input id="coAddr" class="field" placeholder="Ex.: Rua..., 136 - casa 2"><label>Referência</label><input id="coRef" class="field" placeholder="Ex.: ao lado de..."><div class="checkoutSticky"><button class="btn" onclick="saveDeliveryAndPay()">Continuar</button></div>`;
- showModal(h); if(ne.length)window.checkoutState.neighborhood=ne[0].name;
+ let o=cfg.store.orderConfig||{},mode=o.deliveryCalc==='neighborhood'?'neighborhood':'fixed';
+ let ne=(o.neighborhoods||[]).filter(n=>n.enabled!==false);
+ let opts=ne.map(n=>`<option value="${esc(n.name)}">${esc(n.name)} — ${brl(n.fee)}</option>`).join('');
+ let bh=mode==='neighborhood'?`<label>Bairro *</label><select id="coNeigh" class="field" onchange="window.checkoutState.neighborhood=this.value">${opts}</select>`:'';
+ showModal(`<div class="row"><h2 class="checkoutTitle">Endereço de entrega</h2><button class="ghost" onclick="showReceiveChoices()">‹</button></div>${bh}<label>Rua, número e complemento</label><input id="coAddr" class="field" placeholder="Ex.: Rua..., 136 - casa 2"><label>Referência</label><input id="coRef" class="field" placeholder="Ex.: ao lado de..."><div class="checkoutSticky"><button class="btn" onclick="saveDeliveryAndPay()">Continuar</button></div>`);
+ window.checkoutState.neighborhood=(mode==='neighborhood'&&ne.length)?ne[0].name:'';
 }
-function saveDeliveryAndPay(){let a=$('#coAddr').value.trim();if(!a){alert('Informe o endereço de entrega.');return}window.checkoutState.address=a+($('#coRef').value.trim()?' · '+$('#coRef').value.trim():'');window.checkoutState.neighborhood=$('#coNeigh').value;showPaymentChoices()}
+function saveDeliveryAndPay(){
+ let a=$('#coAddr')?.value.trim()||'';if(!a){alert('Informe o endereço de entrega.');return}
+ let mode=cfg.store.orderConfig?.deliveryCalc==='neighborhood'?'neighborhood':'fixed';
+ window.checkoutState.address=a+($('#coRef')?.value.trim()?' · '+$('#coRef').value.trim():'');
+ window.checkoutState.neighborhood=mode==='neighborhood'?($('#coNeigh')?.value||''):'';
+ showPaymentChoices()
+}
 function showDineinForm(){let req=!!cfg.store.orderConfig?.dineinTableRequired;showModal(`<div class="row"><h2 class="checkoutTitle">Consumo no local</h2><button class="ghost" onclick="showReceiveChoices()">‹</button></div><label>Número da mesa ${req?'*':'(opcional)'}</label><input id="coTable" class="field" inputmode="numeric"><div class="checkoutSticky"><button class="btn" onclick="saveDineinAndPay(${req})">Continuar</button></div>`)}
 function saveDineinAndPay(req){let v=$('#coTable').value.trim();if(req&&!v){alert('Informe o número da mesa.');return}window.checkoutState.table=v;showPaymentChoices()}
 function paymentKeyLabel(k){return ({pix:'Pix',cash:'Dinheiro',credit:'Crédito',debit:'Débito',foodVoucher:'Vale alimentação',mealVoucher:'Vale refeição'})[k]||k}
@@ -1197,7 +1206,7 @@ function finishWhatsApp(){
  let sub=cartSubtotal(),fee=cartDeliveryFee(),adj=paymentAdjustment(sub+fee),total=sub+fee+adj,L=['🍧 *PEDIDO POINT DO AÇAÍ FRONTIN*',''];
  cart.forEach(i=>{let p=cfg.products.find(x=>x.id===i.pid);L.push(`*${i.qty}x ${p?.name||'Produto'}* — ${brl(i.unit*i.qty)}`);i.groups.forEach(g=>L.push(`${g.name}: ${g.items.map(x=>(x.qty&&x.qty>1?x.qty+'x ':'')+x.name).join(', ')}`));if(i.obs)L.push('Obs.: '+i.obs);L.push('')});
  L.push('Cliente: '+st.customer,'Celular: '+st.phone,'Tipo: '+(st.mode==='delivery'?'Entrega':st.mode==='pickup'?'Retirada':'Consumo no local'));
- if(st.mode==='delivery')L.push('Bairro: '+st.neighborhood,'Endereço: '+st.address);if(st.mode==='dinein'&&st.table)L.push('Mesa: '+st.table);
+ if(st.mode==='delivery'){if(cfg.store.orderConfig?.deliveryCalc==='neighborhood'&&st.neighborhood)L.push('Bairro: '+st.neighborhood);L.push('Endereço: '+st.address);}if(st.mode==='dinein'&&st.table)L.push('Mesa: '+st.table);
  L.push('Pagamento: '+paymentKeyLabel(st.payment),'Subtotal: '+brl(sub));if(fee)L.push('Taxa de entrega: '+brl(fee));if(adj)L.push((adj>0?'Taxa':'Desconto')+' de pagamento: '+brl(adj));L.push('*TOTAL: '+brl(total)+'*');if(st.note)L.push('Observações: '+st.note);
  location.href='https://wa.me/'+cfg.store.whatsapp+'?text='+encodeURIComponent(L.join('\n'));
 }
@@ -1652,7 +1661,7 @@ function finishWhatsApp(){
  let st=window.checkoutState;st.customer=$('#coName').value.trim();st.phone=$('#coPhone').value.trim();st.note=$('#coObs').value.trim();if(!st.customer||!st.phone){alert('Informe seu nome e celular.');return}
  let sub=sum(),od=activeOfferDiscount(),discount=od.amount,afterOffer=Math.max(0,sub-discount),fee=cartDeliveryFee(),adj=paymentAdjustment(afterOffer+fee),total=afterOffer+fee+adj,L=['🍧 *PEDIDO POINT DO AÇAÍ FRONTIN*',''];
  cart.forEach(i=>{let p=cfg.products.find(x=>x.id===i.pid);L.push(`*${i.qty}x ${p?.name||'Produto'}${i.variantName?' · '+i.variantName:''}* — ${brl(i.unit*i.qty)}`);i.groups.forEach(g=>L.push(`${g.name}: ${g.items.map(x=>(x.qty&&x.qty>1?x.qty+'x ':'')+x.name).join(', ')}`));if(i.obs)L.push('Obs.: '+i.obs);L.push('')});
- L.push('Cliente: '+st.customer,'Celular: '+st.phone,'Tipo: '+(st.mode==='delivery'?'Entrega':st.mode==='pickup'?'Retirada':'Consumo no local'));if(st.mode==='delivery')L.push('Bairro: '+st.neighborhood,'Endereço: '+st.address);if(st.mode==='dinein'&&st.table)L.push('Mesa: '+st.table);L.push('Pagamento: '+paymentKeyLabel(st.payment),'Subtotal: '+brl(sub));if(discount)L.push('Oferta: '+od.offer.title+' (-'+od.offer.percent+'%): - '+brl(discount));if(fee)L.push('Taxa de entrega: '+brl(fee));if(adj)L.push((adj>0?'Taxa':'Desconto')+' de pagamento: '+brl(adj));L.push('*TOTAL: '+brl(total)+'*');if(st.note)L.push('Observações: '+st.note);location.href='https://wa.me/'+cfg.store.whatsapp+'?text='+encodeURIComponent(L.join('\n'));
+ L.push('Cliente: '+st.customer,'Celular: '+st.phone,'Tipo: '+(st.mode==='delivery'?'Entrega':st.mode==='pickup'?'Retirada':'Consumo no local'));if(st.mode==='delivery'){if(cfg.store.orderConfig?.deliveryCalc==='neighborhood'&&st.neighborhood)L.push('Bairro: '+st.neighborhood);L.push('Endereço: '+st.address);}if(st.mode==='dinein'&&st.table)L.push('Mesa: '+st.table);L.push('Pagamento: '+paymentKeyLabel(st.payment),'Subtotal: '+brl(sub));if(discount)L.push('Oferta: '+od.offer.title+' (-'+od.offer.percent+'%): - '+brl(discount));if(fee)L.push('Taxa de entrega: '+brl(fee));if(adj)L.push((adj>0?'Taxa':'Desconto')+' de pagamento: '+brl(adj));L.push('*TOTAL: '+brl(total)+'*');if(st.note)L.push('Observações: '+st.note);location.href='https://wa.me/'+cfg.store.whatsapp+'?text='+encodeURIComponent(L.join('\n'));
 }
 
 // Endereço com mapa real. O iframe usa a busca do Google Maps e não precisa de chave de API.
@@ -2449,7 +2458,7 @@ saveGeneralBrand=async function(){
 };
 
 // ===== v1.7: VERSIONAMENTO E MIGRAÇÕES DE DADOS =====
-const APP_VERSION='1.32.17';
+const APP_VERSION='1.32.18';
 const DATA_SCHEMA_VERSION=4;
 
 /*
@@ -3041,7 +3050,7 @@ function buildOrderTextV111(){
     'Tipo: '+(st.mode==='delivery'?'Entrega':st.mode==='pickup'?'Retirada':'Consumo no local')
   );
 
-  if(st.mode==='delivery')L.push('Bairro: '+(st.neighborhood||''),'Endereço: '+(st.address||''));
+  if(st.mode==='delivery'){if(cfg.store.orderConfig?.deliveryCalc==='neighborhood'&&st.neighborhood)L.push('Bairro: '+st.neighborhood);L.push('Endereço: '+(st.address||''));}
   if(st.mode==='dinein'&&st.table)L.push('Mesa: '+st.table);
 
   L.push('Pagamento: '+paymentKeyLabel(st.payment),'Subtotal: '+brl(t.sub));
@@ -3365,7 +3374,7 @@ showDeliveryForm=function(){
   const cached=loadCustomerProfileV114();
   _showDeliveryFormV114Base();
 
-  const neigh=document.getElementById('coNeigh');
+  const neigh=cfg.store.orderConfig?.deliveryCalc==='neighborhood'?document.getElementById('coNeigh'):null;
   const addr=document.getElementById('coAddr');
   const ref=document.getElementById('coRef');
 
@@ -3387,7 +3396,7 @@ const _saveDeliveryAndPayV114Base=saveDeliveryAndPay;
 saveDeliveryAndPay=function(){
   const addr=document.getElementById('coAddr')?.value.trim()||'';
   const ref=document.getElementById('coRef')?.value.trim()||'';
-  const neigh=document.getElementById('coNeigh')?.value||'';
+  const neigh=cfg.store.orderConfig?.deliveryCalc==='neighborhood'?(document.getElementById('coNeigh')?.value||''):'';
   if(!addr){alert('Informe o endereço de entrega.');return}
 
   window.checkoutState.address=addr;
@@ -3691,7 +3700,7 @@ showDeliveryForm=function(){
   if(cachedPhone){
     getCustomerProfileV115(cachedPhone).then(profile=>{
       if(!profile)return;
-      const neigh=document.getElementById('coNeigh');
+      const neigh=cfg.store.orderConfig?.deliveryCalc==='neighborhood'?document.getElementById('coNeigh'):null;
       const addr=document.getElementById('coAddr');
       const ref=document.getElementById('coRef');
 
@@ -3711,7 +3720,7 @@ showDeliveryForm=function(){
 saveDeliveryAndPay=function(){
   const addr=document.getElementById('coAddr')?.value.trim()||'';
   const ref=document.getElementById('coRef')?.value.trim()||'';
-  const neigh=document.getElementById('coNeigh')?.value||'';
+  const neigh=cfg.store.orderConfig?.deliveryCalc==='neighborhood'?(document.getElementById('coNeigh')?.value||''):'';
   if(!addr){alert('Informe o endereço de entrega.');return}
 
   window.checkoutState.address=addr;
@@ -9752,7 +9761,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.1: CONSOLIDAÇÃO DO GRANDE CONSERTO + AUDITORIA DE OVERRIDES =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.17';
+  window.PEDEVIA_VERSION='1.32.18';
 
   // 1) Placeholder da marca: uma frase única, legível e realmente centralizada.
   const st=document.createElement('style');
@@ -9936,7 +9945,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.2: CORREÇÃO DE FEEDBACK AO SALVAR PRODUTO =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.17';
+  window.PEDEVIA_VERSION='1.32.18';
 
   // O salvamento já podia concluir com sucesso, mas um elemento de feedback
   // podia desaparecer após a re-renderização e uma camada antiga tentava
@@ -9998,7 +10007,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.3: CONFIGURAÇÕES DE PEDIDOS TAMBÉM PARA ADMINISTRADORES DAS LOJAS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.17';
+  window.PEDEVIA_VERSION='1.32.18';
 
   // Abre a configuração pelo mesmo fluxo usado pelo painel principal.
   // Não depende de ser Point ou tenant; a persistência continua sendo roteada
@@ -10077,7 +10086,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.4: SESSÃO PERSISTENTE + ATUALIZAÇÃO DE PÁGINA SEM NOVO LOGIN =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.17';
+  window.PEDEVIA_VERSION='1.32.18';
 
   let restoringSessionV1324=false;
 
@@ -10156,7 +10165,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.5: ROTA DIRETA E DEFINITIVA PARA CONFIGURAÇÕES DE PEDIDOS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.17';
+  window.PEDEVIA_VERSION='1.32.18';
 
   // A tela profissional v1.30 recria o cabeçalho de Pedidos. Em tenants,
   // depender da cadeia histórica adminOrdersView -> adminOrders estava deixando
@@ -10268,7 +10277,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.6: NORMALIZAÇÃO REAL DAS CONFIGURAÇÕES DE PEDIDOS DOS TENANTS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.17';
+  window.PEDEVIA_VERSION='1.32.18';
 
   function normalizeTenantOrderConfigV1326(){
     cfg.store=cfg.store||{};
@@ -10428,7 +10437,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.13: REMOÇÃO DEFINITIVA DE ZONAS DE ENTREGA POR KM =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.17';
+  window.PEDEVIA_VERSION='1.32.18';
 
   function sanitizeDeliveryV13213(){
     if(!window.cfg || !cfg.store) return;
@@ -10505,7 +10514,7 @@ initializeOnlineStateV13();
 <script>
 // ===== v1.32.14: ENTREGA SIMPLIFICADA + ENDEREÇO ÚNICO E CONSISTENTE =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.17';
+  window.PEDEVIA_VERSION='1.32.18';
 
   function clean(v){ return String(v??'').trim(); }
   function storeAddressV13214(){
@@ -10620,9 +10629,9 @@ initializeOnlineStateV13();
 
 
 <script>
-// ===== v1.32.17: ENTREGA FIXA/BAIRROS COERENTE =====
+// ===== v1.32.18: CHECKOUT RESPEITA O MODO DE TAXA =====
 (function(){
- window.PEDEVIA_VERSION='1.32.17';
+ window.PEDEVIA_VERSION='1.32.18';
  function normalize(){const s=window.cfg?.store,o=s?.orderConfig;if(!o)return;if(!['fixed','neighborhood'].includes(o.deliveryCalc))o.deliveryCalc='fixed';if(o.deliveryCalc==='fixed'){o.deliveryFixedFee=Number(o.deliveryFixedFee??s.deliveryFee??0)||0;s.deliveryFee=o.deliveryFixedFee;}}
  normalize();
  window.addEventListener('pageshow',()=>{normalize();try{renderShop()}catch(e){}});
