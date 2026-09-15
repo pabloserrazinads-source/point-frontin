@@ -66,13 +66,21 @@
   window.platformAdminStableV13230=platformAdminStableV13230;
 
   async function refreshMasterSlotV13230(force){
-    const slot=document.getElementById('platformMasterSlotV1201');
-    if(!slot) return;
     const ok=await platformAdminStableV13230(!!force);
-    // Só mexe se ainda estivermos na mesma tela/render.
-    const live=document.getElementById('platformMasterSlotV1201');
-    if(!live) return;
-    live.innerHTML=ok?moreCard('🏪','Sites dos clientes','Painel mestre para criar e administrar cardápios','openClientSitesMasterV120()'):'';
+    if(!ok)return false;
+
+    const content=document.getElementById('adminContent');
+    const list=content?.querySelector('.moreList');
+    if(!list)return false;
+
+    let slot=document.getElementById('platformMasterSlotV1201');
+    if(!slot){
+      slot=document.createElement('div');
+      slot.id='platformMasterSlotV1201';
+      list.appendChild(slot);
+    }
+    slot.innerHTML=moreCard('🏪','Sites dos clientes','Cadastrar e administrar estabelecimentos','openClientSitesMasterV120()');
+    return true;
   }
   window.loadPlatformMasterCardV1201=function(){return refreshMasterSlotV13230(false)};
 
@@ -99,4 +107,35 @@
   // Cobre sessão que já estava pronta antes deste script final carregar.
   setTimeout(()=>{refreshMasterSlotV13230(false);syncTenantCommercialV13230()},0);
   if(typeof window.applyPedeviaVersion==='function')window.applyPedeviaVersion();
+})();
+
+/* v1.32.49 stable3 — restauração robusta do menu mestre */
+(function(){
+  let busy=false;
+  async function ensureMasterCardStable3(){
+    if(busy)return;
+    const list=document.querySelector('#adminContent .moreList');
+    if(!list)return;
+    if(document.getElementById('platformMasterSlotV1201')?.textContent?.includes('Sites dos clientes'))return;
+    busy=true;
+    try{ await refreshMasterSlotV13230(true); }finally{ busy=false; }
+  }
+  const obs=new MutationObserver(()=>{setTimeout(ensureMasterCardStable3,0)});
+  const start=()=>{
+    const c=document.getElementById('adminContent');
+    if(c)obs.observe(c,{childList:true,subtree:true});
+    setTimeout(ensureMasterCardStable3,50);
+    setTimeout(ensureMasterCardStable3,400);
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
+
+  const old=window.adminMore||adminMore;
+  const wrapped=function(){
+    const r=old.apply(this,arguments);
+    setTimeout(ensureMasterCardStable3,50);
+    setTimeout(ensureMasterCardStable3,400);
+    return r;
+  };
+  window.adminMore=wrapped;
+  try{adminMore=wrapped}catch(e){}
 })();
