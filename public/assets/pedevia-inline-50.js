@@ -247,3 +247,69 @@
   },false);
  });
 })();
+
+
+/* PEDEVIA CSP — NAMED ACTION COMPATIBILITY FIX
+   Corrige Configurações Gerais/Pedidos após remoção dos onclick.
+   Sem eval/new Function: interpreta apenas chamadas nomeadas com argumentos simples.
+*/
+(function(){
+  if(window.__pedeviaNamedActionCompat)return;
+  window.__pedeviaNamedActionCompat=true;
+
+  function splitArgs(src){
+    const out=[]; let cur="", q=null, esc=false, depth=0;
+    for(let i=0;i<src.length;i++){
+      const ch=src[i];
+      if(q){
+        cur+=ch;
+        if(esc) esc=false;
+        else if(ch==="\\") esc=true;
+        else if(ch===q) q=null;
+        continue;
+      }
+      if(ch==="'"||ch==='""'){q=ch;cur+=ch;continue;}
+      if(ch==="("||ch==="["||ch==="{"){depth++;cur+=ch;continue;}
+      if(ch===")"||ch==="]"||ch==="}"){depth--;cur+=ch;continue;}
+      if(ch===","&&depth===0){out.push(cur.trim());cur="";continue;}
+      cur+=ch;
+    }
+    if(cur.trim())out.push(cur.trim());
+    return out;
+  }
+  function primitive(v){
+    v=(v||"").trim();
+    if((v[0]==="'"&&v[v.length-1]==="'")||(v[0]==='"'&&v[v.length-1]==='"')){
+      return v.slice(1,-1).replace(/\\(['"\\])/g,"$1");
+    }
+    if(v==="true")return true;
+    if(v==="false")return false;
+    if(v==="null")return null;
+    if(v==="undefined")return undefined;
+    if(v!==""&&!Number.isNaN(Number(v)))return Number(v);
+    return v;
+  }
+  function invoke(action){
+    const m=String(action||"").trim().match(/^([A-Za-z_$][\w$]*)\((.*)\)$/s);
+    if(!m)return false;
+    const fn=window[m[1]];
+    if(typeof fn!=="function")return false;
+    const args=m[2].trim()?splitArgs(m[2]).map(primitive):[];
+    fn.apply(window,args);
+    return true;
+  }
+
+  document.addEventListener("click",function(event){
+    const el=event.target&&event.target.closest?event.target.closest("[data-pedevia-named-action]"):null;
+    if(!el)return;
+    const action=decodeURIComponent(el.getAttribute("data-pedevia-named-action")||"");
+    if(!action)return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    try{
+      if(!invoke(action)) console.warn("[Pedevia] Ação não resolvida:",action);
+    }catch(err){
+      console.error("[Pedevia] Falha em ação de configuração:",action,err);
+    }
+  },true);
+})();
