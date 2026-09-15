@@ -1,4 +1,4 @@
-const CACHE='pedevia-shell-v13248b';
+const CACHE='pedevia-shell-v13249csp';
 const SHELL=['/','/manifest.webmanifest','/pedevia-icon.svg'];
 self.addEventListener('install',e=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).catch(()=>{}));
