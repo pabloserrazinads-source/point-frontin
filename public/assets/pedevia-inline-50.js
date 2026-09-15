@@ -1,6 +1,6 @@
 
 (function(){
-  const CURRENT_VERSION='1.32.48';
+  const CURRENT_VERSION='1.32.49';
   window.PEDEVIA_VERSION=CURRENT_VERSION;
 
   // Não depende da cadeia histórica de wrappers de closeModal.
@@ -34,7 +34,7 @@
     if(b && !b.hasAttribute('type')) b.setAttribute('type','button');
   },true);
 
-  // v1.32.48b — compatibilidade de handlers após externalização dos scripts.
+  // v1.32.49 — compatibilidade de handlers após externalização dos scripts.
   // Os controles do cardápio/checkout ainda são gerados com atributos onclick.
   // Expõe explicitamente os pontos de entrada no objeto global para preservar
   // o mesmo comportamento da versão monolítica em todos os tenants.
@@ -48,7 +48,7 @@
     if(typeof qty==='function') window.qty=qty;
     if(typeof changeOptQty==='function') window.changeOptQty=changeOptQty;
     if(typeof handleChoiceChange==='function') window.handleChoiceChange=handleChoiceChange;
-  }catch(e){ console.error('Pedevia handler bridge v1.32.48b',e); }
+  }catch(e){ console.error('Pedevia handler bridge v1.32.49',e); }
 
   if(typeof window.applyPedeviaVersion==='function') window.applyPedeviaVersion();
 })();

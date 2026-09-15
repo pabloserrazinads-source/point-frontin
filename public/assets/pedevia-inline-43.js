@@ -1,7 +1,7 @@
 
-// ===== v1.32.48: LOJA EXCLUÍDA NÃO PODE SOBREVIVER PELO CACHE =====
+// ===== v1.32.49: LOJA EXCLUÍDA NÃO PODE SOBREVIVER PELO CACHE =====
 (function(){
-  const CURRENT_VERSION='1.32.48';
+  const CURRENT_VERSION='1.32.49';
   window.PEDEVIA_VERSION=CURRENT_VERSION;
   const CACHE_PREFIX='pedevia:public-store-cache:';
 

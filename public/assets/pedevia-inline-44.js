@@ -1,6 +1,6 @@
 
 (function(){
-  const CURRENT_VERSION='1.32.48';
+  const CURRENT_VERSION='1.32.49';
   window.PEDEVIA_VERSION=CURRENT_VERSION;
 
   function tenantSlugV13233(){

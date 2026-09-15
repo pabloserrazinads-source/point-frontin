@@ -911,7 +911,7 @@ maybeHandleInviteV122=async function(){
 
 // Exibe a versão nova no cabeçalho administrativo.
 setTimeout(()=>{
-  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9]/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.32.48')});
+  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9]/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.32.49')});
 },0);
 
 
@@ -1131,7 +1131,7 @@ finishWhatsApp=async function(){
 
 // Mostra a versão nova no cabeçalho administrativo.
 setTimeout(()=>{
-  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.32.48')});
+  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.32.49')});
 },0);
 
 
@@ -1282,7 +1282,7 @@ adminMore=function(){
 };
 
 // Versão exibida no Admin.
-setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.32.48')})},0);
+setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.32.49')})},0);
 
 
 // ===== v1.27.0: AUDITORIA GERAL PEDEVIA =====
@@ -1425,7 +1425,7 @@ const _renderAdminV127Clean=renderAdmin;
 renderAdmin=function(){_renderAdminV127Clean();setTimeout(cleanLegacyLabelsV127,0)};
 
 syncServerClockV127();setInterval(syncServerClockV127,10*60*1000);
-setTimeout(()=>{sanitizeTenantV127();cleanLegacyLabelsV127();document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.48')})},0);
+setTimeout(()=>{sanitizeTenantV127();cleanLegacyLabelsV127();document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.49')})},0);
 
 // --- Backups de configuração + resumo do painel mestre ---
 async function openConfigBackupsV127(){
@@ -1670,20 +1670,11 @@ const _renderClientSitesListV130Base=renderClientSitesListV120;
 renderClientSitesListV120=function(rows){_renderClientSitesListV130Base(rows);const host=document.getElementById('clientSitesListV120');if(host&&!document.getElementById('masterSummaryV130')){const d=document.createElement('div');d.id='masterSummaryV130';d.className='v126StatsGrid';host.prepend(d);PedeviaV130.masterMetrics()}};
 
 // Versão.
-setTimeout(()=>{PedeviaV130.init();document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.48')})},600);
+setTimeout(()=>{PedeviaV130.init();document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.49')})},600);
 
 // ===== v1.30.1 extras: Storage de imagens + UX de checkout =====
 Object.assign(PedeviaV130,{
-  async dataUrlToBlob(data){
-    const s=String(data||'');
-    const m=s.match(/^data:([^;,]+)?(;base64)?,(.*)$/s);
-    if(!m)throw new Error('Imagem temporária inválida.');
-    const mime=m[1]||'application/octet-stream';
-    const raw=m[2]?atob(m[3]):decodeURIComponent(m[3]);
-    const bytes=new Uint8Array(raw.length);
-    for(let i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);
-    return new Blob([bytes],{type:mime});
-  },
+  async dataUrlToBlob(data){const r=await fetch(data);return await r.blob()},
   async uploadMedia(dataUrl,path){
     const blob=await this.dataUrlToBlob(dataUrl),bucket=supabaseClient.storage.from('pedevia-media');
     const {error}=await bucket.upload(path,blob,{upsert:true,contentType:blob.type||'image/jpeg',cacheControl:'31536000'});if(error)throw error;
@@ -1927,7 +1918,7 @@ adminMore=function(){_adminMoreV130MediaBase();const list=document.querySelector
   };
 
   // Atualiza a versão visível sem interferir nas demais camadas.
-  setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.48')})},900);
+  setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.49')})},900);
 })();
 
 
@@ -1969,53 +1960,8 @@ adminMore=function(){_adminMoreV130MediaBase();const list=document.querySelector
   renderAdmin=function(){baseRender();if(window.pedeviaTenantV121)ownerBillingCardV1311()};
   const baseEnter=enterTenantAdminV122;
   enterTenantAdminV122=async function(){const ok=await baseEnter();if(window.pedeviaTenantV121)ownerBillingCardV1311();return ok};
-  setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.48')})},1000);
+  setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.49')})},1000);
 })();
 
 // Inicializa somente depois de todas as camadas de compatibilidade do arquivo terem sido carregadas.
 // v1.31.14: inicialização adiada para depois de todas as camadas.
-
-/* PEDEVIA QUICK FIX — PRODUTO + MENU DE ESTABELECIMENTOS
-   1) dataUrlToBlob não usa fetch(data:), evitando "Failed to fetch" sob CSP.
-   2) Reforça o cartão Sites dos clientes para o administrador mestre após o render final.
-*/
-setTimeout(function(){
-  try{
-    const base=window.adminMore;
-    if(typeof base!=="function" || base.__pedeviaMasterMenuQuickFix)return;
-    const wrapped=function(){
-      const r=base.apply(this,arguments);
-      setTimeout(async function(){
-        try{
-          const list=document.querySelector("#adminContent .moreList");
-          if(!list)return;
-          if([...list.querySelectorAll(".moreCard")].some(x=>/Sites dos clientes/i.test(x.textContent||"")))return;
-
-          let ok=false;
-          if(typeof window.platformAdminStableV13230==="function"){
-            ok=await window.platformAdminStableV13230(true);
-          }else if(window.supabaseClient){
-            const {data:sd}=await supabaseClient.auth.getSession();
-            if(sd?.session){
-              const {data,error}=await supabaseClient.rpc("is_platform_admin");
-              if(error)throw error;
-              ok=data===true;
-            }
-          }
-          if(!ok)return;
-
-          const holder=document.createElement("div");
-          holder.id="platformMasterQuickFixV13249";
-          holder.innerHTML=moreCard("🏪","Sites dos clientes","Painel mestre para criar e administrar cardápios","openClientSitesMasterV120()");
-          list.appendChild(holder);
-        }catch(e){
-          console.warn("Pedevia: não foi possível restaurar o menu de estabelecimentos.",e);
-        }
-      },60);
-      return r;
-    };
-    wrapped.__pedeviaMasterMenuQuickFix=true;
-    window.adminMore=wrapped;
-    try{ if(typeof adminMore!=="undefined") adminMore=wrapped; }catch(e){}
-  }catch(e){console.warn(e)}
-},0);

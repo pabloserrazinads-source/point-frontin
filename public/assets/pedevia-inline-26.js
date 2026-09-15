@@ -1,7 +1,7 @@
 
 // ===== v1.32.4: SESSÃO PERSISTENTE + ATUALIZAÇÃO DE PÁGINA SEM NOVO LOGIN =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.48';
+  window.PEDEVIA_VERSION='1.32.49';
 
   let restoringSessionV1324=false;
 
