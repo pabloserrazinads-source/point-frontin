@@ -92,7 +92,7 @@ tplPreviewV117 = function(id,tpl){
 
 function v118Choice(key,value,label,desc){
   const d=cfg.store.design||{};
-  return `<button type="button" class="v118StyleBtn ${d[key]===value?'on':''}" data-pedevia-handler="h139" data-pedevia-args="${encodeURIComponent(JSON.stringify([key,value]))}">${label}${desc?`<small>${desc}</small>`:''}</button>`;
+  return `<button type="button" class="v118StyleBtn ${d[key]===value?'on':''}" onclick="setChoiceV117('${key}','${value}')">${label}${desc?`<small>${desc}</small>`:''}</button>`;
 }
 
 const _generalAppearanceV116_v118 = generalAppearanceV116;
@@ -371,12 +371,12 @@ function renderClientSitesListV120(rows){
     <div><b>${esc(r.name||'Loja')}</b> ${clientSiteStatusV120(r)}<br>
     <span class="hint">/${esc(r.slug||'')} · ${esc(r.admin_email||'sem administrador')}</span><br>
     <small class="hint">Criada em ${r.created_at?new Date(r.created_at).toLocaleDateString('pt-BR'):'-'}</small></div>
-    <div class="miniBtns"><button class="ghost" data-pedevia-handler="h140" data-pedevia-args="${encodeURIComponent(JSON.stringify([r.id]))}">Gerenciar</button></div>
+    <div class="miniBtns"><button class="ghost" onclick="editClientSiteV120('${r.id}')">Gerenciar</button></div>
   </div>`).join('');
 }
 function newClientSiteV120(){
   showModal(`<div class="row"><div><h2 style="margin:0">Nova loja</h2><div class="hint">Será criada uma estrutura limpa, sem produtos nem informações do Point.</div></div><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div>
-  <label>Nome do estabelecimento</label><input id="csNameV120" class="field" placeholder="Ex.: Pizzaria Central" data-pedevia-handler="h141">
+  <label>Nome do estabelecimento</label><input id="csNameV120" class="field" placeholder="Ex.: Pizzaria Central" oninput="document.getElementById('csSlugV120').value=slugifyStoreV120(this.value)">
   <label>Endereço do site (slug)</label><input id="csSlugV120" class="field" placeholder="pizzaria-central"><div class="hint">Usaremos este nome no endereço do cardápio.</div>
   <label>WhatsApp da loja</label><input id="csWaV120" class="field" inputmode="tel" placeholder="5524999999999">
   <label>E-mail do administrador da loja</label><input id="csEmailV120" class="field" type="email" placeholder="dono@empresa.com"><div class="hint">Esse será o login autorizado a administrar somente esta loja.</div>
@@ -408,8 +408,8 @@ function editClientSiteV120(id){
   <label>Administrador</label><input id="cseEmailV120" type="email" class="field" value="${escapeAttrV120(r.admin_email||'')}">
   <label class="switchrow"><span><b>Loja ativa</b><small class="hint">Ative somente quando o cardápio estiver pronto para o cliente.</small></span><input id="cseActiveV120" type="checkbox" ${r.active?'checked':''}></label>
   <div class="notice" style="margin:12px 0"><b>Etapa atual:</b> estrutura-base criada e isolada.<br><small>Na próxima etapa, vamos ligar este cadastro à página pública e ao painel de edição exclusivo do cliente.</small></div>
-  <button id="cseSaveBtnV120" class="btn full" data-pedevia-handler="h142" data-pedevia-args="${encodeURIComponent(JSON.stringify([r.id]))}">Salvar</button>
-  <button class="dangerBtn full" style="margin-top:8px" data-pedevia-handler="h143" data-pedevia-args="${encodeURIComponent(JSON.stringify([r.id]))}">Excluir esta loja</button>`);
+  <button id="cseSaveBtnV120" class="btn full" onclick="saveClientSiteV120('${r.id}')">Salvar</button>
+  <button class="dangerBtn full" style="margin-top:8px" onclick="deleteClientSiteV120('${r.id}')">Excluir esta loja</button>`);
 }
 async function saveClientSiteV120(id){
   const row=window.clientSitesV120.find(x=>String(x.id)===String(id));if(!row)return;

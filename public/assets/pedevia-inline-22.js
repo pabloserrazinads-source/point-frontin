@@ -226,7 +226,7 @@
     const bg=d.siteGradient?`linear-gradient(${d.siteAngle}deg,${d.siteBg1},${d.siteBg2})`:th.background;
     const head=d.headerGradient?`linear-gradient(${d.headerAngle}deg,${d.headerBg1},${d.headerBg2})`:th.headerBg;
     const active=cfg.store.design?.template===t.id;
-    return `<button type="button" class="v132TemplateCard ${active?'on':''}" data-pedevia-handler="h228" data-pedevia-args="${encodeURIComponent(JSON.stringify([t.id]))}">
+    return `<button type="button" class="v132TemplateCard ${active?'on':''}" onclick="applyTemplateV132('${t.id}')">
       <div class="v132Mini" style="background:${bg}">
         <div class="v132MiniHead" style="background:${head};color:${th.headerText}">SUA MARCA</div>
         <div class="v132MiniHero" style="background:linear-gradient(135deg,${th.heroStart},${th.heroEnd})">Cardápio online</div>
