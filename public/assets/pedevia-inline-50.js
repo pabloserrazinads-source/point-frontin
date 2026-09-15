@@ -168,3 +168,48 @@
   }
   setTimeout(sync,0);
 })();
+
+/* PEDEVIA v1.32.49 — CART BAR TOTAL FINAL
+   Usa diretamente o mesmo estado/funções do carrinho (cart/sum/oferta),
+   em vez de procurar o carrinho em window.
+*/
+(function(){
+  if(window.__pedeviaCartBarTotalFinal)return;
+  window.__pedeviaCartBarTotalFinal=true;
+
+  function syncCartBarFinal(){
+    try{
+      const count=(cart||[]).reduce((s,i)=>s+(Number(i.qty)||0),0);
+      let total=Number(typeof sum==="function"?sum():0)||0;
+
+      if(typeof activeOfferDiscount==="function"){
+        const d=activeOfferDiscount();
+        total=Math.max(0,total-(Number(d&&d.amount)||0));
+      }
+
+      const countEl=document.getElementById("cartCount");
+      const totalEl=document.getElementById("cartTotal");
+      if(countEl) countEl.textContent=String(count);
+      if(totalEl) totalEl.textContent=brl(total);
+    }catch(e){
+      console.warn("[Pedevia] Falha ao sincronizar total da barra",e);
+    }
+  }
+
+  /* Encadeia no updateCart final já existente. */
+  if(typeof updateCart==="function"){
+    const prevUpdateCart=updateCart;
+    updateCart=function(){
+      const r=prevUpdateCart.apply(this,arguments);
+      syncCartBarFinal();
+      setTimeout(syncCartBarFinal,0);
+      setTimeout(syncCartBarFinal,30);
+      return r;
+    };
+  }
+
+  /* Neutraliza apenas a informação antiga do enhancer legado,
+     executando a sincronização correta logo depois dele. */
+  document.addEventListener("click",function(){setTimeout(syncCartBarFinal,40)},false);
+  syncCartBarFinal();
+})();
