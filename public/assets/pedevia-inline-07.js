@@ -83,11 +83,11 @@ editClientSiteV120=function(id){
   <label class="switchrow"><span><b>Loja ativa</b><small class="hint">Ative somente quando o cardápio estiver pronto para o cliente.</small></span><input id="cseActiveV120" type="checkbox" ${r.active?'checked':''}></label>
   <div class="panel" style="margin:14px 0;padding:14px"><b>▦ QR Code enviado pelo cliente</b><div class="hint" style="margin:4px 0 10px">Envie a imagem do QR Code para deixá-la salva junto ao cadastro desta empresa.</div>
     <div id="clientQrPreviewV1201"></div>
-    <label class="btn" style="display:inline-block;margin-top:10px;cursor:pointer">Enviar QR Code<input type="file" accept="image/*" style="display:none" onchange="readQrUploadV1201(this)"></label>
+    <label class="btn" style="display:inline-block;margin-top:10px;cursor:pointer">Enviar QR Code<input type="file" accept="image/*" style="display:none" data-pedevia-event="change" data-pedevia-call="readQrUploadV1201" data-pedevia-arg="this"></label>
   </div>
   <div class="notice" style="margin:12px 0"><b>Etapa atual:</b> estrutura-base criada e isolada.<br><small>Na próxima etapa, vamos ligar este cadastro à página pública e ao painel de edição exclusivo do cliente.</small></div>
-  <button id="cseSaveBtnV120" class="btn full" onclick="saveClientSiteV120('${r.id}')">Salvar</button>
-  <button class="dangerBtn full" style="margin-top:8px" onclick="deleteClientSiteV120('${r.id}')">Excluir esta loja</button>`);
+  <button id="cseSaveBtnV120" class="btn full" data-pedevia-handler="h144" data-pedevia-args="${encodeURIComponent(JSON.stringify([r.id]))}">Salvar</button>
+  <button class="dangerBtn full" style="margin-top:8px" data-pedevia-handler="h145" data-pedevia-args="${encodeURIComponent(JSON.stringify([r.id]))}">Excluir esta loja</button>`);
   setTimeout(renderQrPreviewV1201,0);
 };
 

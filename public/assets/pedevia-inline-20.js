@@ -104,7 +104,7 @@
              type="file"
              accept="image/*"
              class="field"
-             onchange="previewBrandFileV13118(this)">
+             data-pedevia-event="change" data-pedevia-call="previewBrandFileV13118" data-pedevia-arg="this">
 
       <p class="hint">
         <b>Uma única logo para todo o site:</b>
