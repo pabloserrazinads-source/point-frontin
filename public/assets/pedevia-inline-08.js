@@ -1674,7 +1674,16 @@ setTimeout(()=>{PedeviaV130.init();document.querySelectorAll('.adminHead .hint')
 
 // ===== v1.30.1 extras: Storage de imagens + UX de checkout =====
 Object.assign(PedeviaV130,{
-  async dataUrlToBlob(data){const r=await fetch(data);return await r.blob()},
+  async dataUrlToBlob(data){
+    const s=String(data||'');
+    const m=s.match(/^data:([^;,]+)?(;base64)?,(.*)$/s);
+    if(!m)throw new Error('Imagem temporária inválida.');
+    const mime=m[1]||'application/octet-stream';
+    const raw=m[2]?atob(m[3]):decodeURIComponent(m[3]);
+    const bytes=new Uint8Array(raw.length);
+    for(let i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);
+    return new Blob([bytes],{type:mime});
+  },
   async uploadMedia(dataUrl,path){
     const blob=await this.dataUrlToBlob(dataUrl),bucket=supabaseClient.storage.from('pedevia-media');
     const {error}=await bucket.upload(path,blob,{upsert:true,contentType:blob.type||'image/jpeg',cacheControl:'31536000'});if(error)throw error;
@@ -1965,3 +1974,48 @@ adminMore=function(){_adminMoreV130MediaBase();const list=document.querySelector
 
 // Inicializa somente depois de todas as camadas de compatibilidade do arquivo terem sido carregadas.
 // v1.31.14: inicialização adiada para depois de todas as camadas.
+
+/* PEDEVIA QUICK FIX — PRODUTO + MENU DE ESTABELECIMENTOS
+   1) dataUrlToBlob não usa fetch(data:), evitando "Failed to fetch" sob CSP.
+   2) Reforça o cartão Sites dos clientes para o administrador mestre após o render final.
+*/
+setTimeout(function(){
+  try{
+    const base=window.adminMore;
+    if(typeof base!=="function" || base.__pedeviaMasterMenuQuickFix)return;
+    const wrapped=function(){
+      const r=base.apply(this,arguments);
+      setTimeout(async function(){
+        try{
+          const list=document.querySelector("#adminContent .moreList");
+          if(!list)return;
+          if([...list.querySelectorAll(".moreCard")].some(x=>/Sites dos clientes/i.test(x.textContent||"")))return;
+
+          let ok=false;
+          if(typeof window.platformAdminStableV13230==="function"){
+            ok=await window.platformAdminStableV13230(true);
+          }else if(window.supabaseClient){
+            const {data:sd}=await supabaseClient.auth.getSession();
+            if(sd?.session){
+              const {data,error}=await supabaseClient.rpc("is_platform_admin");
+              if(error)throw error;
+              ok=data===true;
+            }
+          }
+          if(!ok)return;
+
+          const holder=document.createElement("div");
+          holder.id="platformMasterQuickFixV13249";
+          holder.innerHTML=moreCard("🏪","Sites dos clientes","Painel mestre para criar e administrar cardápios","openClientSitesMasterV120()");
+          list.appendChild(holder);
+        }catch(e){
+          console.warn("Pedevia: não foi possível restaurar o menu de estabelecimentos.",e);
+        }
+      },60);
+      return r;
+    };
+    wrapped.__pedeviaMasterMenuQuickFix=true;
+    window.adminMore=wrapped;
+    try{ if(typeof adminMore!=="undefined") adminMore=wrapped; }catch(e){}
+  }catch(e){console.warn(e)}
+},0);
