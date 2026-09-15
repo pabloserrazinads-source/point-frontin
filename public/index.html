@@ -472,7 +472,7 @@ button:active,.tab:active,.settingCard:active,.moreCard:active,.socialBtn:active
 <body>
 <header class="top">
 <div class="logo"><div class="logoMark" id="headerLogoMark"><span aria-hidden="true" style="font-size:25px;line-height:1;font-weight:900">P</span></div><div class="brand" id="headerBrandName">PEDEVIA<small>Cardápio online</small></div></div>
-<button class="iconbtn" id="modeBtn" onclick="switchMode()">⚙️</button>
+<button class="iconbtn" id="modeBtn" data-pedevia-action="switch-mode">⚙️</button>
 </header>
 <main class="wrap">
 <section id="shopView">
@@ -490,16 +490,16 @@ button:active,.tab:active,.settingCard:active,.moreCard:active,.socialBtn:active
 <h2>🔐 Administração</h2><p class="hint">Entre com o usuário administrador cadastrado no Supabase.</p>
 <input autocomplete="username" class="field" id="loginEmail" placeholder="E-mail" type="email"/>
 <input autocomplete="current-password" class="field" id="loginPass" placeholder="Senha" type="password"/>
-<button class="btn full" id="loginBtn" onclick="login()">Entrar</button>
+<button class="btn full" id="loginBtn" data-pedevia-action="login">Entrar</button>
 <p class="hint" id="loginMsg"></p>
 </div>
 <div class="hide" id="adminPanel">
-<div class="adminHead"><h2>Painel da loja</h2><div id="adminStatus">Gerencie cardápio, estoque e atendimento.<br/><small id="syncStatus">☁️ Sincronização online ativa</small></div><button class="ghost" onclick="logoutAdmin()" style="margin-top:10px">Sair</button></div>
+<div class="adminHead"><h2>Painel da loja</h2><div id="adminStatus">Gerencie cardápio, estoque e atendimento.<br/><small id="syncStatus">☁️ Sincronização online ativa</small></div><button class="ghost" data-pedevia-action="logout-admin" style="margin-top:10px">Sair</button></div>
 <div id="adminContent"></div><nav aria-label="Menu administrativo" class="adminBottomNav" id="adminBottomNav"></nav>
 </div>
 </section>
 </main>
-<div class="cartbar" id="cartBar"><button class="btn" onclick="showCart()"><span>🛒 Carrinho · <b id="cartCount">0</b></span><b id="cartTotal">R$ 0,00</b></button></div>
+<div class="cartbar" id="cartBar"><button class="btn" data-pedevia-action="show-cart"><span>🛒 Carrinho · <b id="cartCount">0</b></span><b id="cartTotal">R$ 0,00</b></button></div>
 <div class="overlay" id="modal"><div class="sheet" id="sheet"></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="assets/pedevia-inline-02.js?v=13248b"></script>
