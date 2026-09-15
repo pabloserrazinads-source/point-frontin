@@ -96,3 +96,75 @@
     });
   });
 })();
+
+/* PEDEVIA v1.32.49 — CART BAR TOTAL SYNC
+   Recalcula o total visível da barra do carrinho usando TODOS os itens atuais.
+*/
+(function(){
+  if(window.__pedeviaCartBarTotalSync)return;
+  window.__pedeviaCartBarTotalSync=true;
+
+  function moneyBR(v){
+    return Number(v||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});
+  }
+
+  function itemTotal(it){
+    if(!it)return 0;
+    /* Prefer totals already calculated by the cart model. */
+    for(const k of ["total","lineTotal","line_total","itemTotal","item_total"]){
+      const n=Number(it[k]);
+      if(Number.isFinite(n) && n>=0) return n;
+    }
+    const qty=Math.max(1,Number(it.qty ?? it.quantity ?? 1)||1);
+    const unit=Number(it.unitPrice ?? it.unit_price ?? it.price ?? 0)||0;
+    let extras=0;
+    const pools=[it.extras,it.addons,it.complements,it.complementos,it.selectedExtras];
+    for(const pool of pools){
+      if(!Array.isArray(pool))continue;
+      extras += pool.reduce((s,x)=>{
+        if(x==null)return s;
+        if(typeof x==="number")return s+x;
+        const p=Number(x.price ?? x.valor ?? x.value ?? 0)||0;
+        const q=Math.max(1,Number(x.qty ?? x.quantity ?? 1)||1);
+        return s+p*q;
+      },0);
+    }
+    return (unit+extras)*qty;
+  }
+
+  function getCart(){
+    const candidates=[window.cart,window.CART,window.carrinho,window.cartItems];
+    return candidates.find(Array.isArray)||[];
+  }
+
+  function sync(){
+    const cart=getCart();
+    if(!cart.length)return;
+    const total=cart.reduce((s,it)=>s+itemTotal(it),0);
+    if(!(total>=0))return;
+
+    /* Bottom cart bar: update only a price-looking text node/element inside it. */
+    const bar=document.querySelector("#cartBar,.cartBar,.cart-bar,[data-cart-bar]");
+    if(!bar)return;
+    const nodes=[...bar.querySelectorAll("span,b,strong,div")];
+    const priceNode=nodes.find(n=>/R\$\s*[\d.,]+/.test((n.textContent||"").trim()));
+    if(priceNode){
+      const old=priceNode.textContent||"";
+      priceNode.textContent=old.replace(/R\$\s*[\d.,]+/,"R$ "+moneyBR(total));
+    }
+  }
+
+  document.addEventListener("click",()=>setTimeout(sync,0));
+  document.addEventListener("change",()=>setTimeout(sync,0));
+  document.addEventListener("input",()=>setTimeout(sync,0));
+
+  const oldRender=window.renderCartBar;
+  if(typeof oldRender==="function"){
+    window.renderCartBar=function(){
+      const r=oldRender.apply(this,arguments);
+      setTimeout(sync,0);
+      return r;
+    };
+  }
+  setTimeout(sync,0);
+})();
