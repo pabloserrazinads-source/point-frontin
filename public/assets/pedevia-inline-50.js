@@ -313,3 +313,78 @@
     }
   },true);
 })();
+
+
+/* PEDEVIA CSP — SAVE ACTION RELIABILITY FIX
+   Evita que ações Salvar sejam perdidas/duplicadas após a migração dos handlers.
+   Também libera novamente o botão após a execução para permitir uma 2ª alteração.
+*/
+(function(){
+  if(window.__pedeviaSaveActionReliability)return;
+  window.__pedeviaSaveActionReliability=true;
+
+  document.addEventListener("click",function(ev){
+    const btn=ev.target&&ev.target.closest?ev.target.closest("button,[role=button]"):null;
+    if(!btn)return;
+    const label=(btn.textContent||"").replace(/\s+/g," ").trim().toLowerCase();
+    if(!label.startsWith("salvar"))return;
+
+    /* Não cria uma ação nova: deixa o dispatcher CSP executar a ação migrada,
+       mas garante que estados visuais/busy não prendam o botão para o próximo save. */
+    setTimeout(function(){
+      try{
+        btn.disabled=false;
+        btn.removeAttribute("aria-disabled");
+        btn.classList.remove("disabled","is-disabled","busy","loading","saving");
+        if(btn.dataset){
+          delete btn.dataset.busy;
+          delete btn.dataset.saving;
+          delete btn.dataset.loading;
+        }
+      }catch(e){}
+    },350);
+    setTimeout(function(){
+      try{
+        btn.disabled=false;
+        btn.removeAttribute("aria-disabled");
+        btn.classList.remove("disabled","is-disabled","busy","loading","saving");
+      }catch(e){}
+    },1200);
+  },true);
+})();
+
+
+/* PEDEVIA CSP — ADMIN CARD ACTION COMPATIBILITY
+   Restaura ações de cards/menu migradas do onclick sem reintroduzir inline JS.
+*/
+(function(){
+  if(window.__pedeviaAdminCardCompat)return;
+  window.__pedeviaAdminCardCompat=true;
+
+  const aliases={
+    "Pedidos":"adminOrders",
+    "Estatísticas de vendas":"salesStatsV126",
+    "Otimizar imagens":"optimizeImagesV129",
+    "Sites dos clientes":"openClientSitesMasterV120",
+    "Backups da configuração":"openConfigBackupsV127",
+    "QR Code":"generalQr"
+  };
+
+  document.addEventListener("click",function(ev){
+    const card=ev.target&&ev.target.closest?ev.target.closest(".moreCard,.settingCard"):null;
+    if(!card)return;
+    const title=(card.querySelector("b,strong,h3,h4")?.textContent||card.textContent||"")
+      .replace(/\s+/g," ").trim();
+
+    let fnName=null;
+    for(const [label,fn] of Object.entries(aliases)){
+      if(title.startsWith(label)){fnName=fn;break;}
+    }
+    if(!fnName)return;
+    const fn=window[fnName];
+    if(typeof fn!=="function")return;
+    ev.preventDefault();
+    ev.stopImmediatePropagation();
+    try{ fn(); }catch(err){ console.error("[Pedevia] Falha no card",fnName,err); }
+  },true);
+})();
