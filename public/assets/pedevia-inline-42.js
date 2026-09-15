@@ -1,7 +1,7 @@
 
 // ===== v1.32.30: DADOS COMERCIAIS AUTENTICADOS + MENU MESTRE ESTÁVEL =====
 (function(){
-  const CURRENT_VERSION='1.32.47';
+  const CURRENT_VERSION='1.32.48';
   window.PEDEVIA_VERSION=CURRENT_VERSION;
 
   // A linha administrativa do tenant precisa trazer também os campos comerciais.

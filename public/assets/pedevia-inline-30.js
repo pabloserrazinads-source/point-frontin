@@ -1,7 +1,7 @@
 
 // ===== v1.32.14: ENTREGA SIMPLIFICADA + ENDEREÇO ÚNICO E CONSISTENTE =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.47';
+  window.PEDEVIA_VERSION='1.32.48';
 
   function clean(v){ return String(v??'').trim(); }
   function storeAddressV13214(){

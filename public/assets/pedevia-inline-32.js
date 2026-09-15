@@ -1,7 +1,7 @@
 
 // ===== v1.32.19: ENDEREÇO DE ENTREGA ESTRUTURADO =====
 (function(){
- window.PEDEVIA_VERSION='1.32.47';
+ window.PEDEVIA_VERSION='1.32.48';
 
  window.showDeliveryForm=function(){
    var o=(cfg.store&&cfg.store.orderConfig)||{};
