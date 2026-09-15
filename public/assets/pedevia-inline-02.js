@@ -76,7 +76,7 @@ function renderClientStoreInfo(){let s=cfg.store,st=openState(),logo=s.brandImag
  $('#clientFooter').innerHTML=`<div class="clientFooter"><b>${esc(s.name)}</b><br>Cardápio e pedidos online</div>`;
 }
 function renderShop(){let st=openState();renderClientStoreInfo();$("#storeStatus").textContent="● "+st.text;$("#closedNotice").innerHTML=st.open?"":'<div class="notice bad">A loja está fechada no momento. Você pode montar o pedido e consultar o cardápio.</div>';
- $("#categoryTabs").innerHTML=cfg.categories.filter(c=>c.active).map(c=>`<button class="tab ${activeCat===c.id?"on":""}" onclick="activeCat='${c.id}';renderShop()">${c.name}</button>`).join("");
+ $("#categoryTabs").innerHTML=cfg.categories.filter(c=>c.active).map(c=>`<button class="tab ${activeCat===c.id?"on":""}" data-pedevia-category="${esc(c.id)}">${c.name}</button>`).join("");
  let ps=cfg.products.filter(p=>p.category===activeCat&&p.status!=="hidden");$("#productGrid").innerHTML=ps.map(p=>`<article class="card" ${p.status==="available"?`onclick="openProduct('${p.id}')"`:""}><div class="photo" ${p.image?`style="background-image:url('${esc(p.image)}')"`:""}>${p.image?"":"🍧"}</div><div class="cardbody"><h3>${esc(p.name)}</h3><p class="desc">${esc(p.desc)}</p><div class="row"><span class="price">${brl(p.price)}</span>${p.status==="unavailable"?'<span class="badge unavailable">Indisponível</span>':""}</div></div></article>`).join("")||'<p class="hint">Nenhum produto nesta categoria.</p>';updateCart()}
 function openProduct(id){let p=cfg.products.find(x=>x.id===id),h=`<div class="row"><div><h2 style="margin:0">${esc(p.name)}</h2><span class="price">${brl(p.price)}</span></div><button class="ghost" onclick="closeModal()">✕</button></div><p>${esc(p.desc)}</p>`;
  p.groups.forEach(gid=>{let g=cfg.groups.find(x=>x.id===gid);if(!g)return;let os=g.options.filter(o=>o.status==="available");if(!os.length)return;h+=`<div class="group choiceGroup" data-gid="${g.id}" data-min="${g.min}" data-max="${g.max}"><div class="groupTitle">${g.name}</div><div class="hint">${g.min?`Escolha no mínimo ${g.min}. `:""}Máximo ${g.max}.</div>${os.map(o=>`<label class="option"><span>${esc(o.name)} ${o.price?`<small>+ ${brl(o.price)}</small>`:""}</span><input type="${g.max===1?"radio":"checkbox"}" name="g_${g.id}" value="${o.id}"></label>`).join("")}</div>`});
@@ -3343,3 +3343,11 @@ document.addEventListener('DOMContentLoaded',()=>{
 
 document.addEventListener("DOMContentLoaded",()=>{restoreAdminSession()});
 
+/* PEDEVIA CSP MIGRATION — CATEGORY TABS */
+document.addEventListener("click",function(e){
+  const btn=e.target&&e.target.closest?e.target.closest("[data-pedevia-category]"):null;
+  if(!btn)return;
+  e.preventDefault();
+  activeCat=btn.getAttribute("data-pedevia-category")||activeCat;
+  renderShop();
+});
