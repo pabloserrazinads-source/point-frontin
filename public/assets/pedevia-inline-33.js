@@ -50,11 +50,11 @@
   window.editReceiptSettings=function(){
     const o=cfg.store.orderConfig||(cfg.store.orderConfig={});
     showModal(`
-      <div class="row"><h2>Impressão de recibos</h2><button class="ghost" onclick="closeModal()">✕</button></div>
+      <div class="row"><h2>Impressão de recibos</h2><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div>
       <label class="switchrow"><span>Ativar impressão de recibos</span>
       <input id="orReceipt" type="checkbox" ${o.receiptPrinting?'checked':''}></label>
       <p class="hint">Ativa a opção de impressão dos pedidos no painel. A impressão usa o recurso de impressão disponível no dispositivo.</p>
-      <button id="receiptSaveV13220" class="btn full" onclick="saveReceiptSettingsV13220()">Salvar</button>
+      <button id="receiptSaveV13220" class="btn full" data-pedevia-event="click" data-pedevia-call="saveReceiptSettingsV13220">Salvar</button>
     `);
   };
 

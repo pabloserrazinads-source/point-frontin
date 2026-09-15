@@ -55,7 +55,7 @@
     return src
       ? `<div class="brandVisualV13119">
            <img src="${esc(src)}" class="brandImgV13119">
-           <button type="button" class="ghost" onclick="removeBrandDraftV13118()">Remover logo</button>
+           <button type="button" class="ghost" data-pedevia-event="click" data-pedevia-call="removeBrandDraftV13118">Remover logo</button>
          </div>`
       : `<div class="brandFallbackV13119">LOGO DO<br>ESTABELECIMENTO</div>`;
   }
@@ -94,7 +94,7 @@
       <input id="gLegal" class="field" placeholder="Razão social" value="${esc(s.legalName||'')}">
       <input id="gCnpj" class="field" placeholder="CNPJ" value="${esc(s.cnpj||'')}">
 
-      <button id="brandSaveBtnV13118" class="btn full" onclick="saveGeneralBrand()">
+      <button id="brandSaveBtnV13118" class="btn full" data-pedevia-event="click" data-pedevia-call="saveGeneralBrand">
         Salvar
       </button>
     `);

@@ -8,7 +8,7 @@
     return src
       ? `<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
            <img src="${esc(src)}" style="width:110px;height:110px;object-fit:contain;border-radius:22px;border:1px solid #ddd;background:#fff">
-           <button type="button" class="ghost" onclick="removeBrandDraftV13118()">Remover logo</button>
+           <button type="button" class="ghost" data-pedevia-event="click" data-pedevia-call="removeBrandDraftV13118">Remover logo</button>
          </div>`
       : `<div style="width:110px;height:110px;border:1px dashed #999;border-radius:22px;display:grid;place-items:center;text-align:center;font-weight:800;color:#777;background:#fff">LOGO DO<br>ESTABELECIMENTO</div>`;
   }
@@ -118,7 +118,7 @@
       <input id="gLegal" class="field" placeholder="Razão social" value="${esc(s.legalName||'')}">
       <input id="gCnpj" class="field" placeholder="CNPJ" value="${esc(s.cnpj||'')}">
 
-      <button id="brandSaveBtnV13118" class="btn full" onclick="saveGeneralBrand()">
+      <button id="brandSaveBtnV13118" class="btn full" data-pedevia-event="click" data-pedevia-call="saveGeneralBrand">
         Salvar
       </button>
     `);

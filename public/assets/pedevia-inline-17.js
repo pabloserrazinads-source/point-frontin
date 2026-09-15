@@ -45,7 +45,7 @@
           <div class="panel">
             <h3>Não foi possível carregar os pedidos</h3>
             <p class="hint">Os pedidos continuam salvos. A sessão pode ter expirado ou houve uma falha de conexão.</p>
-            <button class="btn full" onclick="loadOrdersPanelV126()">Tentar novamente</button>
+            <button class="btn full" data-pedevia-event="click" data-pedevia-call="loadOrdersPanelV126">Tentar novamente</button>
           </div>`;
       }
       throw e;

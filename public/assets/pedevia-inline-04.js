@@ -227,7 +227,7 @@ function v116ColorRow(label,key){
       <div id="v116mini_${key}">${v116MiniPreviewV1164(key)}</div>
     </div>
     <div class="v116ColorSwatchWrap">
-      <input type="color" id="v116_${key}" value="${value}" oninput="previewAppearanceV116()">
+      <input type="color" id="v116_${key}" value="${value}" data-pedevia-event="input" data-pedevia-call="previewAppearanceV116">
     </div>
   </div>`;
 }
@@ -356,8 +356,8 @@ function generalAppearanceV116(){
     </div>
 
     <div class="v116Actions">
-      <button class="ghost" onclick="restoreAppearanceV116()">Restaurar padrão</button>
-      <button class="btn" onclick="saveAppearanceV116()">Salvar alterações</button>
+      <button class="ghost" data-pedevia-event="click" data-pedevia-call="restoreAppearanceV116">Restaurar padrão</button>
+      <button class="btn" data-pedevia-event="click" data-pedevia-call="saveAppearanceV116">Salvar alterações</button>
     </div>
   `);
   previewAppearanceV116();

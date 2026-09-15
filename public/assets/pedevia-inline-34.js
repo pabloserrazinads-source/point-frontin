@@ -30,7 +30,7 @@
   window.editOtherOrderSettings=function(){
     const o=cfg.store.orderConfig||(cfg.store.orderConfig={});
     showModal(`
-      <div class="row"><h2>Outras configurações</h2><button class="ghost" onclick="closeModal()">✕</button></div>
+      <div class="row"><h2>Outras configurações</h2><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div>
       <div class="cfgBlock"><label class="switchrow"><span><b>Solicitar CPF ou CNPJ do cliente na compra</b><small class="hint">Se habilitado, o preenchimento será obrigatório.</small></span>${toggleHTML('orCpf',!!o.requireCpf)}</label></div>
       <div class="cfgBlock"><label class="switchrow"><span><b>Incluir código de referência nos produtos e complementos</b><small class="hint">Útil para identificar itens por código.</small></span>${toggleHTML('orRef',!!o.referenceCodes)}</label></div>
       <div class="cfgBlock"><label class="switchrow"><span><b>Mostrar numeração dos pedidos</b><small class="hint">A numeração fica visível para o estabelecimento e cliente.</small></span>${toggleHTML('orNum',!!o.showOrderNumber)}</label></div>
@@ -38,7 +38,7 @@
       <input id="orPrefix" class="field" value="${esc(o.orderPrefix||'PD')}">
       <label class="cfgLabel">Próximo número</label>
       <input id="orNext" type="number" min="1" class="field" value="${Math.max(1,+o.nextOrder||1)}">
-      <button id="otherSaveV13221" class="btn full" onclick="saveOtherOrderSettingsV13221()">Salvar</button>
+      <button id="otherSaveV13221" class="btn full" data-pedevia-event="click" data-pedevia-call="saveOtherOrderSettingsV13221">Salvar</button>
     `);
   };
 

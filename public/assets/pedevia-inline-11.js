@@ -40,10 +40,10 @@
           <h2 style="margin:0">★ Clientes do Clube</h2>
           <div class="hint">${Math.max(1,+offer.requiredOrders||10)} pedidos → ${Math.max(0,+offer.rewardPercent||10)}% de benefício</div>
         </div>
-        <button class="ghost" onclick="closeModal()">✕</button>
+        <button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button>
       </div>
       <div style="margin-top:12px">
-        <input id="loyaltyAdminSearchV1314" class="field" placeholder="Buscar cliente ou celular" oninput="filterLoyaltyCustomersAdminV1314()">
+        <input id="loyaltyAdminSearchV1314" class="field" placeholder="Buscar cliente ou celular" data-pedevia-event="input" data-pedevia-call="filterLoyaltyCustomersAdminV1314">
       </div>
       <div id="loyaltyAdminSummaryV1314" class="v126StatsGrid" style="margin-top:10px"></div>
       <div id="loyaltyAdminListV1314">
@@ -181,7 +181,7 @@
   // Mantém a tela de Ofertas já existente e acrescenta o acesso ao acompanhamento.
   adminOffers=function(){
     normalizeOffers();
-    let list=cfg.offers.map(o=>`<div class="offerAdminCard"><div class="row"><div><span class="offerType">${o.type==='percentage'?'DESCONTO':'FIDELIDADE'}</span><h3 style="margin:5px 0 3px">${esc(o.title)}</h3><div class="hint">${o.type==='percentage'?`${+o.percent||0}% · ${esc(offerScopeText(o))}${+o.minValue?' · mínimo '+brl(+o.minValue):''}`:`${o.requiredOrders||10} pedidos → ${o.rewardPercent||10}% de benefício`}</div></div><span class="badge ${o.active?'available':'hidden'}">${o.active?'Ativa':'Inativa'}</span></div><div class="miniBtns" style="margin-top:10px"><button class="ghost" onclick="editOffer('${o.id}')">Editar</button>${o.type==='loyalty'?`<button class="ghost" onclick="openLoyaltyCustomersAdminV1314()">Clientes do clube</button>`:''}<button class="ghost" onclick="toggleOffer('${o.id}')">${o.active?'Desativar':'Ativar'}</button><button class="dangerBtn" onclick="deleteOffer('${o.id}')">Excluir</button></div></div>`).join('')||'<div class="emptySection">Nenhuma oferta criada ainda.</div>';
+    let list=cfg.offers.map(o=>`<div class="offerAdminCard"><div class="row"><div><span class="offerType">${o.type==='percentage'?'DESCONTO':'FIDELIDADE'}</span><h3 style="margin:5px 0 3px">${esc(o.title)}</h3><div class="hint">${o.type==='percentage'?`${+o.percent||0}% · ${esc(offerScopeText(o))}${+o.minValue?' · mínimo '+brl(+o.minValue):''}`:`${o.requiredOrders||10} pedidos → ${o.rewardPercent||10}% de benefício`}</div></div><span class="badge ${o.active?'available':'hidden'}">${o.active?'Ativa':'Inativa'}</span></div><div class="miniBtns" style="margin-top:10px"><button class="ghost" onclick="editOffer('${o.id}')">Editar</button>${o.type==='loyalty'?`<button class="ghost" data-pedevia-event="click" data-pedevia-call="openLoyaltyCustomersAdminV1314">Clientes do clube</button>`:''}<button class="ghost" onclick="toggleOffer('${o.id}')">${o.active?'Desativar':'Ativar'}</button><button class="dangerBtn" onclick="deleteOffer('${o.id}')">Excluir</button></div></div>`).join('')||'<div class="emptySection">Nenhuma oferta criada ainda.</div>';
 
     $('#adminContent').innerHTML=`<div class="panel"><div class="menuBuilderHead"><div><h3 style="margin:0">Ofertas</h3><div class="hint">Crie promoções que aparecem no cardápio e podem alterar o total do pedido.</div></div></div><div class="two"><button class="btn" onclick="newOffer('percentage')">＋ Desconto</button><button class="ghost" onclick="newOffer('loyalty')">★ Fidelidade</button></div>${list}<div class="notice">Descontos percentuais ativos são aplicados automaticamente no carrinho. Se houver mais de um válido, o sistema usa o que dá o maior desconto.</div></div>`;
   };

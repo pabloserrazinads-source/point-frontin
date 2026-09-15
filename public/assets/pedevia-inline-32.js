@@ -16,14 +16,14 @@
      : '<input id="coNeighText" class="field" placeholder="Ex.: Centro">';
 
    var h=''
-     +'<div class="row"><h2 class="checkoutTitle">Endereço de entrega</h2><button class="ghost" onclick="showReceiveChoices()">‹</button></div>'
+     +'<div class="row"><h2 class="checkoutTitle">Endereço de entrega</h2><button class="ghost" data-pedevia-event="click" data-pedevia-call="showReceiveChoices">‹</button></div>'
      +'<label>Rua / Avenida *</label><input id="coStreet" class="field" placeholder="Ex.: Avenida João Batista Ferrini">'
      +'<div class="two"><div><label>Número *</label><input id="coNumber" class="field" placeholder="Ex.: 136"></div>'
      +'<div><label>Bairro *</label>'+bairro+'</div></div>'
      +'<label>Complemento</label><input id="coComplement" class="field" placeholder="Casa, apto, bloco...">'
      +'<label>Referência *</label><input id="coRef" class="field" placeholder="Ex.: ao lado da farmácia">'
      +'<div class="hint" style="margin-top:8px">Os campos com * são obrigatórios.</div>'
-     +'<div class="checkoutSticky"><button class="btn" onclick="saveDeliveryAndPay()">Continuar</button></div>';
+     +'<div class="checkoutSticky"><button class="btn" data-pedevia-event="click" data-pedevia-call="saveDeliveryAndPay">Continuar</button></div>';
    showModal(h);
  };
 

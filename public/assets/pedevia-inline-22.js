@@ -327,8 +327,8 @@
       </details>
 
       <div class="v116Actions">
-        <button class="ghost" onclick="restoreAppearanceV116()">Restaurar padrão</button>
-        <button class="btn" id="saveAppearanceV132" onclick="saveAppearanceV132()">Salvar aparência</button>
+        <button class="ghost" data-pedevia-event="click" data-pedevia-call="restoreAppearanceV116">Restaurar padrão</button>
+        <button class="btn" id="saveAppearanceV132" data-pedevia-event="click" data-pedevia-call="saveAppearanceV132">Salvar aparência</button>
       </div>
     `);
     previewAppearanceV116();

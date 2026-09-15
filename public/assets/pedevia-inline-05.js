@@ -55,7 +55,7 @@ function updateDesignV117(){
   d.radius=Number(val('v117Radius',d.radius));markCustomV117();applyThemeV116();
   ['Site','Header','Button'].forEach(n=>{const p=g('v117Prev'+n);if(!p)return;const key=n.toLowerCase();if(n==='Site')p.style.background=d.siteGradient?`linear-gradient(${d.siteAngle}deg,${d.siteBg1},${d.siteBg2})`:d.siteBg1;if(n==='Header')p.style.background=d.headerGradient?`linear-gradient(${d.headerAngle}deg,${d.headerBg1},${d.headerBg2})`:d.headerBg1;if(n==='Button')p.style.background=d.buttonGradient?`linear-gradient(${d.buttonAngle}deg,${d.buttonBg1},${d.buttonBg2})`:d.buttonBg1;});
 }
-function gradientBoxV117(title,prefix,on,c1,c2,angle){return `<div class="v117GradientBox"><div class="v117Toggle"><b>${title}</b><label><input type="checkbox" id="v117${prefix}Gradient" ${on?'checked':''} onchange="updateDesignV117()"> usar degradê</label></div><div class="v117GradientPreview" id="v117Prev${prefix}" style="background:${on?`linear-gradient(${angle}deg,${c1},${c2})`:c1}"></div><div class="v117ColorPair"><label>Cor 1<input type="color" id="v117${prefix}Bg1" value="${c1}" oninput="updateDesignV117()"></label><label>Cor 2<input type="color" id="v117${prefix}Bg2" value="${c2}" oninput="updateDesignV117()"></label></div><div class="v117RangeRow"><span class="hint">Direção do degradê</span><input type="range" id="v117${prefix}Angle" min="0" max="360" value="${angle}" oninput="updateDesignV117()"></div></div>`}
+function gradientBoxV117(title,prefix,on,c1,c2,angle){return `<div class="v117GradientBox"><div class="v117Toggle"><b>${title}</b><label><input type="checkbox" id="v117${prefix}Gradient" ${on?'checked':''} data-pedevia-event="change" data-pedevia-call="updateDesignV117"> usar degradê</label></div><div class="v117GradientPreview" id="v117Prev${prefix}" style="background:${on?`linear-gradient(${angle}deg,${c1},${c2})`:c1}"></div><div class="v117ColorPair"><label>Cor 1<input type="color" id="v117${prefix}Bg1" value="${c1}" data-pedevia-event="input" data-pedevia-call="updateDesignV117"></label><label>Cor 2<input type="color" id="v117${prefix}Bg2" value="${c2}" data-pedevia-event="input" data-pedevia-call="updateDesignV117"></label></div><div class="v117RangeRow"><span class="hint">Direção do degradê</span><input type="range" id="v117${prefix}Angle" min="0" max="360" value="${angle}" data-pedevia-event="input" data-pedevia-call="updateDesignV117"></div></div>`}
 
 const _generalAppearanceV116_old=generalAppearanceV116;
 generalAppearanceV116=function(){
@@ -71,7 +71,7 @@ generalAppearanceV116=function(){
       <label class="cfgLabel">Espaçamento</label><div class="v117ChoiceGrid">${[['compact','Compacto'],['comfortable','Confortável'],['airy','Arejado']].map(([v,l])=>`<button class="v117Choice ${d.density===v?'on':''}" onclick="setChoiceV117('density','${v}')">${l}</button>`).join('')}</div>
       <label class="cfgLabel">Formato das fotos</label><div class="v117ChoiceGrid">${[['default','Clássico'],['soft','Suave'],['pill','Redondo']].map(([v,l])=>`<button class="v117Choice ${d.photoShape===v?'on':''}" onclick="setChoiceV117('photoShape','${v}')">${l}</button>`).join('')}</div>
       <label class="cfgLabel">Sombras</label><div class="v117ChoiceGrid">${[['none','Sem sombra'],['soft','Suave'],['deep','Profunda']].map(([v,l])=>`<button class="v117Choice ${d.shadow===v?'on':''}" onclick="setChoiceV117('shadow','${v}')">${l}</button>`).join('')}</div>
-      <div class="v117RangeRow"><span><b>Arredondamento</b><div class="hint">De reto a bem arredondado</div></span><input type="range" id="v117Radius" min="8" max="34" value="${d.radius}" oninput="updateDesignV117()"></div>
+      <div class="v117RangeRow"><span><b>Arredondamento</b><div class="hint">De reto a bem arredondado</div></span><input type="range" id="v117Radius" min="8" max="34" value="${d.radius}" data-pedevia-event="input" data-pedevia-call="updateDesignV117"></div>
     </div>
 
     <div class="v117Section"><h3>🌈 Degradês e superfícies</h3><p class="hint">Ative ou desative degradês nas principais áreas.</p>
@@ -98,7 +98,7 @@ generalAppearanceV116=function(){
       <div class="v1163Section"><h4>Carrinho, modal e botões</h4><div class="v116ColorGrid">${v116ColorRow('Fundo do carrinho','cartBg')}${v116ColorRow('Texto do carrinho','cartText')}${v116ColorRow('Fundo da janela','modalBg')}${v116ColorRow('Texto da janela','modalText')}${v116ColorRow('Fundo botão principal','buttonBg')}${v116ColorRow('Texto botão principal','buttonText')}${v116ColorRow('Fundo botão secundário','secondaryButtonBg')}${v116ColorRow('Texto botão secundário','secondaryButtonText')}</div></div>
     </details>
 
-    <div class="v116Actions"><button class="ghost" onclick="restoreAppearanceV117()">Restaurar visual padrão</button><button class="btn" onclick="saveAppearanceV117()">Salvar visual</button></div>
+    <div class="v116Actions"><button class="ghost" data-pedevia-event="click" data-pedevia-call="restoreAppearanceV117">Restaurar visual padrão</button><button class="btn" data-pedevia-event="click" data-pedevia-call="saveAppearanceV117">Salvar visual</button></div>
   `);
   previewAppearanceV116();updateDesignV117();
 }

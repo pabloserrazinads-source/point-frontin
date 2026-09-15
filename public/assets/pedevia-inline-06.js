@@ -350,8 +350,8 @@ async function fetchClientSitesV120(){
   return window.clientSitesV120;
 }
 async function openClientSitesMasterV120(){
-  $('#adminContent').innerHTML=`<button class="backBtn" onclick="generalBack()">‹ Configurações gerais</button>
-  <div class="panel"><div class="row"><div><div class="settingsTitle">🏪 Sites dos clientes</div><div class="hint">Seu painel mestre. O Point do Açaí continua separado e funcionando normalmente.</div></div><button class="btn" onclick="newClientSiteV120()">+ Nova loja</button></div>
+  $('#adminContent').innerHTML=`<button class="backBtn" data-pedevia-event="click" data-pedevia-call="generalBack">‹ Configurações gerais</button>
+  <div class="panel"><div class="row"><div><div class="settingsTitle">🏪 Sites dos clientes</div><div class="hint">Seu painel mestre. O Point do Açaí continua separado e funcionando normalmente.</div></div><button class="btn" data-pedevia-event="click" data-pedevia-call="newClientSiteV120">+ Nova loja</button></div>
   <div id="clientSitesListV120" style="margin-top:14px"><p class="hint">Carregando lojas...</p></div></div>`;
   try{
     const rows=await fetchClientSitesV120();
@@ -375,12 +375,12 @@ function renderClientSitesListV120(rows){
   </div>`).join('');
 }
 function newClientSiteV120(){
-  showModal(`<div class="row"><div><h2 style="margin:0">Nova loja</h2><div class="hint">Será criada uma estrutura limpa, sem produtos nem informações do Point.</div></div><button class="ghost" onclick="closeModal()">✕</button></div>
+  showModal(`<div class="row"><div><h2 style="margin:0">Nova loja</h2><div class="hint">Será criada uma estrutura limpa, sem produtos nem informações do Point.</div></div><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div>
   <label>Nome do estabelecimento</label><input id="csNameV120" class="field" placeholder="Ex.: Pizzaria Central" oninput="document.getElementById('csSlugV120').value=slugifyStoreV120(this.value)">
   <label>Endereço do site (slug)</label><input id="csSlugV120" class="field" placeholder="pizzaria-central"><div class="hint">Usaremos este nome no endereço do cardápio.</div>
   <label>WhatsApp da loja</label><input id="csWaV120" class="field" inputmode="tel" placeholder="5524999999999">
   <label>E-mail do administrador da loja</label><input id="csEmailV120" class="field" type="email" placeholder="dono@empresa.com"><div class="hint">Esse será o login autorizado a administrar somente esta loja.</div>
-  <button id="csCreateBtnV120" class="btn full" onclick="createClientSiteV120()">Criar estrutura da loja</button>`);
+  <button id="csCreateBtnV120" class="btn full" data-pedevia-event="click" data-pedevia-call="createClientSiteV120">Criar estrutura da loja</button>`);
 }
 async function createClientSiteV120(){
   const name=$('#csNameV120').value.trim(),slug=slugifyStoreV120($('#csSlugV120').value||name),wa=$('#csWaV120').value.replace(/\D/g,''),email=$('#csEmailV120').value.trim().toLowerCase();
@@ -401,7 +401,7 @@ async function createClientSiteV120(){
 }
 function editClientSiteV120(id){
   const r=window.clientSitesV120.find(x=>String(x.id)===String(id));if(!r)return;
-  showModal(`<div class="row"><div><h2 style="margin:0">${esc(r.name)}</h2><div class="hint">Estrutura independente do Point do Açaí</div></div><button class="ghost" onclick="closeModal()">✕</button></div>
+  showModal(`<div class="row"><div><h2 style="margin:0">${esc(r.name)}</h2><div class="hint">Estrutura independente do Point do Açaí</div></div><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div>
   <label>Nome</label><input id="cseNameV120" class="field" value="${escapeAttrV120(r.name)}">
   <label>Slug</label><input id="cseSlugV120" class="field" value="${escapeAttrV120(r.slug)}">
   <label>WhatsApp</label><input id="cseWaV120" class="field" value="${escapeAttrV120(r.whatsapp||'')}">

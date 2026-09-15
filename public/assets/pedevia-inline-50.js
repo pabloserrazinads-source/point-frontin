@@ -77,3 +77,22 @@
     }
   },false);
 })();
+
+
+/* PEDEVIA CSP FULL MIGRATION — GENERIC ZERO-ARG ACTIONS */
+(function(){
+  if(window.__pedeviaCspGenericZeroArg)return;
+  window.__pedeviaCspGenericZeroArg=true;
+  ["click","change","input"].forEach(function(type){
+    document.addEventListener(type,function(ev){
+      const el=ev.target&&ev.target.closest?ev.target.closest('[data-pedevia-event="'+type+'"][data-pedevia-call]'):null;
+      if(!el)return;
+      const name=el.getAttribute("data-pedevia-call");
+      const fn=name&&name.split(".").reduce(function(o,k){return o&&o[k]},window);
+      if(typeof fn==="function"){
+        if(type==="click") ev.preventDefault();
+        fn.call(el,ev);
+      }
+    });
+  });
+})();

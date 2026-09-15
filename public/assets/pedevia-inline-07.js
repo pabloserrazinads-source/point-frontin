@@ -67,7 +67,7 @@ function readQrUploadV1201(input){
 function renderQrPreviewV1201(){
   const box=document.getElementById('clientQrPreviewV1201');if(!box)return;
   const img=window.clientQrDraftV1201;
-  box.innerHTML=img?`<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><img src="${img}" alt="QR Code do cliente" style="width:150px;height:150px;object-fit:contain;background:#fff;border:1px solid #ddd;border-radius:16px;padding:8px"><button type="button" class="ghost" onclick="removeQrV1201()">Remover QR Code</button></div>`:`<div class="hint">Nenhum QR Code enviado ainda.</div>`;
+  box.innerHTML=img?`<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><img src="${img}" alt="QR Code do cliente" style="width:150px;height:150px;object-fit:contain;background:#fff;border:1px solid #ddd;border-radius:16px;padding:8px"><button type="button" class="ghost" data-pedevia-event="click" data-pedevia-call="removeQrV1201">Remover QR Code</button></div>`:`<div class="hint">Nenhum QR Code enviado ainda.</div>`;
 }
 function removeQrV1201(){window.clientQrDraftV1201='';renderQrPreviewV1201();}
 
@@ -75,7 +75,7 @@ function removeQrV1201(){window.clientQrDraftV1201='';renderQrPreviewV1201();}
 editClientSiteV120=function(id){
   const r=window.clientSitesV120.find(x=>String(x.id)===String(id));if(!r)return;
   window.clientQrDraftV1201=r?.config?.store?.clientQrImage||'';
-  showModal(`<div class="row"><div><h2 style="margin:0">${esc(r.name)}</h2><div class="hint">Estrutura independente do Point do Açaí</div></div><button class="ghost" onclick="closeModal()">✕</button></div>
+  showModal(`<div class="row"><div><h2 style="margin:0">${esc(r.name)}</h2><div class="hint">Estrutura independente do Point do Açaí</div></div><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div>
   <label>Nome</label><input id="cseNameV120" class="field" value="${escapeAttrV120(r.name)}">
   <label>Slug</label><input id="cseSlugV120" class="field" value="${escapeAttrV120(r.slug)}">
   <label>WhatsApp</label><input id="cseWaV120" class="field" value="${escapeAttrV120(r.whatsapp||'')}">
