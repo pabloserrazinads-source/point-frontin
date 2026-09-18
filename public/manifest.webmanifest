@@ -1,13 +1,18 @@
 {
-  "name": "Pedevia",
+  "name": "Pedevia — Cardápio online",
   "short_name": "Pedevia",
-  "description": "Cardápio online e painel de pedidos Pedevia",
+  "description": "Cardápio e pedidos online",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
+  "background_color": "#f7f4f8",
   "theme_color": "#712489",
   "icons": [
-    {"src":"/pedevia-icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}
+    {
+      "src": "/pedevia-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
   ]
 }
