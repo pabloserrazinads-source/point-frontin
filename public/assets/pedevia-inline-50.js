@@ -1,6 +1,6 @@
 
 (function(){
-  const CURRENT_VERSION='1.32.49';
+  const CURRENT_VERSION='1.32.50';
   window.PEDEVIA_VERSION=CURRENT_VERSION;
 
   // Não depende da cadeia histórica de wrappers de closeModal.
@@ -34,7 +34,7 @@
     if(b && !b.hasAttribute('type')) b.setAttribute('type','button');
   },true);
 
-  // v1.32.49 — compatibilidade de handlers após externalização dos scripts.
+  // v1.32.50 — compatibilidade de handlers após externalização dos scripts.
   // Os controles do cardápio/checkout ainda são gerados com atributos onclick.
   // Expõe explicitamente os pontos de entrada no objeto global para preservar
   // o mesmo comportamento da versão monolítica em todos os tenants.
@@ -48,7 +48,7 @@
     if(typeof qty==='function') window.qty=qty;
     if(typeof changeOptQty==='function') window.changeOptQty=changeOptQty;
     if(typeof handleChoiceChange==='function') window.handleChoiceChange=handleChoiceChange;
-  }catch(e){ console.error('Pedevia handler bridge v1.32.49',e); }
+  }catch(e){ console.error('Pedevia handler bridge v1.32.50',e); }
 
   if(typeof window.applyPedeviaVersion==='function') window.applyPedeviaVersion();
 })();
@@ -97,7 +97,7 @@
   });
 })();
 
-/* PEDEVIA v1.32.49 — CART BAR TOTAL SYNC
+/* PEDEVIA v1.32.50 — CART BAR TOTAL SYNC
    Recalcula o total visível da barra do carrinho usando TODOS os itens atuais.
 */
 (function(){
@@ -169,7 +169,7 @@
   setTimeout(sync,0);
 })();
 
-/* PEDEVIA v1.32.49 — CART BAR TOTAL FINAL
+/* PEDEVIA v1.32.50 — CART BAR TOTAL FINAL
    Usa diretamente o mesmo estado/funções do carrinho (cart/sum/oferta),
    em vez de procurar o carrinho em window.
 */
