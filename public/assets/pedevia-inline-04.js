@@ -388,7 +388,12 @@ function previewAppearanceV116(){
     'buttonBg','buttonText','secondaryButtonBg','secondaryButtonText'];
   keys.forEach(k=>{
     const host=document.getElementById('v116mini_'+k);
-    if(host)host.innerHTML=v116MiniPreviewV1164(k);
+    if(host){
+      // A prévia é gerada apenas pelo próprio aplicativo. Parseamos em um
+      // documento inerte e importamos os nós, sem escrever HTML no DOM vivo.
+      const doc=new DOMParser().parseFromString('<body>'+v116MiniPreviewV1164(k)+'</body>','text/html');
+      host.replaceChildren(...Array.from(doc.body.childNodes,n=>document.importNode(n,true)));
+    }
   });
 }
 

@@ -135,40 +135,19 @@
       return;
     }
 
-    host.innerHTML=list.map(c=>{
+    host.replaceChildren();
+    list.forEach(c=>{
       const s=c.status;
       const width=Math.max(4,Math.min(100,(s.progress/s.required)*100));
-      return `
-        <div class="panel loyaltyAdminCustomerV1314"
-             data-search="${esc((c.name+' '+c.phone).toLowerCase())}"
-             style="padding:14px;margin:10px 0">
-          <div class="row" style="align-items:flex-start">
-            <div style="min-width:0">
-              <b style="font-size:16px">${esc(c.name)}</b>
-              <div class="hint">${esc(c.phone)}</div>
-            </div>
-            <span class="badge ${s.eligible?'available':''}" style="${s.eligible?'':'background:#eee;color:#555'}">
-              ${s.eligible?'PRÊMIO DISPONÍVEL':s.progress+'/'+s.required}
-            </span>
-          </div>
-
-          <div class="loyaltyProgressBarV115" style="margin:12px 0 6px">
-            <span style="width:${width}%"></span>
-          </div>
-
-          <div class="row">
-            <div>
-              <b>${s.count} pedido${s.count===1?'':'s'} no clube</b>
-              <div class="hint">${s.eligible
-                ? `${s.reward}% de desconto disponível no próximo pedido`
-                : `Faltam ${s.remaining} pedido${s.remaining===1?'':'s'} para ${s.reward}% OFF`
-              }</div>
-            </div>
-            ${c.last?`<small class="hint" style="text-align:right">Último pedido<br>${esc(new Date(c.last).toLocaleDateString('pt-BR'))}</small>`:''}
-          </div>
-        </div>
-      `;
-    }).join('');
+      const panel=document.createElement('div');panel.className='panel loyaltyAdminCustomerV1314';panel.dataset.search=String((c.name+' '+c.phone).toLowerCase());Object.assign(panel.style,{padding:'14px',margin:'10px 0'});
+      const top=document.createElement('div');top.className='row';top.style.alignItems='flex-start';
+      const identity=document.createElement('div');identity.style.minWidth='0';const customer=document.createElement('b');customer.style.fontSize='16px';customer.textContent=c.name;const phone=document.createElement('div');phone.className='hint';phone.textContent=c.phone;identity.append(customer,phone);
+      const badge=document.createElement('span');badge.className='badge'+(s.eligible?' available':'');if(!s.eligible)Object.assign(badge.style,{background:'#eee',color:'#555'});badge.textContent=s.eligible?'PRÊMIO DISPONÍVEL':s.progress+'/'+s.required;top.append(identity,badge);
+      const progress=document.createElement('div');progress.className='loyaltyProgressBarV115';progress.style.margin='12px 0 6px';const fill=document.createElement('span');fill.style.width=width+'%';progress.append(fill);
+      const bottom=document.createElement('div');bottom.className='row';const details=document.createElement('div');const count=document.createElement('b');count.textContent=s.count+' pedido'+(s.count===1?'':'s')+' no clube';const hint=document.createElement('div');hint.className='hint';hint.textContent=s.eligible?s.reward+'% de desconto disponível no próximo pedido':'Faltam '+s.remaining+' pedido'+(s.remaining===1?'':'s')+' para '+s.reward+'% OFF';details.append(count,hint);bottom.append(details);
+      if(c.last){const last=document.createElement('small');last.className='hint';last.style.textAlign='right';const date=new Date(c.last);last.append('Último pedido',document.createElement('br'),Number.isFinite(date.getTime())?date.toLocaleDateString('pt-BR'):'-');bottom.append(last)}
+      panel.append(top,progress,bottom);host.append(panel);
+    });
   };
 
   window.filterLoyaltyCustomersAdminV1314=function(){

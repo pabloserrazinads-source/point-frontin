@@ -89,7 +89,14 @@
           ?'Este estabelecimento ainda está preparando o cardápio na Pedevia.'
           :'Este estabelecimento está temporariamente indisponível na Pedevia.';
         const shop=document.getElementById('shopView');
-        if(shop)shop.innerHTML=`<div class="panel" style="max-width:620px;margin:55px auto;text-align:center;padding:28px"><div style="font-size:52px">🏪</div><h2>${esc(title)}</h2><p><b>${esc(name)}</b></p><p class="hint">${esc(text)}</p></div>`;
+        if(shop){
+          const panel=document.createElement('div');panel.className='panel';Object.assign(panel.style,{maxWidth:'620px',margin:'55px auto',textAlign:'center',padding:'28px'});
+          const icon=document.createElement('div');icon.style.fontSize='52px';icon.textContent='🏪';
+          const heading=document.createElement('h2');heading.textContent=title;
+          const store=document.createElement('p'),strong=document.createElement('b');strong.textContent=name;store.append(strong);
+          const message=document.createElement('p');message.className='hint';message.textContent=text;
+          panel.append(icon,heading,store,message);shop.replaceChildren(panel);
+        }
         document.getElementById('cartBar')?.classList.add('hide');
       }else{
         showTenantNotFoundV121(slug);

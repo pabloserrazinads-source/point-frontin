@@ -73,7 +73,15 @@ function applyTenantConfigV121(row){
 
 function showTenantNotFoundV121(slug){
   const shop=document.getElementById('shopView');
-  if(shop)shop.innerHTML=`<div class="panel" style="max-width:620px;margin:50px auto;text-align:center"><div style="font-size:52px">🏪</div><h2>Loja indisponível</h2><p class="hint">O endereço <b>/${esc(slug)}</b> não está publicado ou não existe na Pedevia.</p><button class="btn" onclick="location.href='/'">Ir para a Pedevia</button></div>`;
+  if(shop){
+    const panel=document.createElement('div');panel.className='panel';Object.assign(panel.style,{maxWidth:'620px',margin:'50px auto',textAlign:'center'});
+    const icon=document.createElement('div');icon.style.fontSize='52px';icon.textContent='🏪';
+    const title=document.createElement('h2');title.textContent='Loja indisponível';
+    const message=document.createElement('p');message.className='hint';message.append('O endereço ');
+    const address=document.createElement('b');address.textContent='/'+String(slug||'');message.append(address,' não está publicado ou não existe na Pedevia.');
+    const back=document.createElement('button');back.type='button';back.className='btn';back.textContent='Ir para a Pedevia';back.addEventListener('click',()=>location.assign('/'));
+    panel.append(icon,title,message,back);shop.replaceChildren(panel);
+  }
   document.getElementById('cartBar')?.classList.add('hide');
 }
 
@@ -100,20 +108,20 @@ renderClientSitesListV120=function(rows){
     el.innerHTML=`<div class="emptySection"><b>Nenhuma loja criada ainda.</b><br><span class="hint">Clique em “+ Nova loja” para gerar a primeira estrutura limpa.</span></div>`;
     return;
   }
-  el.innerHTML=rows.map(r=>{
+  el.replaceChildren();
+  rows.forEach(r=>{
     const url=tenantPublicUrlV121(r.slug||'');
-    return `<div class="adminItem" style="align-items:flex-start">
-      <div><b>${esc(r.name||'Loja')}</b> ${clientSiteStatusV120(r)}<br>
-      <span class="hint">/${esc(r.slug||'')} · ${esc(r.admin_email||'sem administrador')}</span><br>
-      <small class="hint">${esc(url)}</small><br>
-      <small class="hint">Criada em ${r.created_at?new Date(r.created_at).toLocaleDateString('pt-BR'):'-'}</small></div>
-      <div class="miniBtns" style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
-        <button class="ghost" onclick="openClientSiteV121('${r.id}')">Abrir site</button>
-        <button class="ghost" onclick="copyClientSiteLinkV121('${r.id}')">Copiar link</button>
-        <button class="ghost" onclick="editClientSiteV120('${r.id}')">Gerenciar</button>
-      </div>
-    </div>`;
-  }).join('');
+    const item=document.createElement('div');item.className='adminItem';item.style.alignItems='flex-start';
+    const info=document.createElement('div');const name=document.createElement('b');name.textContent=r.name||'Loja';info.append(name,' ');
+    const badge=document.createElement('span');badge.className='badge '+(r.active?'available':'hidden');badge.textContent=r.active?'Ativo':'Rascunho';info.append(badge,document.createElement('br'));
+    const meta=document.createElement('span');meta.className='hint';meta.textContent='/'+(r.slug||'')+' · '+(r.admin_email||'sem administrador');
+    const link=document.createElement('small');link.className='hint';link.textContent=url;
+    const created=document.createElement('small');created.className='hint';const date=r.created_at?new Date(r.created_at):null;created.textContent='Criada em '+(date&&Number.isFinite(date.getTime())?date.toLocaleDateString('pt-BR'):'-');
+    info.append(meta,document.createElement('br'),link,document.createElement('br'),created);
+    const actions=document.createElement('div');actions.className='miniBtns';Object.assign(actions.style,{display:'flex',gap:'6px',flexWrap:'wrap',justifyContent:'flex-end'});
+    [['Abrir site',()=>openClientSiteV121(r.id)],['Copiar link',()=>copyClientSiteLinkV121(r.id)],['Gerenciar',()=>editClientSiteV120(r.id)]].forEach(([label,handler])=>{const button=document.createElement('button');button.type='button';button.className='ghost';button.textContent=label;button.addEventListener('click',handler);actions.append(button)});
+    item.append(info,actions);el.append(item);
+  });
 };
 
 function clientRowV121(id){return (window.clientSitesV120||[]).find(x=>String(x.id)===String(id))}
@@ -1753,8 +1761,8 @@ PedeviaV130.enhanceAdminProducts=function(){
   _enhanceAdminProductsV130Base();
   const content=document.getElementById('adminContent');if(!content)return;
   const first=content.querySelector('.adminProdCard');
-  if(first&&!document.getElementById('v130BulkToolbar')){const bar=document.createElement('div');bar.id='v130BulkToolbar';bar.className='v130BulkToolbar';bar.innerHTML=`<b>Ações em lote</b><button class="ghost" onclick="PedeviaV130.bulkSet('available')">Disponibilizar</button><button class="ghost" onclick="PedeviaV130.bulkSet('unavailable')">Indisponibilizar</button><button class="ghost" onclick="PedeviaV130.bulkSet('hidden')">Ocultar</button>`;first.parentNode.insertBefore(bar,first)}
-  content.querySelectorAll('.adminProdCard').forEach(card=>{const edit=card.querySelector('button[onclick*="editProduct"]'),m=(edit?.getAttribute('onclick')||'').match(/editProduct\('([^']+)'\)/),id=m?.[1];if(!id)return;if(!card.querySelector('.v130ProdSelect')){const sel=document.createElement('label');sel.className='v130SelectWrap';sel.innerHTML=`<input class="v130ProdSelect" type="checkbox" value="${esc(id)}"> Selecionar`;card.prepend(sel)}const tools=card.querySelector('.v130ProdTools');if(tools&&!tools.querySelector('.v130MoveUp')){const up=document.createElement('button');up.className='ghost v130MoveUp';up.textContent='↑';up.onclick=()=>PedeviaV130.moveProduct(id,-1);const dn=document.createElement('button');dn.className='ghost';dn.textContent='↓';dn.onclick=()=>PedeviaV130.moveProduct(id,1);tools.append(up,dn)}})
+  if(first&&!document.getElementById('v130BulkToolbar')){const bar=document.createElement('div');bar.id='v130BulkToolbar';bar.className='v130BulkToolbar';const label=document.createElement('b');label.textContent='Ações em lote';bar.append(label);[['available','Disponibilizar'],['unavailable','Indisponibilizar'],['hidden','Ocultar']].forEach(([status,text])=>{const button=document.createElement('button');button.type='button';button.className='ghost';button.textContent=text;button.addEventListener('click',()=>PedeviaV130.bulkSet(status));bar.append(button)});first.parentNode.insertBefore(bar,first)}
+  content.querySelectorAll('.adminProdCard').forEach(card=>{const edit=card.querySelector('button[onclick*="editProduct"]'),m=(edit?.getAttribute('onclick')||'').match(/editProduct\('([^']+)'\)/),id=m?.[1];if(!id)return;if(!card.querySelector('.v130ProdSelect')){const sel=document.createElement('label');sel.className='v130SelectWrap';const checkbox=document.createElement('input');checkbox.className='v130ProdSelect';checkbox.type='checkbox';checkbox.value=String(id);sel.append(checkbox,' Selecionar');card.prepend(sel)}const tools=card.querySelector('.v130ProdTools');if(tools&&!tools.querySelector('.v130MoveUp')){const up=document.createElement('button');up.className='ghost v130MoveUp';up.textContent='↑';up.onclick=()=>PedeviaV130.moveProduct(id,-1);const dn=document.createElement('button');dn.className='ghost';dn.textContent='↓';dn.onclick=()=>PedeviaV130.moveProduct(id,1);tools.append(up,dn)}})
 };
 
 // Card de otimização de imagens no menu Mais.
@@ -1898,7 +1906,14 @@ adminMore=function(){_adminMoreV130MediaBase();const list=document.querySelector
     const title=status==='draft'?'Cardápio em preparação':'Cardápio temporariamente indisponível';
     const text=status==='draft'?'Este estabelecimento ainda está preparando o cardápio na Pedevia.':'Este estabelecimento está temporariamente indisponível na Pedevia.';
     const shop=document.getElementById('shopView');
-    if(shop)shop.innerHTML=`<div class="panel" style="max-width:620px;margin:55px auto;text-align:center;padding:28px"><div style="font-size:52px">🏪</div><h2>${esc(title)}</h2><p><b>${esc(name)}</b></p><p class="hint">${esc(text)}</p></div>`;
+    if(shop){
+      const panel=document.createElement('div');panel.className='panel';Object.assign(panel.style,{maxWidth:'620px',margin:'55px auto',textAlign:'center',padding:'28px'});
+      const icon=document.createElement('div');icon.style.fontSize='52px';icon.textContent='🏪';
+      const heading=document.createElement('h2');heading.textContent=title;
+      const store=document.createElement('p'),strong=document.createElement('b');strong.textContent=name;store.append(strong);
+      const message=document.createElement('p');message.className='hint';message.textContent=text;
+      panel.append(icon,heading,store,message);shop.replaceChildren(panel);
+    }
     document.getElementById('cartBar')?.classList.add('hide');
   }
   async function publicServiceInfoV131(slug){

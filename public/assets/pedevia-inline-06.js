@@ -367,12 +367,19 @@ function renderClientSitesListV120(rows){
     el.innerHTML=`<div class="emptySection"><b>Nenhuma loja criada ainda.</b><br><span class="hint">Clique em “+ Nova loja” para gerar a primeira estrutura limpa a partir do seu sistema.</span></div>`;
     return;
   }
-  el.innerHTML=rows.map(r=>`<div class="adminItem" style="align-items:flex-start">
-    <div><b>${esc(r.name||'Loja')}</b> ${clientSiteStatusV120(r)}<br>
-    <span class="hint">/${esc(r.slug||'')} · ${esc(r.admin_email||'sem administrador')}</span><br>
-    <small class="hint">Criada em ${r.created_at?new Date(r.created_at).toLocaleDateString('pt-BR'):'-'}</small></div>
-    <div class="miniBtns"><button class="ghost" onclick="editClientSiteV120('${r.id}')">Gerenciar</button></div>
-  </div>`).join('');
+  el.replaceChildren();
+  rows.forEach(r=>{
+    const item=document.createElement('div');item.className='adminItem';item.style.alignItems='flex-start';
+    const info=document.createElement('div');
+    const name=document.createElement('b');name.textContent=r.name||'Loja';info.append(name,' ');
+    const badge=document.createElement('span');badge.className='badge '+(r.active?'available':'hidden');badge.textContent=r.active?'Ativo':'Rascunho';info.append(badge,document.createElement('br'));
+    const meta=document.createElement('span');meta.className='hint';meta.textContent='/'+(r.slug||'')+' · '+(r.admin_email||'sem administrador');info.append(meta,document.createElement('br'));
+    const created=document.createElement('small');created.className='hint';
+    const date=r.created_at?new Date(r.created_at):null;created.textContent='Criada em '+(date&&Number.isFinite(date.getTime())?date.toLocaleDateString('pt-BR'):'-');info.append(created);
+    const actions=document.createElement('div');actions.className='miniBtns';
+    const manage=document.createElement('button');manage.type='button';manage.className='ghost';manage.textContent='Gerenciar';manage.addEventListener('click',()=>editClientSiteV120(r.id));actions.append(manage);
+    item.append(info,actions);el.append(item);
+  });
 }
 function newClientSiteV120(){
   showModal(`<div class="row"><div><h2 style="margin:0">Nova loja</h2><div class="hint">Será criada uma estrutura limpa, sem produtos nem informações do Point.</div></div><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div>
