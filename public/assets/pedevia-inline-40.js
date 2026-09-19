@@ -1,7 +1,7 @@
 
 // ===== v1.32.30: DIVULGAÇÃO REAL DA LOJA =====
 (function(){
-  const V='1.32.50'; window.PEDEVIA_VERSION=V;
+  const V='1.32.51'; window.PEDEVIA_VERSION=V;
   function publicUrl(){
     const custom=String(cfg?.store?.customDomain||'').trim();
     if(custom){return /^https?:\/\//i.test(custom)?custom:'https://'+custom}
@@ -46,7 +46,20 @@
   window.updateQrV13228=function(){const q=qrSettings();q.size=+document.getElementById('pvQrSizeV13228')?.value||260;q.dark=document.getElementById('pvQrDarkV13228')?.value||'#211d23';q.light=document.getElementById('pvQrLightV13228')?.value||'#ffffff';renderQrV13228()};
   window.saveQrSettingsV13228=async function(){updateQrV13228();const b=document.getElementById('pvSaveQrV13228'),old=b?.textContent;if(b){b.disabled=true;b.textContent='Salvando...'}try{const ok=await persist('Preferências do QR Code salvas.');if(ok!==false)generalQr();else if(b){b.disabled=false;b.textContent=old}}catch(e){console.error(e);if(b){b.disabled=false;b.textContent=old}}};
   window.downloadQrV13228=function(){const host=document.getElementById('pvQrCanvasV13228'),canvas=host?.querySelector('canvas'),img=host?.querySelector('img');let data='';try{data=canvas?.toDataURL('image/png')||img?.src||''}catch(e){}if(!data){alert('Aguarde o QR Code ser gerado.');return}const a=document.createElement('a');a.href=data;a.download=`qr-code-${String(cfg.store?.hubSlug||'cardapio').replace(/[^a-z0-9_-]/gi,'-')}.png`;document.body.appendChild(a);a.click();a.remove()};
-  window.printQrV13228=function(){const host=document.getElementById('pvQrCanvasV13228'),canvas=host?.querySelector('canvas'),img=host?.querySelector('img');let data='';try{data=canvas?.toDataURL('image/png')||img?.src||''}catch(e){}if(!data)return;const w=window.open('','_blank','width=520,height=700');if(!w){alert('Permita pop-ups para imprimir o QR Code.');return}w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>QR Code</title><style>body{font-family:Arial;text-align:center;padding:30px}img{width:320px;max-width:90%}h2{margin-bottom:8px}p{word-break:break-all}</style></head><body><h2>${esc(cfg.store?.name||'Cardápio')}</h2><img src="${data}"><p>${esc(publicUrl())}</p><script>onload=()=>print()<\/script></body></html>`);w.document.close()};
+  window.printQrV13228=function(){
+    const host=document.getElementById('pvQrCanvasV13228'),canvas=host?.querySelector('canvas'),img=host?.querySelector('img');
+    let data='';try{data=canvas?.toDataURL('image/png')||img?.src||''}catch(e){}
+    if(!/^data:image\/(?:png|jpeg|webp);base64,/i.test(data))return;
+    const w=window.open('','_blank','width=520,height=700');
+    if(!w){alert('Permita pop-ups para imprimir o QR Code.');return}
+    const d=w.document;d.title='QR Code';
+    const style=d.createElement('style');style.textContent='body{font-family:Arial;text-align:center;padding:30px}img{width:320px;max-width:90%}h2{margin-bottom:8px}p{word-break:break-all}';
+    const title=d.createElement('h2');title.textContent=String(cfg.store?.name||'Cardápio');
+    const qr=d.createElement('img');qr.alt='QR Code do cardápio';
+    qr.addEventListener('load',()=>{w.focus();w.print()},{once:true});qr.src=data;
+    const url=d.createElement('p');url.textContent=String(publicUrl());
+    d.head.append(style);d.body.replaceChildren(title,qr,url);
+  };
   window.generalQr=function(){
     const q=qrSettings(),url=publicUrl();
     generalShell('QR Code do Cardápio',`<p class="hint">Gere o QR Code real da sua loja para balcão, mesas, embalagens, cartões e redes sociais.</p>

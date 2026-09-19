@@ -919,7 +919,7 @@ maybeHandleInviteV122=async function(){
 
 // Exibe a versão nova no cabeçalho administrativo.
 setTimeout(()=>{
-  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9]/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.32.50')});
+  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9]/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.32.51')});
 },0);
 
 
@@ -1139,7 +1139,7 @@ finishWhatsApp=async function(){
 
 // Mostra a versão nova no cabeçalho administrativo.
 setTimeout(()=>{
-  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.32.50')});
+  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.32.51')});
 },0);
 
 
@@ -1262,10 +1262,13 @@ async function loadStatisticsV126(){
     const revenue=completed.reduce((s,o)=>s+(+o.total||0),0),lifeRevenue=lifeCompleted.reduce((s,o)=>s+(+o.total||0),0),ticket=completed.length?revenue/completed.length:0;
     const customers=aggregateCustomersV126(period).sort((a,b)=>b.completed-a.completed||b.spent-a.spent),products=aggregateProductsV126(period).slice(0,10);
     const ranges=[['7','7 dias'],['30','30 dias'],['90','90 dias'],['all','Todo período']].map(([v,n])=>`<button class="${statsRangeV126===v?'on':''}" onclick="statsRangeV126='${v}';loadStatisticsV126()">${n}</button>`).join('');
-    const topCustomers=customers.filter(c=>c.completed>0).slice(0,10).map((c,i)=>`<div class="v126Rank"><div class="v126RankNum">${i+1}</div><div><b>${esc(c.name)}</b><small>${esc(c.phone||'Sem telefone')} · ${c.completed} concluído(s)</small></div><div class="v126Right"><b>${brl(c.spent)}</b><button class="ghost" style="padding:5px 8px;margin-top:4px" onclick="customerHistoryV126('${c.key.replace(/'/g,"\\'")}')">Histórico</button></div></div>`).join('')||'<p class="hint">Ainda não há clientes com pedidos concluídos neste período.</p>';
-    const allCustomers=customers.slice(0,30).map(c=>`<div class="adminItem"><div><b>${esc(c.name)}</b><small>${esc(c.phone||'Sem telefone')} · último pedido ${orderDateV125(c.last)}</small></div><button class="ghost" onclick="customerHistoryV126('${c.key.replace(/'/g,"\\'")}')">Ver histórico</button></div>`).join('')||'<p class="hint">Nenhum cliente registrado.</p>';
+    const rankedCustomers=customers.filter(c=>c.completed>0).slice(0,10),listedCustomers=customers.slice(0,30);
+    const topCustomers=rankedCustomers.map((c,i)=>`<div class="v126Rank"><div class="v126RankNum">${i+1}</div><div><b>${esc(c.name)}</b><small>${esc(c.phone||'Sem telefone')} · ${c.completed} concluído(s)</small></div><div class="v126Right"><b>${brl(c.spent)}</b><button type="button" class="ghost v126TopCustomerHistory" data-customer-index="${i}" style="padding:5px 8px;margin-top:4px">Histórico</button></div></div>`).join('')||'<p class="hint">Ainda não há clientes com pedidos concluídos neste período.</p>';
+    const allCustomers=listedCustomers.map((c,i)=>`<div class="adminItem"><div><b>${esc(c.name)}</b><small>${esc(c.phone||'Sem telefone')} · último pedido ${orderDateV125(c.last)}</small></div><button type="button" class="ghost v126AllCustomerHistory" data-customer-index="${i}">Ver histórico</button></div>`).join('')||'<p class="hint">Nenhum cliente registrado.</p>';
     const topProducts=products.map((p,i)=>`<div class="v126Rank"><div class="v126RankNum">${i+1}</div><div><b>${esc(p.name)}</b><small>${p.qty} unidade(s) vendida(s)</small></div><div class="v126Right"><b>${brl(p.revenue)}</b></div></div>`).join('')||'<p class="hint">Ainda não há produtos vendidos neste período.</p>';
     host.innerHTML=`<div class="v126Filters">${ranges}</div><div class="v126StatsGrid"><div class="v126Stat"><b>${brl(revenue)}</b><small>Faturamento no período</small></div><div class="v126Stat"><b>${completed.length}</b><small>Vendas concluídas</small></div><div class="v126Stat"><b>${brl(ticket)}</b><small>Ticket médio</small></div><div class="v126Stat"><b>${brl(lifeRevenue)}</b><small>Faturamento geral</small></div></div><div class="panel"><div class="row"><h3 style="margin:0">Situação dos pedidos</h3><span class="hint">${active.length} ativos · ${cancelled.length} cancelados no período</span></div></div><div class="panel"><h3>Clientes que mais pedem</h3>${topCustomers}</div><div class="panel"><h3>Produtos mais vendidos</h3>${topProducts}</div><div class="panel"><h3>Histórico dos clientes</h3><p class="hint">Veja todos os pedidos registrados para cada cliente, inclusive cancelados.</p>${allCustomers}</div>`;
+    host.querySelectorAll('.v126TopCustomerHistory').forEach(button=>button.addEventListener('click',()=>{const customer=rankedCustomers[Number(button.dataset.customerIndex)];if(customer)customerHistoryV126(customer.key)}));
+    host.querySelectorAll('.v126AllCustomerHistory').forEach(button=>button.addEventListener('click',()=>{const customer=listedCustomers[Number(button.dataset.customerIndex)];if(customer)customerHistoryV126(customer.key)}));
   }catch(e){console.error(e);host.innerHTML='<div class="notice bad"><b>Não foi possível carregar as estatísticas.</b><br>Confirme se o SQL da versão 1.26.0 foi executado.</div>'}
 }
 
@@ -1290,7 +1293,7 @@ adminMore=function(){
 };
 
 // Versão exibida no Admin.
-setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.32.50')})},0);
+setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.32.51')})},0);
 
 
 // ===== v1.27.0: AUDITORIA GERAL PEDEVIA =====
@@ -1433,7 +1436,7 @@ const _renderAdminV127Clean=renderAdmin;
 renderAdmin=function(){_renderAdminV127Clean();setTimeout(cleanLegacyLabelsV127,0)};
 
 syncServerClockV127();setInterval(syncServerClockV127,10*60*1000);
-setTimeout(()=>{sanitizeTenantV127();cleanLegacyLabelsV127();document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.50')})},0);
+setTimeout(()=>{sanitizeTenantV127();cleanLegacyLabelsV127();document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.51')})},0);
 
 // --- Backups de configuração + resumo do painel mestre ---
 async function openConfigBackupsV127(){
@@ -1678,7 +1681,7 @@ const _renderClientSitesListV130Base=renderClientSitesListV120;
 renderClientSitesListV120=function(rows){_renderClientSitesListV130Base(rows);const host=document.getElementById('clientSitesListV120');if(host&&!document.getElementById('masterSummaryV130')){const d=document.createElement('div');d.id='masterSummaryV130';d.className='v126StatsGrid';host.prepend(d);PedeviaV130.masterMetrics()}};
 
 // Versão.
-setTimeout(()=>{PedeviaV130.init();document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.50')})},600);
+setTimeout(()=>{PedeviaV130.init();document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.51')})},600);
 
 // ===== v1.30.1 extras: Storage de imagens + UX de checkout =====
 Object.assign(PedeviaV130,{
@@ -1933,7 +1936,7 @@ adminMore=function(){_adminMoreV130MediaBase();const list=document.querySelector
   };
 
   // Atualiza a versão visível sem interferir nas demais camadas.
-  setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.50')})},900);
+  setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.51')})},900);
 })();
 
 
@@ -1975,7 +1978,7 @@ adminMore=function(){_adminMoreV130MediaBase();const list=document.querySelector
   renderAdmin=function(){baseRender();if(window.pedeviaTenantV121)ownerBillingCardV1311()};
   const baseEnter=enterTenantAdminV122;
   enterTenantAdminV122=async function(){const ok=await baseEnter();if(window.pedeviaTenantV121)ownerBillingCardV1311();return ok};
-  setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.50')})},1000);
+  setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.51')})},1000);
 })();
 
 // Inicializa somente depois de todas as camadas de compatibilidade do arquivo terem sido carregadas.

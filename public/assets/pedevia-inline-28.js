@@ -1,7 +1,7 @@
 
 // ===== v1.32.6: NORMALIZAÇÃO REAL DAS CONFIGURAÇÕES DE PEDIDOS DOS TENANTS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.50';
+  window.PEDEVIA_VERSION='1.32.51';
 
   function normalizeTenantOrderConfigV1326(){
     cfg.store=cfg.store||{};
