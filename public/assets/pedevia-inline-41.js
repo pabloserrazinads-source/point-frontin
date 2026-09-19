@@ -1,7 +1,7 @@
 
 // ===== v1.32.30: SINCRONIZAÇÃO COMERCIAL DO PROPRIETÁRIO =====
 (function(){
-  const CURRENT_VERSION='1.32.51';
+  const CURRENT_VERSION='1.32.52';
   window.PEDEVIA_VERSION=CURRENT_VERSION;
 
   async function refreshTenantCommercialV13229(){
