@@ -1,7 +1,7 @@
 
 // ===== v1.32.30: DIVULGAÇÃO REAL DA LOJA =====
 (function(){
-  const V='1.32.52'; window.PEDEVIA_VERSION=V;
+  const V='1.32.54'; window.PEDEVIA_VERSION=V;
   function publicUrl(){
     const custom=String(cfg?.store?.customDomain||'').trim();
     if(custom){return /^https?:\/\//i.test(custom)?custom:'https://'+custom}

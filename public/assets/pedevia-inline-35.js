@@ -1,7 +1,7 @@
 
 // ===== v1.32.22: META-AUDITORIA / HARDENING COMERCIAL =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.52';
+  window.PEDEVIA_VERSION='1.32.54';
 
   // 1) Migração definitiva do modelo de entrega: somente FIXA ou BAIRROS.
   function normalizeCommercialConfigV13222(){
@@ -95,7 +95,7 @@
   function enforceVersionV13222(){
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.52');
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.54');
       }
     });
   }
