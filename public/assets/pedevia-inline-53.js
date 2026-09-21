@@ -1,8 +1,8 @@
-// ===== v1.32.55: SALVAMENTO DIRECIONADO DE PRODUTOS =====
+// ===== v1.32.56: SALVAMENTO DIRECIONADO DE PRODUTOS VIA RPC =====
 (function(){
   'use strict';
 
-  window.PEDEVIA_VERSION='1.32.55';
+  window.PEDEVIA_VERSION='1.32.56';
 
   const previousSaveProductV13255=window.saveProduct;
   const previousDuplicateProductV13255=window.duplicateProduct;
@@ -24,9 +24,10 @@
 
   async function upsertOneProductV13255(product,sortOrder){
     await requireAdminSessionV13255();
-    const {error}=await supabaseClient
-      .from('products')
-      .upsert(productToDbRow(product,sortOrder),{onConflict:'id'});
+    const row=productToDbRow(product,sortOrder);
+    const {error}=await supabaseClient.rpc('save_pedevia_product_v13256',{
+      p_product:row
+    });
     if(error)throw error;
     try{localStorage.setItem(KEY,JSON.stringify(cfg))}catch(e){console.warn('Falha no cache local',e)}
     return true;
@@ -104,7 +105,7 @@
       else alert('Produto salvo.');
       return true;
     }catch(error){
-      console.error('Falha ao salvar produto v1.32.55:',error);
+      console.error('Falha ao salvar produto v1.32.56:',error);
       if(typeof setSyncStatusV15==='function')setSyncStatusV15('error',errorTextV13255(error));
       const message='Não foi possível salvar: '+errorTextV13255(error);
       if(typeof pedeviaToastV1315==='function')pedeviaToastV1315(message,'error');
@@ -145,7 +146,7 @@
       else alert('Produto duplicado. Agora edite a cópia e toque em Concluir.');
       return true;
     }catch(error){
-      console.error('Falha ao duplicar produto v1.32.55:',error);
+      console.error('Falha ao duplicar produto v1.32.56:',error);
       cfg.products=cfg.products.filter(p=>String(p.id)!==String(copy.id));
       try{localStorage.setItem(KEY,JSON.stringify(cfg))}catch(e){}
       const message='Não foi possível duplicar: '+errorTextV13255(error);
@@ -156,11 +157,11 @@
   };
 
   function enforceVersionV13255(){
-    window.PEDEVIA_VERSION='1.32.55';
+    window.PEDEVIA_VERSION='1.32.56';
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       const text=el.textContent||'';
       if(/Versão\s+1\.\d+(?:\.\d+)*/i.test(text)){
-        el.textContent=text.replace(/Versão\s+1\.\d+(?:\.\d+)*/i,'Versão 1.32.55');
+        el.textContent=text.replace(/Versão\s+1\.\d+(?:\.\d+)*/i,'Versão 1.32.56');
       }
     });
   }
