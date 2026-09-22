@@ -1,8 +1,23 @@
-// ===== v1.32.57: BOTÃO ÚNICO + SALVAMENTO DIRECIONADO VIA RPC =====
+// ===== v1.32.58: BOTÃO À PROVA DE TRAVAS + SALVAMENTO VIA RPC =====
 (function(){
   'use strict';
 
-  window.PEDEVIA_VERSION='1.32.57';
+  window.PEDEVIA_VERSION='1.32.58';
+
+  const buttonFixStyleV13258=document.createElement('style');
+  buttonFixStyleV13258.textContent=`
+    #saveProductBtnV132{
+      pointer-events:auto!important;
+      position:relative!important;
+      z-index:2147483000!important;
+      min-height:54px!important;
+      opacity:1!important;
+      visibility:visible!important;
+      touch-action:manipulation!important;
+    }
+    #sheet .stickySave{z-index:2147482999!important}
+  `;
+  document.head.appendChild(buttonFixStyleV13258);
 
   const previousSaveProductV13255=window.saveProduct;
   const previousDuplicateProductV13255=window.duplicateProduct;
@@ -118,7 +133,7 @@
       else alert('Produto salvo.');
       return true;
     }catch(error){
-      console.error('Falha ao salvar produto v1.32.57:',error);
+      console.error('Falha ao salvar produto v1.32.58:',error);
       if(typeof setSyncStatusV15==='function')setSyncStatusV15('error',errorTextV13255(error));
       const message='Não foi possível salvar: '+errorTextV13255(error);
       if(typeof pedeviaToastV1315==='function')pedeviaToastV1315(message,'error');
@@ -159,7 +174,7 @@
       else alert('Produto duplicado. Agora edite a cópia e toque em Concluir.');
       return true;
     }catch(error){
-      console.error('Falha ao duplicar produto v1.32.57:',error);
+      console.error('Falha ao duplicar produto v1.32.58:',error);
       cfg.products=cfg.products.filter(p=>String(p.id)!==String(copy.id));
       try{localStorage.setItem(KEY,JSON.stringify(cfg))}catch(e){}
       const message='Não foi possível duplicar: '+errorTextV13255(error);
@@ -170,11 +185,11 @@
   };
 
   function enforceVersionV13255(){
-    window.PEDEVIA_VERSION='1.32.57';
+    window.PEDEVIA_VERSION='1.32.58';
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       const text=el.textContent||'';
       if(/Versão\s+1\.\d+(?:\.\d+)*/i.test(text)){
-        el.textContent=text.replace(/Versão\s+1\.\d+(?:\.\d+)*/i,'Versão 1.32.57');
+        el.textContent=text.replace(/Versão\s+1\.\d+(?:\.\d+)*/i,'Versão 1.32.58');
       }
     });
   }
@@ -195,7 +210,14 @@
     if(!button)return;
     button.type='button';
     button.disabled=false;
+    button.style.pointerEvents='auto';
+    button.style.opacity='1';
     button.removeAttribute('onclick');
+    button.removeAttribute('aria-busy');
+    delete button.dataset.pedeviaWorking;
+    delete button.dataset.pedeviaBusy;
+    delete button.dataset.pedeviaOriginal;
+    delete button.dataset.pedeviaOriginalText;
     button.dataset.noAutoBusy='1';
     button.dataset.pedeviaProductSave='1';
     if(button.dataset.boundSaveV13257==='1')return;
@@ -215,5 +237,29 @@
       return result;
     };
   }
+
+  // Intercepta antes de onclick e dos listeners históricos. Mesmo que alguma
+  // camada antiga recrie o botão, este controlador continua sendo o único save.
+  document.addEventListener('click',function(event){
+    const button=event.target?.closest?.('#saveProductBtnV132,#sheet .stickySave .btn');
+    if(!button)return;
+    const footer=button.closest('.stickySave');
+    if(!footer || !document.getElementById('epn'))return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    const id=window._editingProductV132 ||
+      (cfg.products||[]).find(p=>p?._draftNewV132)?.id;
+    if(id)window.saveProduct(id);
+  },true);
+
+  // Cura automaticamente botões recriados por renderizações antigas.
+  const saveButtonObserverV13258=new MutationObserver(()=>{
+    const id=window._editingProductV132;
+    if(id)bindProductSaveButtonV13257(id);
+  });
+  saveButtonObserverV13258.observe(document.getElementById('sheet')||document.body,{
+    childList:true,
+    subtree:true
+  });
   [0,400,1200,2500].forEach(ms=>setTimeout(enforceVersionV13255,ms));
 })();
