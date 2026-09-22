@@ -1,7 +1,7 @@
 
 // ===== v1.32.20: SAVE ROBUSTO + PIX + IMPRESSÃO =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.53';
+  window.PEDEVIA_VERSION='1.32.54';
 
   function saveButtonV13220(label){
     const modal=document.getElementById('modal');
