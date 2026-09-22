@@ -1,5 +1,5 @@
 
 (function(){
-  window.PEDEVIA_VERSION='1.32.54';
+  window.PEDEVIA_VERSION='1.32.53';
   if(typeof window.applyPedeviaVersion==='function')window.applyPedeviaVersion();
 })();

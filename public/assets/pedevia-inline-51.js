@@ -1,50 +1,39 @@
-// ===== v1.32.54: FIDELIDADE SOMENTE APÓS CONCLUSÃO =====
+// ===== Pedevia v1.32.53: FIDELIDADE SOMENTE APÓS CONCLUSÃO =====
 (function(){
-  const CURRENT_VERSION='1.32.54';
-  window.PEDEVIA_VERSION=CURRENT_VERSION;
+  const digits=v=>String(v||'').replace(/\D/g,'');
 
-  // O checkout continua salvando o perfil e o pedido operacional, mas não
-  // contabiliza fidelidade. A contagem passa a ser responsabilidade exclusiva
-  // da transição administrativa para "completed".
-  window.registerLoyaltyOrderV113=async function(){ return null; };
-  window.registerOrderAndCustomerV115=async function(){
-    const st=window.checkoutState||{};
-    const phone=typeof normalizePhoneV127==='function'
-      ?normalizePhoneV127(st.phone)
-      :String(st.phone||'').replace(/\D/g,'');
-    if(phone.length<10)return null;
-    if(typeof cacheCustomerPhoneV115==='function')cacheCustomerPhoneV115(phone);
-    if(typeof upsertCustomerProfileV115==='function'){
-      return await upsertCustomerProfileV115({
-        phone,
-        name:String(st.customer||'').trim(),
-        neighborhood:String(st.neighborhood||''),
-        address:String(st.address||''),
-        reference:String(st.reference||'')
-      });
-    }
-    return null;
-  };
-
-  async function orderByIdV13253(id){
-    const cached=(window.pedeviaOrdersV125||[]).find(x=>String(x.id)===String(id));
-    if(cached)return cached;
-    const {data,error}=await supabaseClient.from('pedevia_orders')
-      .select('*').eq('id',id).eq('store_key',currentStoreKeyV127()).maybeSingle();
-    if(error)throw error;
-    return data||null;
+  async function currentLoyaltyProfileV13253(phone){
+    try{return await getCustomerProfileV115(phone)}catch(_e){return null}
   }
 
-  async function countCompletedOrderV13253(order){
+  // No checkout salvamos apenas os dados do cliente. O pedido ainda não vale
+  // ponto: ele precisa ser concluído pelo estabelecimento.
+  registerOrderAndCustomerV115=async function(){
+    const st=window.checkoutState||{};
+    const phone=digits(st.phone);
+    if(phone.length<10)throw new Error('Telefone inválido');
+    cacheCustomerPhoneV115(phone);
+    await upsertCustomerProfileV115({
+      phone,
+      name:String(st.customer||'').trim(),
+      neighborhood:String(st.neighborhood||''),
+      address:String(st.address||''),
+      reference:String(st.reference||'')
+    });
+    const profile=await currentLoyaltyProfileV13253(phone);
+    if(profile)updateLoyaltyDisplaysV115(profile);
+    return profile||{phone,name:String(st.customer||'').trim(),order_count:0};
+  };
+
+  async function creditCompletedOrderV13253(order){
     if(!order||order.status!=='completed')return null;
-    const phone=typeof normalizePhoneV127==='function'
-      ?normalizePhoneV127(order.customer_phone)
-      :String(order.customer_phone||'').replace(/\D/g,'');
+    const phone=digits(order.customer_phone);
     if(phone.length<10)return null;
-    const clientOrderId=String(order.id||'').trim();
+    const key=String(order.store_key||currentStoreKeyV127());
+    const clientOrderId=String(order.id||'');
     if(!clientOrderId)return null;
     const {data,error}=await supabaseClient.rpc('register_pedevia_customer_order_v127',{
-      p_store_key:String(order.store_key||currentStoreKeyV127()),
+      p_store_key:key,
       p_client_order_id:clientOrderId,
       p_phone:phone,
       p_name:String(order.customer_name||'').trim(),
@@ -57,66 +46,76 @@
     if(error)throw error;
     return Array.isArray(data)?data[0]||null:data;
   }
-  window.countCompletedOrderV13253=countCompletedOrderV13253;
+  window.creditCompletedOrderV13253=creditCompletedOrderV13253;
 
-  async function countByIdV13253(id){
-    try{
-      return await countCompletedOrderV13253(await orderByIdV13253(id));
-    }catch(e){
-      console.error('Fidelidade após conclusão:',e);
-      alert('O pedido foi concluído, mas a fidelidade não pôde ser atualizada. Salve-o como Concluído novamente para tentar de novo.');
-      return null;
-    }
+  async function fetchCompletedOrderV13253(id){
+    const key=currentStoreKeyV127();
+    const {data,error}=await supabaseClient.from('pedevia_orders')
+      .select('*').eq('id',id).eq('store_key',key).eq('status','completed').maybeSingle();
+    if(error)throw error;
+    return data||null;
   }
 
-  if(window.PedeviaV130?.setStatus){
-    const base=PedeviaV130.setStatus.bind(PedeviaV130);
-    PedeviaV130.setStatus=async function(id,status){
-      const result=await base(...arguments);
-      if(status==='completed')await countByIdV13253(id);
-      return result;
-    };
-  }
-
+  // Tela detalhada/histórico.
   if(typeof updateOrderStatusV126==='function'){
-    const base=updateOrderStatusV126;
+    const baseUpdate=updateOrderStatusV126;
     updateOrderStatusV126=async function(id){
-      const target=document.getElementById('orderStatusV125')?.value||'new';
-      const result=await base.apply(this,arguments);
-      if(target==='completed')await countByIdV13253(id);
+      const wanted=document.getElementById('orderStatusV125')?.value||'new';
+      const result=await baseUpdate.apply(this,arguments);
+      if(wanted==='completed'){
+        try{
+          const order=await fetchCompletedOrderV13253(id);
+          if(order)await creditCompletedOrderV13253(order);
+        }catch(e){
+          console.error('Pedido concluído, mas a fidelidade não pôde ser atualizada:',e);
+          alert('O pedido foi concluído, mas a fidelidade não foi atualizada. Abra o pedido e salve como Concluído novamente.');
+        }
+      }
       return result;
     };
     updateOrderStatusV125=updateOrderStatusV126;
   }
 
-  if(typeof finishTodayOrdersV126==='function'){
-    const base=finishTodayOrdersV126;
-    finishTodayOrdersV126=async function(){
-      let candidateIds=[];
-      try{
-        const start=new Date();start.setHours(0,0,0,0);
-        const end=new Date(start);end.setDate(end.getDate()+1);
-        const {data}=await supabaseClient.from('pedevia_orders').select('id')
-          .eq('store_key',currentStoreKeyV127())
-          .in('status',['new','accepted','preparing','ready'])
-          .gte('created_at',start.toISOString()).lt('created_at',end.toISOString());
-        candidateIds=(data||[]).map(x=>x.id).filter(Boolean);
-      }catch(_e){}
-      const result=await base.apply(this,arguments);
-      if(!candidateIds.length)return result;
-      try{
-        const {data,error}=await supabaseClient.from('pedevia_orders').select('*')
-          .eq('store_key',currentStoreKeyV127()).eq('status','completed')
-          .in('id',candidateIds);
-        if(error)throw error;
-        for(const order of (data||[]))await countCompletedOrderV13253(order);
-      }catch(e){
-        console.error('Fidelidade no encerramento em lote:',e);
-        alert('Os pedidos foram concluídos, mas alguma fidelidade não pôde ser atualizada. Conclua novamente o pedido afetado para tentar de novo.');
+  // Quadro operacional moderno.
+  if(window.PedeviaV130&&typeof PedeviaV130.setStatus==='function'){
+    const baseSetStatus=PedeviaV130.setStatus;
+    PedeviaV130.setStatus=async function(id,status,sendMessage){
+      const result=await baseSetStatus.apply(this,arguments);
+      if(status==='completed'){
+        try{
+          const order=await fetchCompletedOrderV13253(id);
+          if(order)await creditCompletedOrderV13253(order);
+        }catch(e){
+          console.error('Pedido concluído, mas a fidelidade não pôde ser atualizada:',e);
+          alert('O pedido foi concluído, mas a fidelidade não foi atualizada. Tente concluir o pedido novamente.');
+        }
       }
       return result;
     };
   }
 
-  if(typeof window.applyPedeviaVersion==='function')window.applyPedeviaVersion();
+  // Encerramento em lote dos pedidos do dia.
+  if(typeof finishTodayOrdersV126==='function'){
+    const baseFinishToday=finishTodayOrdersV126;
+    finishTodayOrdersV126=async function(){
+      const key=currentStoreKeyV127();
+      const before=await fetchStoreOrdersV126(1000).catch(()=>[]);
+      const candidates=before.filter(o=>['new','accepted','preparing','ready'].includes(o.status));
+      const result=await baseFinishToday.apply(this,arguments);
+      for(const candidate of candidates){
+        try{
+          const order=await fetchCompletedOrderV13253(candidate.id);
+          if(order)await creditCompletedOrderV13253(order);
+        }catch(e){console.error('Falha ao creditar fidelidade do pedido '+candidate.id,e)}
+      }
+      return result;
+    };
+  }
+
+  window.PEDEVIA_VERSION='1.32.53';
+  setTimeout(()=>{
+    document.querySelectorAll('.adminHead .hint').forEach(el=>{
+      el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.53');
+    });
+  },0);
 })();
