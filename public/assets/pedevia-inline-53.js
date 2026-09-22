@@ -1,8 +1,8 @@
-// ===== v1.32.56: SALVAMENTO DIRECIONADO DE PRODUTOS VIA RPC =====
+// ===== v1.32.57: BOTÃO ÚNICO + SALVAMENTO DIRECIONADO VIA RPC =====
 (function(){
   'use strict';
 
-  window.PEDEVIA_VERSION='1.32.56';
+  window.PEDEVIA_VERSION='1.32.57';
 
   const previousSaveProductV13255=window.saveProduct;
   const previousDuplicateProductV13255=window.duplicateProduct;
@@ -25,10 +25,23 @@
   async function upsertOneProductV13255(product,sortOrder){
     await requireAdminSessionV13255();
     const row=productToDbRow(product,sortOrder);
-    const {error}=await supabaseClient.rpc('save_pedevia_product_v13256',{
-      p_product:row
-    });
-    if(error)throw error;
+    let lastError=null;
+    for(let attempt=1;attempt<=3;attempt++){
+      try{
+        const {error}=await supabaseClient.rpc('save_pedevia_product_v13256',{
+          p_product:row
+        });
+        if(!error){lastError=null;break}
+        lastError=error;
+      }catch(error){
+        lastError=error;
+      }
+      if(attempt<3){
+        try{await supabaseClient.auth.refreshSession()}catch(e){}
+        await new Promise(resolve=>setTimeout(resolve,attempt*900));
+      }
+    }
+    if(lastError)throw lastError;
     try{localStorage.setItem(KEY,JSON.stringify(cfg))}catch(e){console.warn('Falha no cache local',e)}
     return true;
   }
@@ -105,7 +118,7 @@
       else alert('Produto salvo.');
       return true;
     }catch(error){
-      console.error('Falha ao salvar produto v1.32.56:',error);
+      console.error('Falha ao salvar produto v1.32.57:',error);
       if(typeof setSyncStatusV15==='function')setSyncStatusV15('error',errorTextV13255(error));
       const message='Não foi possível salvar: '+errorTextV13255(error);
       if(typeof pedeviaToastV1315==='function')pedeviaToastV1315(message,'error');
@@ -146,7 +159,7 @@
       else alert('Produto duplicado. Agora edite a cópia e toque em Concluir.');
       return true;
     }catch(error){
-      console.error('Falha ao duplicar produto v1.32.56:',error);
+      console.error('Falha ao duplicar produto v1.32.57:',error);
       cfg.products=cfg.products.filter(p=>String(p.id)!==String(copy.id));
       try{localStorage.setItem(KEY,JSON.stringify(cfg))}catch(e){}
       const message='Não foi possível duplicar: '+errorTextV13255(error);
@@ -157,11 +170,11 @@
   };
 
   function enforceVersionV13255(){
-    window.PEDEVIA_VERSION='1.32.56';
+    window.PEDEVIA_VERSION='1.32.57';
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       const text=el.textContent||'';
       if(/Versão\s+1\.\d+(?:\.\d+)*/i.test(text)){
-        el.textContent=text.replace(/Versão\s+1\.\d+(?:\.\d+)*/i,'Versão 1.32.56');
+        el.textContent=text.replace(/Versão\s+1\.\d+(?:\.\d+)*/i,'Versão 1.32.57');
       }
     });
   }
@@ -170,6 +183,35 @@
     window.renderAdmin=function(){
       const result=previousRenderAdminV13255.apply(this,arguments);
       setTimeout(enforceVersionV13255,0);
+      return result;
+    };
+  }
+
+  // Remove a disputa entre o onclick histórico e os dois listeners globais de
+  // feedback. O botão passa a ter exatamente um controlador de salvamento.
+  function bindProductSaveButtonV13257(id){
+    const button=document.getElementById('saveProductBtnV132') ||
+      document.querySelector('#sheet .stickySave .btn');
+    if(!button)return;
+    button.type='button';
+    button.disabled=false;
+    button.removeAttribute('onclick');
+    button.dataset.noAutoBusy='1';
+    button.dataset.pedeviaProductSave='1';
+    if(button.dataset.boundSaveV13257==='1')return;
+    button.dataset.boundSaveV13257='1';
+    button.addEventListener('click',function(event){
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      window.saveProduct(id);
+    },false);
+  }
+
+  const previousEditProductV13257=window.editProduct;
+  if(typeof previousEditProductV13257==='function'){
+    window.editProduct=function(id){
+      const result=previousEditProductV13257.apply(this,arguments);
+      [0,60,250].forEach(ms=>setTimeout(()=>bindProductSaveButtonV13257(id),ms));
       return result;
     };
   }
