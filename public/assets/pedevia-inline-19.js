@@ -1,7 +1,7 @@
 
 // ===== v1.31.15: VERSÃO CENTRALIZADA =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.57';
+  window.PEDEVIA_VERSION='1.32.59';
   window.PEDEVIA_DATA_VERSION = 'v4';
 
   function applyPedeviaVersionV13115(){

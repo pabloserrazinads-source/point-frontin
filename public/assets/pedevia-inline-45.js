@@ -1,6 +1,6 @@
 
 (function(){
-  const CURRENT_VERSION='1.32.57';
+  const CURRENT_VERSION='1.32.59';
   window.PEDEVIA_VERSION=CURRENT_VERSION;
 
   function cleanPublicBusyResidueV13238(){
