@@ -1,7 +1,7 @@
 
 // ===== v1.32.13: REMOÇÃO DEFINITIVA DE ZONAS DE ENTREGA POR KM =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.54';
+  window.PEDEVIA_VERSION='1.32.55';
 
   function sanitizeDeliveryV13213(){
     if(!window.cfg || !cfg.store) return;

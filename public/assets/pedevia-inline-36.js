@@ -1,7 +1,7 @@
 
 // ===== v1.32.23: FINAL DE PUBLICAÇÃO =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.54';
+  window.PEDEVIA_VERSION='1.32.55';
 
   // Mantém fechamento automático completamente separado dos pedidos existentes.
   // Esta função SOMENTE informa se novos pedidos podem entrar.
@@ -58,10 +58,10 @@
 
   // Centraliza a versão visível após timers de camadas antigas.
   function finalVersionV13223(){
-    window.PEDEVIA_VERSION='1.32.54';
+    window.PEDEVIA_VERSION='1.32.55';
     document.querySelectorAll('.adminHead .hint,.hero .hint,.panel .hint').forEach(el=>{
       const t=el.textContent||'';
-      if(/Versão\s+1\.\d+(?:\.\d+)*/i.test(t))el.textContent=t.replace(/Versão\s+1\.\d+(?:\.\d+)*/i,'Versão 1.32.54');
+      if(/Versão\s+1\.\d+(?:\.\d+)*/i.test(t))el.textContent=t.replace(/Versão\s+1\.\d+(?:\.\d+)*/i,'Versão 1.32.55');
     });
   }
   [0,600,1400,2800,5000].forEach(ms=>setTimeout(finalVersionV13223,ms));

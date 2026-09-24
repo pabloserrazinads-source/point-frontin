@@ -1,6 +1,6 @@
 
 (function(){
-  window.PEDEVIA_VERSION='1.32.54';
+  window.PEDEVIA_VERSION='1.32.55';
   if(mode==='shop'){
     const renderCoreV13244=renderShop;
     let rafV13244=0, pendingV13244=false;

@@ -146,8 +146,51 @@
       const progress=document.createElement('div');progress.className='loyaltyProgressBarV115';progress.style.margin='12px 0 6px';const fill=document.createElement('span');fill.style.width=width+'%';progress.append(fill);
       const bottom=document.createElement('div');bottom.className='row';const details=document.createElement('div');const count=document.createElement('b');count.textContent=s.count+' pedido'+(s.count===1?'':'s')+' no clube';const hint=document.createElement('div');hint.className='hint';hint.textContent=s.eligible?s.reward+'% de desconto disponível no próximo pedido':'Faltam '+s.remaining+' pedido'+(s.remaining===1?'':'s')+' para '+s.reward+'% OFF';details.append(count,hint);bottom.append(details);
       if(c.last){const last=document.createElement('small');last.className='hint';last.style.textAlign='right';const date=new Date(c.last);last.append('Último pedido',document.createElement('br'),Number.isFinite(date.getTime())?date.toLocaleDateString('pt-BR'):'-');bottom.append(last)}
-      panel.append(top,progress,bottom);host.append(panel);
+      const editor=document.createElement('div');editor.className='row';Object.assign(editor.style,{gap:'8px',marginTop:'12px',alignItems:'end'});
+      const field=document.createElement('div');field.style.flex='1';const label=document.createElement('label');label.textContent='Quantidade de pedidos';label.style.margin='0 0 5px';const input=document.createElement('input');input.className='field';input.type='number';input.min='0';input.step='1';input.value=String(s.count);input.id='loyaltyCount_'+c.phone;input.style.margin='0';field.append(label,input);
+      const saveBtn=document.createElement('button');saveBtn.className='ghost';saveBtn.textContent='Salvar quantidade';saveBtn.dataset.phone=c.phone;saveBtn.dataset.name=c.name;saveBtn.addEventListener('click',()=>saveLoyaltyCountAdminV13255(c.phone,c.name,saveBtn));editor.append(field,saveBtn);
+      panel.append(top,progress,bottom,editor);host.append(panel);
     });
+  };
+
+  window.saveLoyaltyCountAdminV13255=async function(phone,name,button){
+    const input=document.getElementById('loyaltyCount_'+phone);
+    const value=Number(input?.value);
+    if(!Number.isInteger(value)||value<0){alert('Informe uma quantidade inteira igual ou maior que zero.');return}
+    if(!confirm(`Alterar a fidelidade de ${name||phone} para ${value} pedido${value===1?'':'s'}?`))return;
+    const old=button?.textContent||'Salvar quantidade';
+    if(button){button.disabled=true;button.textContent='Salvando...'}
+    try{
+      const key=currentStoreKeyV127();
+      let saved=false;
+
+      // Usa a função segura quando ela estiver instalada no Supabase.
+      const rpc=await supabaseClient.rpc('set_pedevia_loyalty_count_v13255',{
+        p_store_key:key,p_phone:phone,p_order_count:value,p_name:String(name||'Cliente')
+      });
+      if(!rpc.error)saved=true;
+      else if(!(rpc.error.code==='PGRST202'||/function.*not found|schema cache/i.test(rpc.error.message||'')))throw rpc.error;
+
+      // Compatibilidade com a estrutura atual, antes da instalação da RPC.
+      if(!saved){
+        const patch={order_count:value,updated_at:new Date().toISOString()};
+        let result=await supabaseClient.from('loyalty_customers').update(patch).eq('store_key',key).eq('phone',phone).select('phone,order_count');
+        if(result.error&&(result.error.code==='42703'||/store_key.*does not exist|column.*store_key/i.test(result.error.message||''))){
+          result=await supabaseClient.from('loyalty_customers').update(patch).eq('phone',phone).select('phone,order_count');
+        }
+        if(result.error)throw result.error;
+        if(!result.data?.length)throw new Error('O cliente não pôde ser atualizado. Verifique a permissão da tabela loyalty_customers.');
+      }
+
+      if(typeof pedeviaToastV1315==='function')pedeviaToastV1315('✓ Quantidade da fidelidade atualizada');
+      else alert('Quantidade atualizada.');
+      await loadLoyaltyCustomersAdminV1314();
+    }catch(e){
+      console.error('Falha ao ajustar fidelidade:',e);
+      alert('Não foi possível alterar a quantidade: '+(e?.message||e));
+    }finally{
+      if(button?.isConnected){button.disabled=false;button.textContent=old}
+    }
   };
 
   window.filterLoyaltyCustomersAdminV1314=function(){
@@ -168,7 +211,7 @@
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.54');
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.55');
       }
     });
   },1200);
