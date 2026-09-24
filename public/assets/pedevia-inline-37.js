@@ -1,7 +1,7 @@
 
 // ===== v1.32.24: CORREÇÃO DE NAVEGAÇÃO DO ADMIN =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.55';
+  window.PEDEVIA_VERSION='1.32.56';
 
   // Há camadas históricas que escreveram window.adminTab/window.adminOrdersView,
   // enquanto o núcleo usa bindings globais `let`. Esta camada usa diretamente
@@ -93,11 +93,11 @@
   wireBottomNavV13224();
 
   function enforceVersionV13224(){
-    window.PEDEVIA_VERSION='1.32.55';
+    window.PEDEVIA_VERSION='1.32.56';
     document.querySelectorAll('.adminHead .hint,.hero .hint,.panel .hint').forEach(el=>{
       const t=el.textContent||'';
       if(/Versão\s+1\.\d+(?:\.\d+)*/i.test(t))
-        el.textContent=t.replace(/Versão\s+1\.\d+(?:\.\d+)*/i,'Versão 1.32.55');
+        el.textContent=t.replace(/Versão\s+1\.\d+(?:\.\d+)*/i,'Versão 1.32.56');
     });
   }
   [0,700,1600,3000,5200].forEach(ms=>setTimeout(enforceVersionV13224,ms));

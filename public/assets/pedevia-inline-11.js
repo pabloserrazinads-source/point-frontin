@@ -92,7 +92,13 @@
           let status=null;
           try{status=await getLoyaltyStatusV113(c.phone)}catch(e){}
           const count=Number(status?.order_count||0);
-          return {...c,status:loyaltyStatusTextAdminV1314(count,offer)};
+          return {
+            ...c,
+            // A RPC pode devolver o telefone exatamente como ele está salvo
+            // (por exemplo, com o 55). Usamos essa chave ao editar.
+            loyaltyPhone:normalizePhoneV127(status?.phone||c.phone),
+            status:loyaltyStatusTextAdminV1314(count,offer)
+          };
         }));
         enriched.push(...results);
       }
@@ -147,8 +153,8 @@
       const bottom=document.createElement('div');bottom.className='row';const details=document.createElement('div');const count=document.createElement('b');count.textContent=s.count+' pedido'+(s.count===1?'':'s')+' no clube';const hint=document.createElement('div');hint.className='hint';hint.textContent=s.eligible?s.reward+'% de desconto disponível no próximo pedido':'Faltam '+s.remaining+' pedido'+(s.remaining===1?'':'s')+' para '+s.reward+'% OFF';details.append(count,hint);bottom.append(details);
       if(c.last){const last=document.createElement('small');last.className='hint';last.style.textAlign='right';const date=new Date(c.last);last.append('Último pedido',document.createElement('br'),Number.isFinite(date.getTime())?date.toLocaleDateString('pt-BR'):'-');bottom.append(last)}
       const editor=document.createElement('div');editor.className='row';Object.assign(editor.style,{gap:'8px',marginTop:'12px',alignItems:'end'});
-      const field=document.createElement('div');field.style.flex='1';const label=document.createElement('label');label.textContent='Quantidade de pedidos';label.style.margin='0 0 5px';const input=document.createElement('input');input.className='field';input.type='number';input.min='0';input.step='1';input.value=String(s.count);input.id='loyaltyCount_'+c.phone;input.style.margin='0';field.append(label,input);
-      const saveBtn=document.createElement('button');saveBtn.className='ghost';saveBtn.textContent='Salvar quantidade';saveBtn.dataset.phone=c.phone;saveBtn.dataset.name=c.name;saveBtn.addEventListener('click',()=>saveLoyaltyCountAdminV13255(c.phone,c.name,saveBtn));editor.append(field,saveBtn);
+      const field=document.createElement('div');field.style.flex='1';const label=document.createElement('label');label.textContent='Quantidade de pedidos';label.style.margin='0 0 5px';const input=document.createElement('input');input.className='field';input.type='number';input.min='0';input.step='1';input.value=String(s.count);input.id='loyaltyCount_'+(c.loyaltyPhone||c.phone);input.style.margin='0';field.append(label,input);
+      const saveBtn=document.createElement('button');saveBtn.className='ghost';saveBtn.textContent='Salvar quantidade';saveBtn.dataset.phone=c.loyaltyPhone||c.phone;saveBtn.dataset.name=c.name;saveBtn.addEventListener('click',()=>saveLoyaltyCountAdminV13255(c.loyaltyPhone||c.phone,c.name,saveBtn));editor.append(field,saveBtn);
       panel.append(top,progress,bottom,editor);host.append(panel);
     });
   };
@@ -165,7 +171,7 @@
       let saved=false;
 
       // Usa a função segura quando ela estiver instalada no Supabase.
-      const rpc=await supabaseClient.rpc('set_pedevia_loyalty_count_v13255',{
+      const rpc=await supabaseClient.rpc('set_pedevia_loyalty_count_v13256',{
         p_store_key:key,p_phone:phone,p_order_count:value,p_name:String(name||'Cliente')
       });
       if(!rpc.error)saved=true;
@@ -211,7 +217,7 @@
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.55');
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.56');
       }
     });
   },1200);

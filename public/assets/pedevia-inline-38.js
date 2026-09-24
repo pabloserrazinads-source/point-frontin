@@ -1,7 +1,7 @@
 
 // ===== v1.32.30: FONTE ÚNICA DE VERSÃO =====
 (function(){
-  const CURRENT_VERSION='1.32.55';
+  const CURRENT_VERSION='1.32.56';
   window.PEDEVIA_VERSION=CURRENT_VERSION;
   window.getPedeviaVersion=function(){return CURRENT_VERSION};
   window.applyPedeviaVersion=function(){

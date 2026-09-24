@@ -1,4 +1,4 @@
-// ===== Pedevia v1.32.55: FIDELIDADE SOMENTE APÓS CONCLUSÃO =====
+// ===== Pedevia v1.32.56: FIDELIDADE SOMENTE APÓS CONCLUSÃO =====
 (function(){
   const digits=v=>String(v||'').replace(/\D/g,'');
 
@@ -112,10 +112,10 @@
     };
   }
 
-  window.PEDEVIA_VERSION='1.32.55';
+  window.PEDEVIA_VERSION='1.32.56';
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
-      el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.55');
+      el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.56');
     });
   },0);
 })();

@@ -1,6 +1,6 @@
 
 (function(){
-  window.PEDEVIA_VERSION='1.32.55';
+  window.PEDEVIA_VERSION='1.32.56';
 
   async function refreshOrdersUiV13245(){
     try{

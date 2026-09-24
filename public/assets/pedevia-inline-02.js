@@ -1922,7 +1922,7 @@ saveGeneralBrand=async function(){
 };
 
 // ===== v1.7: VERSIONAMENTO E MIGRAÇÕES DE DADOS =====
-const APP_VERSION='1.32.55';
+const APP_VERSION='1.32.56';
 const DATA_SCHEMA_VERSION=4;
 
 /*
