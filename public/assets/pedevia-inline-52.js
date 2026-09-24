@@ -1,4 +1,4 @@
-// ===== Pedevia v1.32.56: IMAGEM RESILIENTE + CONSOLIDAÇÃO DA FIDELIDADE =====
+// ===== Pedevia v1.32.57: IMAGEM RESILIENTE + CONSOLIDAÇÃO DA FIDELIDADE =====
 (function(){
   async function compactImageV13255(dataUrl){
     return await new Promise((resolve,reject)=>{
@@ -37,10 +37,10 @@
 
   // O checkout não credita fidelidade. A camada 51 registra o ponto somente
   // depois de o pedido ser confirmado com status completed/Concluído.
-  window.PEDEVIA_VERSION='1.32.56';
+  window.PEDEVIA_VERSION='1.32.57';
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
-      el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.56');
+      el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.57');
     });
   },1300);
 })();

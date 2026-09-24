@@ -171,7 +171,7 @@
       let saved=false;
 
       // Usa a função segura quando ela estiver instalada no Supabase.
-      const rpc=await supabaseClient.rpc('set_pedevia_loyalty_count_v13256',{
+      const rpc=await supabaseClient.rpc('set_pedevia_loyalty_count_v13257',{
         p_store_key:key,p_phone:phone,p_order_count:value,p_name:String(name||'Cliente')
       });
       if(!rpc.error)saved=true;
@@ -217,7 +217,7 @@
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
       if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||'')){
-        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.56');
+        el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.57');
       }
     });
   },1200);

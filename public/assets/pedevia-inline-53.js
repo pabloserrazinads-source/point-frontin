@@ -1,6 +1,6 @@
-// ===== Pedevia v1.32.56: EXCLUSÃO DE RASCUNHO + HISTÓRICO ESTÁVEL =====
+// ===== Pedevia v1.32.57: EXCLUSÃO DE RASCUNHO + HISTÓRICO ESTÁVEL =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.56';
+  window.PEDEVIA_VERSION='1.32.57';
 
   // Um produto novo ainda é um rascunho local. Mesmo assim, a ação esperada
   // pelo administrador é Excluir, e não um Cancelar ambíguo.
@@ -60,7 +60,7 @@
 
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
-      el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.56');
+      el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.57');
     });
   },1400);
 })();
