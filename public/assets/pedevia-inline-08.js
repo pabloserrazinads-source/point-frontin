@@ -1597,7 +1597,7 @@ window.PedeviaV130 = window.PedeviaV130 || {
     const box=document.getElementById('masterSummaryV130');if(!box)return;
     try{const since=new Date();since.setDate(1);since.setHours(0,0,0,0);const {data,error}=await supabaseClient.from('pedevia_orders').select('store_key,total,status,created_at').gte('created_at',since.toISOString());if(error)throw error;const rows=data||[],completed=rows.filter(o=>o.status==='completed'),rev=completed.reduce((a,o)=>a+(+o.total||0),0);box.innerHTML=`<div class="v126Stat"><b>${rows.length}</b><small>Pedidos este mês</small></div><div class="v126Stat"><b>${brl(rev)}</b><small>Movimentado no mês</small></div><div class="v126Stat"><b>${new Set(rows.map(x=>x.store_key)).size}</b><small>Lojas com pedidos</small></div>`}catch(e){box.innerHTML=''}
   },
-  init(){this.ensureDefaults();setTimeout(()=>{try{this.enhanceShop()}catch(e){}},400);if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js?v=13300stable1',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{})}
+  init(){this.ensureDefaults();setTimeout(()=>{try{this.enhanceShop()}catch(e){}},400);if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js?v=13301stable1',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{})}
 };
 
 

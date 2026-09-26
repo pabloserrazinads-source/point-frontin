@@ -1,8 +1,8 @@
-// ===== Pedevia v1.33.0: CENTRAL DE GESTÃO, CRM, RELATÓRIOS E EXPERIÊNCIA =====
+// ===== Pedevia v1.33.1: CENTRAL DE GESTÃO, CRM, RELATÓRIOS E EXPERIÊNCIA =====
 (function(){
   'use strict';
-  const VERSION='1.33.0';
-  const CACHE_TAG='13300stable1';
+  const VERSION='1.33.1';
+  const CACHE_TAG='13301stable1';
   const state={selectedOrders:new Set(),bulk:false};
   window.PEDEVIA_VERSION=VERSION;
 
