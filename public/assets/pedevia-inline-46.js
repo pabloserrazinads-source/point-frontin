@@ -1,6 +1,6 @@
 
 (function(){
-  const CURRENT_VERSION='1.32.59';
+  const CURRENT_VERSION='1.33.0';
   window.PEDEVIA_VERSION=CURRENT_VERSION;
 
   function money2V13239(v){
@@ -58,7 +58,7 @@
       p_whatsapp_text:text
     };
 
-    console.info('Pedevia pedido v1.32.59',{
+    console.info('Pedevia pedido v1.33.0',{
       store_key:args.p_store_key,
       mode:args.p_order_mode,
       payment:args.p_payment_method,

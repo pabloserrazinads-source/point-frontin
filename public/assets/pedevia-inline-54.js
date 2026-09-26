@@ -1,6 +1,6 @@
-// ===== Pedevia v1.32.59: EXCLUSÃO REAL DE QUALQUER PRODUTO =====
+// ===== Pedevia v1.33.0: EXCLUSÃO REAL DE QUALQUER PRODUTO =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.59';
+  window.PEDEVIA_VERSION='1.33.0';
 
   const editProductBaseV13257=editProduct;
   editProduct=function(id){
@@ -45,7 +45,7 @@
 
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
-      el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.59');
+      el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.33.0');
     });
   },1500);
 })();

@@ -1,7 +1,7 @@
 
 // ===== v1.32.30: DADOS COMERCIAIS AUTENTICADOS + MENU MESTRE ESTÁVEL =====
 (function(){
-  const CURRENT_VERSION='1.32.59';
+  const CURRENT_VERSION='1.33.0';
   window.PEDEVIA_VERSION=CURRENT_VERSION;
 
   // A linha administrativa do tenant precisa trazer também os campos comerciais.
@@ -109,7 +109,7 @@
   if(typeof window.applyPedeviaVersion==='function')window.applyPedeviaVersion();
 })();
 
-/* v1.32.59 stable1 — restauração robusta do menu mestre */
+/* v1.33.0 stable1 — restauração robusta do menu mestre */
 (function(){
   let busy=false;
   async function ensureMasterCardStable3(){

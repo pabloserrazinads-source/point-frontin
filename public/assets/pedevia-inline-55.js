@@ -1,6 +1,6 @@
-// ===== Pedevia v1.32.59: NAVEGAÇÃO ESTÁVEL + FLUXO SIMPLES DE PEDIDOS =====
+// ===== Pedevia v1.33.0: NAVEGAÇÃO ESTÁVEL + FLUXO SIMPLES DE PEDIDOS =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.59';
+  window.PEDEVIA_VERSION='1.33.0';
 
   // A navegação inferior sempre reabre a tela solicitada, mesmo quando um
   // subpainel deixou adminTab apontando para a mesma aba.
@@ -76,7 +76,7 @@
 
   setTimeout(()=>{
     document.querySelectorAll('.adminHead .hint').forEach(el=>{
-      el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.59');
+      el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.33.0');
     });
   },1600);
 })();

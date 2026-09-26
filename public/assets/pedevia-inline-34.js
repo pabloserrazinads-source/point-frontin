@@ -1,7 +1,7 @@
 
 // ===== v1.32.21: OUTRAS CONFIGURAÇÕES — SAVE ROBUSTO =====
 (function(){
-  window.PEDEVIA_VERSION='1.32.59';
+  window.PEDEVIA_VERSION='1.33.0';
 
   async function saveOrderConfigOnlyV13221(){
     try{

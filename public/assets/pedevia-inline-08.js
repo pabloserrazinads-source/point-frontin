@@ -922,7 +922,7 @@ maybeHandleInviteV122=async function(){
 
 // Exibe a versão nova no cabeçalho administrativo.
 setTimeout(()=>{
-  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9]/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.32.59')});
+  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9]/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.33.0')});
 },0);
 
 
@@ -1142,7 +1142,7 @@ finishWhatsApp=async function(){
 
 // Mostra a versão nova no cabeçalho administrativo.
 setTimeout(()=>{
-  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.32.59')});
+  document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.33.0')});
 },0);
 
 
@@ -1296,7 +1296,7 @@ adminMore=function(){
 };
 
 // Versão exibida no Admin.
-setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.32.59')})},0);
+setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.2[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.2[0-9.]+/i,'Versão 1.33.0')})},0);
 
 
 // ===== v1.27.0: AUDITORIA GERAL PEDEVIA =====
@@ -1439,7 +1439,7 @@ const _renderAdminV127Clean=renderAdmin;
 renderAdmin=function(){_renderAdminV127Clean();setTimeout(cleanLegacyLabelsV127,0)};
 
 syncServerClockV127();setInterval(syncServerClockV127,10*60*1000);
-setTimeout(()=>{sanitizeTenantV127();cleanLegacyLabelsV127();document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.59')})},0);
+setTimeout(()=>{sanitizeTenantV127();cleanLegacyLabelsV127();document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.33.0')})},0);
 
 // --- Backups de configuração + resumo do painel mestre ---
 async function openConfigBackupsV127(){
@@ -1597,7 +1597,7 @@ window.PedeviaV130 = window.PedeviaV130 || {
     const box=document.getElementById('masterSummaryV130');if(!box)return;
     try{const since=new Date();since.setDate(1);since.setHours(0,0,0,0);const {data,error}=await supabaseClient.from('pedevia_orders').select('store_key,total,status,created_at').gte('created_at',since.toISOString());if(error)throw error;const rows=data||[],completed=rows.filter(o=>o.status==='completed'),rev=completed.reduce((a,o)=>a+(+o.total||0),0);box.innerHTML=`<div class="v126Stat"><b>${rows.length}</b><small>Pedidos este mês</small></div><div class="v126Stat"><b>${brl(rev)}</b><small>Movimentado no mês</small></div><div class="v126Stat"><b>${new Set(rows.map(x=>x.store_key)).size}</b><small>Lojas com pedidos</small></div>`}catch(e){box.innerHTML=''}
   },
-  init(){this.ensureDefaults();setTimeout(()=>{try{this.enhanceShop()}catch(e){}},400);if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js?v=13259stable1',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{})}
+  init(){this.ensureDefaults();setTimeout(()=>{try{this.enhanceShop()}catch(e){}},400);if('serviceWorker'in navigator)navigator.serviceWorker.register('/sw.js?v=13300stable1',{updateViaCache:'none'}).then(r=>r.update()).catch(()=>{})}
 };
 
 
@@ -1684,7 +1684,7 @@ const _renderClientSitesListV130Base=renderClientSitesListV120;
 renderClientSitesListV120=function(rows){_renderClientSitesListV130Base(rows);const host=document.getElementById('clientSitesListV120');if(host&&!document.getElementById('masterSummaryV130')){const d=document.createElement('div');d.id='masterSummaryV130';d.className='v126StatsGrid';host.prepend(d);PedeviaV130.masterMetrics()}};
 
 // Versão.
-setTimeout(()=>{PedeviaV130.init();document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.59')})},600);
+setTimeout(()=>{PedeviaV130.init();document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.33.0')})},600);
 
 // ===== v1.30.1 extras: Storage de imagens + UX de checkout =====
 Object.assign(PedeviaV130,{
@@ -1939,7 +1939,7 @@ adminMore=function(){_adminMoreV130MediaBase();const list=document.querySelector
   };
 
   // Atualiza a versão visível sem interferir nas demais camadas.
-  setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.59')})},900);
+  setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.33.0')})},900);
 })();
 
 
@@ -1981,7 +1981,7 @@ adminMore=function(){_adminMoreV130MediaBase();const list=document.querySelector
   renderAdmin=function(){baseRender();if(window.pedeviaTenantV121)ownerBillingCardV1311()};
   const baseEnter=enterTenantAdminV122;
   enterTenantAdminV122=async function(){const ok=await baseEnter();if(window.pedeviaTenantV121)ownerBillingCardV1311();return ok};
-  setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.32.59')})},1000);
+  setTimeout(()=>{document.querySelectorAll('.adminHead .hint').forEach(el=>{if(/Versão\s+1\.[0-9.]+/i.test(el.textContent||''))el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão 1.33.0')})},1000);
 })();
 
 // Inicializa somente depois de todas as camadas de compatibilidade do arquivo terem sido carregadas.
