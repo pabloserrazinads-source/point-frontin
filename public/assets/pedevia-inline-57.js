@@ -1,7 +1,7 @@
-// ===== Pedevia v1.33.1: ADICIONAIS LEGÍVEIS E HORÁRIO SEM DUPLICAÇÃO =====
+// ===== Pedevia v1.33.3: ADICIONAIS LEGÍVEIS, HORÁRIO E VERSÃO ESTÁVEL =====
 (function(){
   'use strict';
-  const VERSION='1.33.1';
+  const VERSION=window.PEDEVIA_CURRENT_VERSION||'1.33.3';
 
   // O nome do adicional ganha duas linhas e toda a largura do cartão.
   // O valor passa para uma linha própria, abaixo do nome.
@@ -54,7 +54,14 @@
 
   function enforceVersionV1331(){
     window.PEDEVIA_VERSION=VERSION;
-    document.querySelectorAll('.adminHead .hint').forEach(el=>el.textContent=(el.textContent||'').replace(/Versão\s+1\.[0-9.]+/i,'Versão '+VERSION));
+    document.querySelectorAll('.adminHead .hint').forEach(el=>{
+      const current=el.textContent||'',updated=current.replace(/Versão\s+1\.[0-9.]+/i,'Versão '+VERSION);
+      if(updated!==current)el.textContent=updated;
+    });
   }
-  [0,700,1600,3200].forEach(ms=>setTimeout(enforceVersionV1331,ms));
+  [0,700,1600,3200,5500].forEach(ms=>setTimeout(enforceVersionV1331,ms));
+  // Algumas camadas históricas atualizam a tela depois de 5 segundos.
+  // Este controlador final impede que elas restaurem uma versão antiga.
+  setInterval(enforceVersionV1331,2000);
+  new MutationObserver(enforceVersionV1331).observe(document.body,{childList:true,subtree:true,characterData:true});
 })();
