@@ -394,9 +394,10 @@ function editGroupForProduct(pid,gid){let g=cfg.groups.find(x=>x.id===gid);if(!g
  <div class="sectionTitle">Como deseja salvar?</div><label class="option"><span>Atualizar este grupo em todos os produtos aplicados</span><input type="radio" name="saveScope" value="global" checked></label><label class="option"><span>Aplicar alterações apenas para este produto</span><input type="radio" name="saveScope" value="product"></label>
  <div class="stickySave"><button class="ghost" onclick="editProduct('${pid}')">Cancelar</button><button class="btn" onclick="saveAdvancedGroup('${pid}','${gid}')">Concluir edição</button></div>`)}
 function setGroupMode(m){$('#ggMode').value=m;$$('.ruleChoice').forEach((b,i)=>b.classList.toggle('on',['single','multiple','quantity'][i]===m))}
-function groupOptionEditors(g){return (g.options||[]).map((o,i)=>`<div class="optionEdit"><div class="line"><input class="field goName" value="${esc(o.name)}" placeholder="Nome"><input class="field goPrice" type="number" step=".01" value="${o.price||0}" placeholder="R$"><button class="ghost" onclick="this.closest('.optionEdit').remove()">×</button></div><input class="field goDesc" value="${esc(o.desc||'')}" placeholder="Descrição (opcional)"><select class="field goStatus"><option value="available" ${o.status==='available'?'selected':''}>Disponível</option><option value="unavailable" ${o.status==='unavailable'?'selected':''}>Indisponível</option><option value="hidden" ${o.status==='hidden'?'selected':''}>Oculto</option></select></div>`).join('')}
-function addGroupOptionEditor(){$('#ggOptions').insertAdjacentHTML('beforeend',`<div class="optionEdit"><div class="line"><input class="field goName" placeholder="Nome"><input class="field goPrice" type="number" step=".01" value="0"><button class="ghost" onclick="this.closest('.optionEdit').remove()">×</button></div><input class="field goDesc" placeholder="Descrição (opcional)"><select class="field goStatus"><option value="available">Disponível</option><option value="unavailable">Indisponível</option><option value="hidden">Oculto</option></select></div>`)}
-function collectGroupForm(base){let required=$('input[name="ggReq"]:checked').value==='1',unlimited=$('input[name="ggLim"]:checked').value==='unlimited',cards=$$('.optionEdit');return {...base,name:$('#ggName').value.trim()||'Grupo',selectionMode:$('#ggMode').value,required,min:required?1:0,unlimited,max:unlimited?999:Math.max(1,+$('#ggMax').value||1),options:cards.map((c,i)=>({id:(base.options&&base.options[i]?.id)||('o'+Date.now()+i),name:c.querySelector('.goName').value.trim()||'Complemento',desc:c.querySelector('.goDesc').value,price:+c.querySelector('.goPrice').value||0,status:c.querySelector('.goStatus').value}))}}
+function visualStyleOptions(selected='auto'){return [['auto','Automático pelo nome'],['none','Sem personalização'],['nutella','Nutella'],['ninho','Leite / Creme de Ninho'],['avela','Creme de avelã'],['bis','Bis'],['ovomaltine','Ovomaltine'],['morango','Morango'],['banana','Banana'],['uva','Uva'],['chocoball','ChocoPowerBall'],['fini','Bala Fini'],['confete','Confete']].map(([value,label])=>`<option value="${value}" ${selected===value?'selected':''}>${label}</option>`).join('')}
+function groupOptionEditors(g){return (g.options||[]).map((o,i)=>`<div class="optionEdit"><div class="line"><input class="field goName" value="${esc(o.name)}" placeholder="Nome"><input class="field goPrice" type="number" step=".01" value="${o.price||0}" placeholder="R$"><button class="ghost" onclick="this.closest('.optionEdit').remove()">×</button></div><input class="field goDesc" value="${esc(o.desc||'')}" placeholder="Descrição (opcional)"><label class="pvVisualStyleLabel">Estilo visual<select class="field goVisualStyle">${visualStyleOptions(o.visualStyle||'auto')}</select></label><select class="field goStatus"><option value="available" ${o.status==='available'?'selected':''}>Disponível</option><option value="unavailable" ${o.status==='unavailable'?'selected':''}>Indisponível</option><option value="hidden" ${o.status==='hidden'?'selected':''}>Oculto</option></select></div>`).join('')}
+function addGroupOptionEditor(){$('#ggOptions').insertAdjacentHTML('beforeend',`<div class="optionEdit"><div class="line"><input class="field goName" placeholder="Nome"><input class="field goPrice" type="number" step=".01" value="0"><button class="ghost" onclick="this.closest('.optionEdit').remove()">×</button></div><input class="field goDesc" placeholder="Descrição (opcional)"><label class="pvVisualStyleLabel">Estilo visual<select class="field goVisualStyle">${visualStyleOptions('auto')}</select></label><select class="field goStatus"><option value="available">Disponível</option><option value="unavailable">Indisponível</option><option value="hidden">Oculto</option></select></div>`)}
+function collectGroupForm(base){let required=$('input[name="ggReq"]:checked').value==='1',unlimited=$('input[name="ggLim"]:checked').value==='unlimited',cards=$$('.optionEdit');return {...base,name:$('#ggName').value.trim()||'Grupo',selectionMode:$('#ggMode').value,required,min:required?1:0,unlimited,max:unlimited?999:Math.max(1,+$('#ggMax').value||1),options:cards.map((c,i)=>({id:(base.options&&base.options[i]?.id)||('o'+Date.now()+i),name:c.querySelector('.goName').value.trim()||'Complemento',desc:c.querySelector('.goDesc').value,price:+c.querySelector('.goPrice').value||0,status:c.querySelector('.goStatus').value,visualStyle:c.querySelector('.goVisualStyle')?.value||'auto'}))}}
 function saveAdvancedGroup(pid,gid){let old=cfg.groups.find(x=>x.id===gid),scope=$('input[name="saveScope"]:checked').value,form=collectGroupForm(old);if(scope==='global'){Object.assign(old,form)}else{let clone={...form,id:'g'+Date.now(),options:form.options.map((o,i)=>({...o,id:'o'+Date.now()+i}))};cfg.groups.push(clone);let p=cfg.products.find(x=>x.id===pid);p.groups=p.groups.map(x=>x===gid?clone.id:x)}save();editProduct(pid)}
 
 
@@ -475,24 +476,27 @@ function clientRuleText(g){
   if(r.mode==='quantity') return r.unlimited?(r.required?'Escolha a quantidade desejada.':'Adicione quantidades se quiser.'):(r.required?`Escolha de 1 até ${r.max} unidade(s).`:`Até ${r.max} unidade(s), opcional.`);
   return r.unlimited?(r.required?'Escolha uma ou mais opções.':'Escolha quantas opções quiser (opcional).'):(r.required?`Escolha de 1 até ${r.max} opção(ões).`:`Escolha até ${r.max} opção(ões), opcional.`);
 }
-function optionVisualTheme(name){
-  let key=String(name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
-  if(key==='nutella')return['pvTasteNutella','🍫','🌰'];
-  if(key==='leite ninho'||key==='creme de ninho')return['pvTasteNinho','🥛','✨'];
-  if(key==='creme de avela')return['pvTasteAvela','🌰','🍫'];
-  if(key==='bis')return['pvTasteBis','🍫','▪️'];
-  if(key==='ovomaltine')return['pvTasteOvomaltine','🍫','✨'];
-  if(key==='morango')return['pvTasteMorango','🍓','🍓'];
-  if(key==='banana')return['pvTasteBanana','🍌','🍌'];
-  if(key==='uva')return['pvTasteUva','🍇','🍇'];
-  if(key==='chocopowerball')return['pvTasteChocoBall','🍫','⚪'];
-  if(key==='bala fini')return['pvTasteFini','🍬','🌈'];
-  if(key==='confete')return['pvTasteConfete','🔵','🟡'];
-  return['','',''];
+function optionVisualTheme(name,selected){
+  let normalized=String(name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+  let key=selected&&selected!=='auto'?selected:normalized;
+  if(key==='none')return['','','',''];
+  if(key==='nutella')return['pvTasteNutella','nutella','0%','0%'];
+  if(key==='ninho'||key==='leite ninho'||key==='creme de ninho')return['pvTasteNinho','ninho','33.333%','0%'];
+  if(key==='avela'||key==='creme de avela')return['pvTasteAvela','avela','66.667%','0%'];
+  if(key==='bis')return['pvTasteBis','bis','100%','0%'];
+  if(key==='ovomaltine')return['pvTasteOvomaltine','ovomaltine','0%','50%'];
+  if(key==='morango')return['pvTasteMorango','morango','33.333%','50%'];
+  if(key==='banana')return['pvTasteBanana','banana','66.667%','50%'];
+  if(key==='uva')return['pvTasteUva','uva','100%','50%'];
+  if(key==='chocoball'||key==='chocopowerball')return['pvTasteChocoBall','chocoball','0%','100%'];
+  if(key==='fini'||key==='bala fini')return['pvTasteFini','fini','33.333%','100%'];
+  if(key==='confete')return['pvTasteConfete','confete','66.667%','100%'];
+  return['','','',''];
 }
 function quantityOptionRow(g,o){
-  let [theme,left,right]=optionVisualTheme(o.name);
-  return `<div class="option optionCard qtyOption ${theme}" data-oid="${o.id}"${theme?` data-pv-taste="1"`:''}><i class="pvTasteDecor pvTasteLeft" aria-hidden="true">${left}</i><span class="pvTasteCopy"><b>${esc(o.name)}</b>${o.desc?`<small class="hint">${esc(o.desc)}</small>`:''}${o.price?`<span class="optionPrice">+ ${brl(o.price)}</span>`:'<span class="optionPrice">Grátis</span>'}</span><i class="pvTasteDecor pvTasteRight" aria-hidden="true">${right}</i><div class="optQty"><button type="button" class="minusBtn" onclick="changeOptionQty(this,-1)">−</button><b class="optQtyValue">0</b><button type="button" class="plusBtn" onclick="changeOptionQty(this,1)">+</button></div></div>`;
+  let [theme,taste,x,y]=optionVisualTheme(o.name,o.visualStyle);
+  let visual=theme?` data-pv-taste="${taste}" style="--taste-x:${x};--taste-y:${y}"`:'';
+  return `<div class="option optionCard qtyOption ${theme}" data-oid="${o.id}"${visual}><span class="pvTasteCopy"><b>${esc(o.name)}</b>${o.desc?`<small class="hint">${esc(o.desc)}</small>`:''}${o.price?`<span class="optionPrice">+ ${brl(o.price)}</span>`:'<span class="optionPrice">Grátis</span>'}</span><div class="optQty"><button type="button" class="minusBtn" onclick="changeOptionQty(this,-1)">−</button><b class="optQtyValue">0</b><button type="button" class="plusBtn" onclick="changeOptionQty(this,1)">+</button></div></div>`;
 }
 function groupSelectedCount(group){
   let mode=group.dataset.mode;
@@ -602,7 +606,7 @@ function collectGroupForm(base){
   let max=mode==='single'?1:(unlimited?999:Math.max(1,+$('#ggMax').value||1));
   let cards=$$('.optionEdit');
   return {...base,name:$('#ggName').value.trim()||'Grupo',selectionMode:mode,required,min:required?1:0,unlimited:mode==='single'?false:unlimited,max,
-    options:cards.map((c,i)=>({id:(base.options&&base.options[i]?.id)||('o'+Date.now()+i),name:c.querySelector('.goName').value.trim()||'Complemento',desc:c.querySelector('.goDesc').value,price:+c.querySelector('.goPrice').value||0,status:c.querySelector('.goStatus').value}))};
+    options:cards.map((c,i)=>({id:(base.options&&base.options[i]?.id)||('o'+Date.now()+i),name:c.querySelector('.goName').value.trim()||'Complemento',desc:c.querySelector('.goDesc').value,price:+c.querySelector('.goPrice').value||0,status:c.querySelector('.goStatus').value,visualStyle:c.querySelector('.goVisualStyle')?.value||'auto'}))};
 }
 function saveAdvancedGroup(pid,gid){
   let old=cfg.groups.find(x=>x.id===gid); if(!old)return;
