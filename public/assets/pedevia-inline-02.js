@@ -475,8 +475,24 @@ function clientRuleText(g){
   if(r.mode==='quantity') return r.unlimited?(r.required?'Escolha a quantidade desejada.':'Adicione quantidades se quiser.'):(r.required?`Escolha de 1 até ${r.max} unidade(s).`:`Até ${r.max} unidade(s), opcional.`);
   return r.unlimited?(r.required?'Escolha uma ou mais opções.':'Escolha quantas opções quiser (opcional).'):(r.required?`Escolha de 1 até ${r.max} opção(ões).`:`Escolha até ${r.max} opção(ões), opcional.`);
 }
+function optionVisualTheme(name){
+  let key=String(name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+  if(key==='nutella')return['pvTasteNutella','🍫','🌰'];
+  if(key==='leite ninho'||key==='creme de ninho')return['pvTasteNinho','🥛','✨'];
+  if(key==='creme de avela')return['pvTasteAvela','🌰','🍫'];
+  if(key==='bis')return['pvTasteBis','🍫','▪️'];
+  if(key==='ovomaltine')return['pvTasteOvomaltine','🍫','✨'];
+  if(key==='morango')return['pvTasteMorango','🍓','🍓'];
+  if(key==='banana')return['pvTasteBanana','🍌','🍌'];
+  if(key==='uva')return['pvTasteUva','🍇','🍇'];
+  if(key==='chocopowerball')return['pvTasteChocoBall','🍫','⚪'];
+  if(key==='bala fini')return['pvTasteFini','🍬','🌈'];
+  if(key==='confete')return['pvTasteConfete','🔵','🟡'];
+  return['','',''];
+}
 function quantityOptionRow(g,o){
-  return `<div class="option optionCard qtyOption" data-oid="${o.id}"><span><b>${esc(o.name)}</b>${o.desc?`<small class="hint">${esc(o.desc)}</small>`:''}${o.price?`<span class="optionPrice">+ ${brl(o.price)}</span>`:'<span class="optionPrice">Grátis</span>'}</span><div class="optQty"><button type="button" class="minusBtn" onclick="changeOptionQty(this,-1)">−</button><b class="optQtyValue">0</b><button type="button" class="plusBtn" onclick="changeOptionQty(this,1)">+</button></div></div>`;
+  let [theme,left,right]=optionVisualTheme(o.name);
+  return `<div class="option optionCard qtyOption ${theme}" data-oid="${o.id}"${theme?` data-pv-taste="1"`:''}><i class="pvTasteDecor pvTasteLeft" aria-hidden="true">${left}</i><span class="pvTasteCopy"><b>${esc(o.name)}</b>${o.desc?`<small class="hint">${esc(o.desc)}</small>`:''}${o.price?`<span class="optionPrice">+ ${brl(o.price)}</span>`:'<span class="optionPrice">Grátis</span>'}</span><i class="pvTasteDecor pvTasteRight" aria-hidden="true">${right}</i><div class="optQty"><button type="button" class="minusBtn" onclick="changeOptionQty(this,-1)">−</button><b class="optQtyValue">0</b><button type="button" class="plusBtn" onclick="changeOptionQty(this,1)">+</button></div></div>`;
 }
 function groupSelectedCount(group){
   let mode=group.dataset.mode;
