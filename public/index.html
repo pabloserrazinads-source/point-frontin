@@ -9,7 +9,7 @@ html.pedeviaTenantBoot::before{
   position:fixed;inset:0;background:#f7f4f8;z-index:2147483647
 }
 </style>
-<script src="assets/pedevia-version.js?v=13409stable1"></script>
+<script src="assets/pedevia-version.js?v=13501stable1"></script>
 <script src="assets/pedevia-inline-01.js?v=13301stable1"></script>
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
@@ -63,6 +63,30 @@ button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:no
 .choiceGroup .qtyOption.locked .optQty button.plusBtn{pointer-events:none}
 .optionPrice{display:block;margin-top:5px;font-size:14px;color:#3e3840;font-weight:650}
 .optionCard{background:#fff;border:1px solid #d8d1da;border-radius:15px;padding:13px 14px;margin:9px 0;align-items:center}
+.qtyOption[data-pv-taste="1"]{position:relative;isolation:isolate;overflow:hidden;min-height:86px;border-width:1.5px;box-shadow:0 7px 18px rgba(59,38,64,.07);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.qtyOption[data-pv-taste="1"]::before{content:"";position:absolute;inset:0;z-index:-2;background:var(--taste-bg)}
+.qtyOption[data-pv-taste="1"]::after{content:"";position:absolute;width:92px;height:92px;right:-38px;top:-42px;border-radius:50%;z-index:-1;background:var(--taste-glow);opacity:.62}
+.qtyOption[data-pv-taste="1"]>.pvTasteCopy{position:relative;z-index:2;min-width:0;padding-left:20px}
+.qtyOption[data-pv-taste="1"]>.pvTasteCopy>b{color:var(--taste-ink)}
+.qtyOption[data-pv-taste="1"] .optionPrice{color:var(--taste-price);font-weight:700}
+.qtyOption[data-pv-taste="1"]>.optQty{position:relative;z-index:3}
+.qtyOption[data-pv-taste="1"]>.optQty button{background:var(--taste-button);color:var(--taste-button-ink);box-shadow:0 4px 12px rgba(45,30,48,.08)}
+.qtyOption[data-pv-taste="1"]>.pvTasteDecor{position:absolute;z-index:1;font-style:normal;pointer-events:none;filter:saturate(.92);user-select:none}
+.qtyOption[data-pv-taste="1"]>.pvTasteLeft{left:7px;top:8px;font-size:22px;transform:rotate(-12deg)}
+.qtyOption[data-pv-taste="1"]>.pvTasteRight{right:8px;bottom:3px;font-size:18px;opacity:.34;transform:rotate(14deg)}
+.qtyOption[data-pv-taste="1"].selected{border-color:var(--taste-border);box-shadow:0 8px 22px var(--taste-shadow);transform:translateY(-1px)}
+.pvTasteNutella{--taste-bg:linear-gradient(135deg,#fff8ef,#f7e3cf);--taste-glow:#c88458;--taste-ink:#6f3828;--taste-price:#8d4b32;--taste-button:#f0d5bf;--taste-button-ink:#713b2b;--taste-border:#b96f45;--taste-shadow:#b96f4530}
+.pvTasteNinho{--taste-bg:linear-gradient(135deg,#fffdf4,#eef7ff);--taste-glow:#b9dcf7;--taste-ink:#315b78;--taste-price:#50748a;--taste-button:#dceefb;--taste-button-ink:#315b78;--taste-border:#82b9dc;--taste-shadow:#82b9dc30}
+.pvTasteAvela{--taste-bg:linear-gradient(135deg,#fff9ed,#ead4b7);--taste-glow:#ab7652;--taste-ink:#65432f;--taste-price:#7e5438;--taste-button:#e8cfb1;--taste-button-ink:#65432f;--taste-border:#a97850;--taste-shadow:#a9785030}
+.pvTasteBis{--taste-bg:linear-gradient(135deg,#fff5ed,#f1c7ae);--taste-glow:#d95c32;--taste-ink:#71321f;--taste-price:#9b452a;--taste-button:#f5cfbd;--taste-button-ink:#843922;--taste-border:#d36d48;--taste-shadow:#d36d4830}
+.pvTasteOvomaltine{--taste-bg:linear-gradient(135deg,#fff5df,#edc07b);--taste-glow:#8f5429;--taste-ink:#623b22;--taste-price:#80502c;--taste-button:#f1d19a;--taste-button-ink:#643c21;--taste-border:#b87839;--taste-shadow:#b8783930}
+.pvTasteMorango{--taste-bg:linear-gradient(135deg,#fff5f7,#ffd9df);--taste-glow:#ef6d7c;--taste-ink:#8c2838;--taste-price:#b33b4d;--taste-button:#ffd1d9;--taste-button-ink:#a72f43;--taste-border:#e55d71;--taste-shadow:#e55d7130}
+.pvTasteBanana{--taste-bg:linear-gradient(135deg,#fffdf0,#fff0a8);--taste-glow:#f0c92d;--taste-ink:#6e5a16;--taste-price:#8a7016;--taste-button:#ffef9b;--taste-button-ink:#705b12;--taste-border:#dfbc26;--taste-shadow:#dfbc2630}
+.pvTasteUva{--taste-bg:linear-gradient(135deg,#fcf7ff,#e9d4fb);--taste-glow:#9660c9;--taste-ink:#5b3279;--taste-price:#77439c;--taste-button:#e4cef5;--taste-button-ink:#633585;--taste-border:#9a64c7;--taste-shadow:#9a64c730}
+.pvTasteChocoBall{--taste-bg:linear-gradient(135deg,#fff9f1,#ead7c5);--taste-glow:#71503b;--taste-ink:#50382c;--taste-price:#6e4a35;--taste-button:#dfc7b5;--taste-button-ink:#563b2c;--taste-border:#8c6650;--taste-shadow:#8c665030}
+.pvTasteFini{--taste-bg:linear-gradient(135deg,#fff4fb,#ffe0ed 48%,#e8f6ff);--taste-glow:#ee75ad;--taste-ink:#8d3261;--taste-price:#b34478;--taste-button:#f9d0e5;--taste-button-ink:#96365f;--taste-border:#df6ba0;--taste-shadow:#df6ba030}
+.pvTasteConfete{--taste-bg:radial-gradient(circle at 12% 78%,#ff7c8d 0 3px,transparent 4px),radial-gradient(circle at 34% 18%,#70c8f1 0 3px,transparent 4px),radial-gradient(circle at 57% 83%,#f2c94c 0 3px,transparent 4px),radial-gradient(circle at 76% 22%,#7ed6a8 0 3px,transparent 4px),linear-gradient(135deg,#fff8ed,#f8e5ff 48%,#e5f6ff);--taste-glow:#70c8f1;--taste-ink:#643b82;--taste-price:#8250a1;--taste-button:#ebd8f6;--taste-button-ink:#6c3d89;--taste-border:#ad6fc7;--taste-shadow:#ad6fc730}
+@media(max-width:430px){.qtyOption[data-pv-taste="1"]{padding-left:12px}.qtyOption[data-pv-taste="1"]>.pvTasteCopy{padding-left:18px}.qtyOption[data-pv-taste="1"]>.pvTasteRight{display:none}}
 .optionCard.selected{border-color:var(--p);background:#fbf5fd}
 .optQty{display:flex;align-items:center;gap:8px}
 .optQty button{width:44px;height:44px;border:0;border-radius:50%;background:#f3ddf7;color:var(--p);font-size:27px;font-weight:800}
@@ -503,7 +527,7 @@ button:active,.tab:active,.settingCard:active,.moreCard:active,.socialBtn:active
 <div class="cartbar" id="cartBar"><button class="btn" data-pedevia-action="show-cart"><span>🛒 Carrinho · <b id="cartCount">0</b></span><b id="cartTotal">R$ 0,00</b></button></div>
 <div class="overlay" id="modal"><div class="sheet" id="sheet"></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/pedevia-inline-02.js?v=13303stable1"></script>
+<script src="assets/pedevia-inline-02.js?v=13501stable1"></script>
 <script src="assets/pedevia-inline-03.js?v=13301stable1"></script>
 <script src="assets/pedevia-inline-04.js?v=13301stable1"></script>
 <style id="v1170Styles">
