@@ -6,7 +6,8 @@
   // O nome do adicional ganha duas linhas e toda a largura do cartão.
   // O valor passa para uma linha própria, abaixo do nome.
   window.groupOptionEditors=function(g){
-    return (g.options||[]).map((o,i)=>`<div class="optionEdit">
+    return (g.options||[]).map((o,i,a)=>`<div class="optionEdit" data-option-id="${esc(o.id||'')}">
+      <div class="pvOptionOrder"><button type="button" class="pvMoveOptionUp" onclick="moveGroupOptionEditor(this,-1)" ${i===0?'disabled':''}>↑ Subir</button><button type="button" class="pvMoveOptionDown" onclick="moveGroupOptionEditor(this,1)" ${i===a.length-1?'disabled':''}>↓ Descer</button></div>
       <label class="v1331OptionLabel">Nome do adicional</label>
       <textarea class="field goName v1331OptionName" rows="2" placeholder="Nome do adicional">${esc(o.name)}</textarea>
       <div class="v1331OptionPriceLine">
@@ -14,12 +15,14 @@
         <button class="ghost v1331RemoveOption" type="button" onclick="this.closest('.optionEdit').remove()" aria-label="Remover adicional">×</button>
       </div>
       <input class="field goDesc" value="${esc(o.desc||'')}" placeholder="Descrição (opcional)">
+      <label class="pvVisualStyleLabel">Estilo visual<select class="field goVisualStyle">${visualStyleOptions(o.visualStyle||'auto')}</select></label>
       <select class="field goStatus"><option value="available" ${o.status==='available'?'selected':''}>Disponível</option><option value="unavailable" ${o.status==='unavailable'?'selected':''}>Indisponível</option><option value="hidden" ${o.status==='hidden'?'selected':''}>Oculto</option></select>
     </div>`).join('');
   };
 
   window.addGroupOptionEditor=function(){
-    document.getElementById('ggOptions')?.insertAdjacentHTML('beforeend',`<div class="optionEdit">
+    const box=document.getElementById('ggOptions');box?.insertAdjacentHTML('beforeend',`<div class="optionEdit" data-option-id="">
+      <div class="pvOptionOrder"><button type="button" class="pvMoveOptionUp" onclick="moveGroupOptionEditor(this,-1)">↑ Subir</button><button type="button" class="pvMoveOptionDown" onclick="moveGroupOptionEditor(this,1)" disabled>↓ Descer</button></div>
       <label class="v1331OptionLabel">Nome do adicional</label>
       <textarea class="field goName v1331OptionName" rows="2" placeholder="Nome do adicional"></textarea>
       <div class="v1331OptionPriceLine">
@@ -27,8 +30,9 @@
         <button class="ghost v1331RemoveOption" type="button" onclick="this.closest('.optionEdit').remove()" aria-label="Remover adicional">×</button>
       </div>
       <input class="field goDesc" placeholder="Descrição (opcional)">
+      <label class="pvVisualStyleLabel">Estilo visual<select class="field goVisualStyle">${visualStyleOptions('auto')}</select></label>
       <select class="field goStatus"><option value="available">Disponível</option><option value="unavailable">Indisponível</option><option value="hidden">Oculto</option></select>
-    </div>`);
+    </div>`);refreshGroupOptionMoveButtons(box);
   };
 
   // Quando a loja está fechada, o horário já aparece em "Fechado agora · hoje...".
@@ -48,6 +52,7 @@
     .optionEdit .v1331OptionPriceLine label span{display:block;margin:2px 2px 0;font-size:13px;font-weight:750;color:var(--muted)}
     .optionEdit .v1331OptionPriceLine .field{margin-bottom:10px}
     .optionEdit .v1331RemoveOption{height:52px;margin-bottom:10px;font-size:22px}
+    .pvOptionOrder{display:flex;gap:8px;margin-bottom:9px}.pvOptionOrder button,.pvGroupActions>button{border:1px solid var(--line);background:#fff;color:var(--p);border-radius:12px;padding:8px 11px;font-weight:750}.pvOptionOrder button:disabled,.pvGroupActions>button:disabled{opacity:.35}.pvGroupActions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;min-width:118px}.pvGroupActions .ghost{padding:9px 12px}
     .clientInfoCard small:empty{display:none}
   `;
   document.head.appendChild(css);
