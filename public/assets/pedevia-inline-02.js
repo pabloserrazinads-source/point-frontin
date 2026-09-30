@@ -493,8 +493,8 @@ function optionVisualTheme(name,selected){
   let normalized=String(name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
   // O nome explícito corrige estilos antigos que foram salvos como "ninho"
   // antes de Leite Ninho e Creme de Ninho terem imagens separadas.
-  if(normalized==='creme de ninho')return['pvTasteNinho','cremeninho','100%','100%'];
-  if(normalized==='leite ninho')return['pvTasteNinho','ninho','33.333%','0%'];
+  if((!selected||selected==='auto')&&normalized==='creme de ninho')return['pvTasteNinho','cremeninho','100%','100%'];
+  if((!selected||selected==='auto')&&normalized==='leite ninho')return['pvTasteNinho','ninho','33.333%','0%'];
   let key=selected&&selected!=='auto'?selected:normalized;
   if(key==='none')return['','','',''];
   const iceStyles={'kinder ovo': 'icekinder', 'passas ao rum': 'icerum', 'maracuja trufado': 'icemaracuja', 'sensacao': 'icesensacao', 'frutas vermelhas': 'icevermelhas', 'blue ice': 'iceblue', 'kit kat': 'icekitkat', 'galak': 'icegalak', 'creme': 'icecreme', 'acai de cupuacu': 'icecupuacu'};
@@ -518,6 +518,11 @@ function quantityOptionRow(g,o){
   let [theme,taste,x,y]=optionVisualTheme(o.name,o.visualStyle);
   let visual=theme?` data-pv-taste="${taste}" style="--taste-x:${x};--taste-y:${y}"`:'';
   return `<div class="option optionCard qtyOption ${theme}" data-oid="${o.id}"${visual}><span class="pvTasteCopy"><b>${esc(o.name)}</b>${o.desc?`<small class="hint">${esc(o.desc)}</small>`:''}${o.price?`<span class="optionPrice">+ ${brl(o.price)}</span>`:'<span class="optionPrice">Grátis</span>'}</span><div class="optQty"><button type="button" class="minusBtn" onclick="changeOptionQty(this,-1)">−</button><b class="optQtyValue">0</b><button type="button" class="plusBtn" onclick="changeOptionQty(this,1)">+</button></div></div>`;
+}
+function choiceOptionRow(g,o,type){
+ let [theme,taste,x,y]=optionVisualTheme(o.name,o.visualStyle);
+ let visual=theme?` data-pv-taste="${taste}" style="--taste-x:${x};--taste-y:${y}"`:'';
+ return `<label class="option optionCard ${theme}"${visual}><span class="pvTasteCopy"><b>${esc(o.name)}</b>${o.desc?`<small class="hint">${esc(o.desc)}</small>`:''}${o.price?`<span class="optionPrice">+ ${brl(o.price)}</span>`:'<span class="optionPrice">Grátis</span>'}</span><input type="${type}" name="g_${g.id}" value="${o.id}" onchange="handleChoiceChange(this)"></label>`;
 }
 function groupSelectedCount(group){
   let mode=group.dataset.mode;
@@ -584,7 +589,7 @@ function openProduct(id){
     if(r.mode==='quantity') h+=os.map(o=>quantityOptionRow(g,o)).join('');
     else{
       let type=r.mode==='single'?'radio':'checkbox';
-      h+=os.map(o=>`<label class="option optionCard"><span><b>${esc(o.name)}</b>${o.desc?`<small class="hint">${esc(o.desc)}</small>`:''}${o.price?`<span class="optionPrice">+ ${brl(o.price)}</span>`:'<span class="optionPrice">Grátis</span>'}</span><input type="${type}" name="g_${g.id}" value="${o.id}" onchange="handleChoiceChange(this)"></label>`).join('');
+      h+=os.map(o=>choiceOptionRow(g,o,type)).join('');
     }
     h+='</div>';
   });
@@ -968,7 +973,7 @@ function openProduct(id){
   let base=firstVar?+firstVar.price||0:+p.price||0;
   let h=`<div class="row"><div><h2 style="margin:0">${esc(p.name)}</h2>${hasVariants(p)?'<span class="price selectedVariantPrice">Escolha o tamanho</span>':`<span class="price">${brl(p.price)}</span>`}</div><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div><p>${esc(p.desc||'')}</p>${p.detailedDesc?`<p class="hint">${esc(p.detailedDesc)}</p>`:''}`;
   if(hasVariants(p)) h+=`<div class="group variantGroup"><div class="groupTitle">Escolha o tamanho</div><div class="hint">${(mode==='pickup'||mode==='dinein')?'Para esta modalidade, aceitamos somente pote de 1 litro.':'Escolha o tamanho desejado.'}</div>${vars.map(v=>variantChoiceHTML(v,mode)).join('')}</div>`;
-  (p.groups||[]).forEach(gid=>{let g=cfg.groups.find(x=>x.id===gid);if(!g)return;let os=(g.options||[]).filter(o=>o.status==='available');if(!os.length)return;let r=effectiveGroupRules(g),maxAttr=Number.isFinite(r.max)?r.max:'inf';h+=`<div class="group choiceGroup" data-gid="${g.id}" data-mode="${r.mode}" data-min="${r.min}" data-max="${maxAttr}"><div class="groupTitle">${esc(g.name)} ${r.required?'<span class="tinyTag">Obrigatório</span>':'<span class="tinyTag">Opcional</span>'}</div><div class="hint">${clientRuleText(g)}</div>`;if(r.mode==='quantity')h+=os.map(o=>quantityOptionRow(g,o)).join('');else{let type=r.mode==='single'?'radio':'checkbox';h+=os.map(o=>`<label class="option optionCard"><span><b>${esc(o.name)}</b>${o.desc?`<small class="hint">${esc(o.desc)}</small>`:''}${o.price?`<span class="optionPrice">+ ${brl(o.price)}</span>`:'<span class="optionPrice">Grátis</span>'}</span><input type="${type}" name="g_${g.id}" value="${o.id}" onchange="handleChoiceChange(this)"></label>`).join('')}h+='</div>'});
+  (p.groups||[]).forEach(gid=>{let g=cfg.groups.find(x=>x.id===gid);if(!g)return;let os=(g.options||[]).filter(o=>o.status==='available');if(!os.length)return;let r=effectiveGroupRules(g),maxAttr=Number.isFinite(r.max)?r.max:'inf';h+=`<div class="group choiceGroup" data-gid="${g.id}" data-mode="${r.mode}" data-min="${r.min}" data-max="${maxAttr}"><div class="groupTitle">${esc(g.name)} ${r.required?'<span class="tinyTag">Obrigatório</span>':'<span class="tinyTag">Opcional</span>'}</div><div class="hint">${clientRuleText(g)}</div>`;if(r.mode==='quantity')h+=os.map(o=>quantityOptionRow(g,o)).join('');else{let type=r.mode==='single'?'radio':'checkbox';h+=os.map(o=>choiceOptionRow(g,o,type)).join('')}h+='</div>'});
   h+=`<label>Observação</label><textarea id="itemObs" class="field" placeholder="Ex.: sem granola"></textarea><div class="productFooter"><div class="productQty"><button onclick="qty(-1)">−</button><b id="qty">1</b><button onclick="qty(1)">+</button></div><button class="btn addPriceBtn" data-base="${base}" onclick="addCart('${p.id}')">Adicionar • <span class="liveTotal">${brl(base)}</span></button></div>`;
   showModal(h);setTimeout(()=>{refreshAllGroupLimits();if(firstVar){let i=document.querySelector(`input[name="productVariant"][value="${CSS.escape(firstVar.id)}"]`);if(i){i.checked=true;handleVariantChange()}}},0);
 }
@@ -1039,7 +1044,7 @@ function openProduct(id){
   let base=firstVar?+firstVar.price||0:+p.price||0;
   let h=`<div class="row"><div><h2 style="margin:0">${esc(p.name)}</h2>${hasVariants(p)?'<span class="price selectedVariantPrice">Escolha o tamanho</span>':`<span class="price">${brl(p.price)}</span>`}</div><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div><p>${esc(p.desc||'')}</p>${p.detailedDesc?`<p class="hint">${esc(p.detailedDesc)}</p>`:''}`;
   if(hasVariants(p))h+=`<div class="group variantGroup"><div class="groupTitle">Escolha o tamanho</div><div class="hint">A forma de recebimento será escolhida ao finalizar o pedido e dependerá dos tamanhos adicionados ao carrinho.</div>${vars.map(v=>variantChoiceHTML(v)).join('')}</div>`;
-  (p.groups||[]).forEach(gid=>{let g=cfg.groups.find(x=>x.id===gid);if(!g)return;let os=(g.options||[]).filter(o=>o.status==='available');if(!os.length)return;let r=effectiveGroupRules(g),maxAttr=Number.isFinite(r.max)?r.max:'inf';h+=`<div class="group choiceGroup" data-gid="${g.id}" data-mode="${r.mode}" data-min="${r.min}" data-max="${maxAttr}"><div class="groupTitle">${esc(g.name)} ${r.required?'<span class="tinyTag">Obrigatório</span>':'<span class="tinyTag">Opcional</span>'}</div><div class="hint">${clientRuleText(g)}</div>`;if(r.mode==='quantity')h+=os.map(o=>quantityOptionRow(g,o)).join('');else{let type=r.mode==='single'?'radio':'checkbox';h+=os.map(o=>`<label class="option optionCard"><span><b>${esc(o.name)}</b>${o.desc?`<small class="hint">${esc(o.desc)}</small>`:''}${o.price?`<span class="optionPrice">+ ${brl(o.price)}</span>`:'<span class="optionPrice">Grátis</span>'}</span><input type="${type}" name="g_${g.id}" value="${o.id}" onchange="handleChoiceChange(this)"></label>`).join('')}h+='</div>'});
+  (p.groups||[]).forEach(gid=>{let g=cfg.groups.find(x=>x.id===gid);if(!g)return;let os=(g.options||[]).filter(o=>o.status==='available');if(!os.length)return;let r=effectiveGroupRules(g),maxAttr=Number.isFinite(r.max)?r.max:'inf';h+=`<div class="group choiceGroup" data-gid="${g.id}" data-mode="${r.mode}" data-min="${r.min}" data-max="${maxAttr}"><div class="groupTitle">${esc(g.name)} ${r.required?'<span class="tinyTag">Obrigatório</span>':'<span class="tinyTag">Opcional</span>'}</div><div class="hint">${clientRuleText(g)}</div>`;if(r.mode==='quantity')h+=os.map(o=>quantityOptionRow(g,o)).join('');else{let type=r.mode==='single'?'radio':'checkbox';h+=os.map(o=>choiceOptionRow(g,o,type)).join('')}h+='</div>'});
   h+=`<label>Observação</label><textarea id="itemObs" class="field" placeholder="Ex.: sem granola"></textarea><div class="productFooter"><div class="productQty"><button onclick="qty(-1)">−</button><b id="qty">1</b><button onclick="qty(1)">+</button></div><button class="btn addPriceBtn" data-base="${base}" onclick="addCart('${p.id}')">Adicionar • <span class="liveTotal">${brl(base)}</span></button></div>`;
   showModal(h);setTimeout(()=>{refreshAllGroupLimits();if(firstVar){let i=document.querySelector(`input[name="productVariant"][value="${CSS.escape(firstVar.id)}"]`);if(i){i.checked=true;handleVariantChange()}}},0);
 }
