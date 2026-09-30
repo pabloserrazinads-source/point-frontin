@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+<head>
+<style id="pedeviaTenantNoFlashV1317">
+html.pedeviaTenantBoot body{visibility:hidden!important}
+html.pedeviaTenantBoot::before{
+  content:"";
+  position:fixed;inset:0;background:#f7f4f8;z-index:2147483647
+}
+</style>
+<script src="assets/pedevia-version.js?v=13504stable1"></script>
+<script src="assets/pedevia-inline-01.js?v=13301stable1"></script>
+<meta charset="utf-8"/>
+<meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
+<meta content="#6f2388" name="theme-color"/>
+<title>Pedevia · Cardápio online</title>
+<style>
+:root{--p:#712489;--p2:#a942b5;--bg:#f7f4f8;--card:#fff;--ink:#28232b;--muted:#7c7480;--line:#e8e1ea;--ok:#198b57;--bad:#c53c49;--warn:#e3a128}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+button,input,select,textarea{font:inherit}button{cursor:pointer}.hide{display:none!important}
+.top{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line);padding:12px 15px;display:flex;align-items:center;justify-content:space-between}
+.logo{display:flex;align-items:center;gap:10px}.logoMark{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#542064,#aa43b9);display:grid;place-items:center;font-size:24px}.brand{font-weight:900;line-height:1.05}.brand small{display:block;font-weight:600;color:var(--muted);font-size:11px;margin-top:3px}
+.iconbtn,.ghost,.btn{border:0;border-radius:13px;padding:10px 13px;font-weight:750}.iconbtn,.ghost{background:#f0ebf2;color:var(--ink)}.btn{background:var(--p);color:#fff}.btn.green{background:#178a56}.btn.full,.ghost.full{width:100%}
+.wrap{max-width:960px;margin:auto;padding:14px 14px 105px}.hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#562066,#9d3eb0);color:#fff;border-radius:25px;padding:23px;margin-bottom:14px;box-shadow:0 9px 25px #6f238825}.hero:after{content:"🍇";position:absolute;right:-5px;bottom:-22px;font-size:100px;opacity:.16;transform:rotate(-18deg)}.hero h1{margin:0 0 6px;font-size:27px}.hero p{margin:0 0 12px;max-width:500px}.status{display:inline-block;background:#ffffff25;padding:7px 10px;border-radius:999px;font-size:13px;font-weight:700}
+.notice{padding:12px 13px;border-radius:14px;background:#fff1c9;margin:10px 0}.notice.bad{background:#fde4e7;color:#8b2832}
+.tabs{display:flex;gap:8px;overflow:auto;padding:4px 0 13px;scrollbar-width:none}.tab{white-space:nowrap;border:1px solid var(--line);background:#fff;border-radius:999px;padding:10px 14px;font-weight:700}.tab.on{background:var(--p);color:#fff;border-color:var(--p)}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.card{background:#fff;border-radius:20px;overflow:hidden;box-shadow:0 4px 16px #00000010;position:relative}.photo{height:145px;background:linear-gradient(145deg,#35103f,#b149c0);background-size:cover;background-position:center;display:grid;place-items:center;font-size:53px;color:#fff}.cardbody{padding:13px}.card h3{font-size:16px;margin:0 0 5px}.desc{font-size:13px;color:var(--muted);min-height:34px;margin:0 0 9px}.price{font-weight:900;font-size:20px;color:var(--p)}
+.cartbar{position:fixed;z-index:18;bottom:14px;left:50%;transform:translateX(-50%);width:min(92%,620px)}.cartbar button{width:100%;box-shadow:0 8px 28px #0005;display:flex;justify-content:space-between}
+.overlay{display:none;position:fixed;z-index:50;inset:0;background:#0009;align-items:flex-end}.overlay.show{display:flex}.sheet{background:#fff;width:100%;max-height:92vh;overflow:auto;border-radius:25px 25px 0 0;padding:18px 17px calc(20px + env(safe-area-inset-bottom))}.row{display:flex;justify-content:space-between;align-items:center;gap:10px}.group{background:#f5f2f6;border-radius:16px;padding:13px;margin:11px 0}.groupTitle{font-weight:850}.hint{font-size:12px;color:var(--muted)}.option{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #e5dfe7}.option:last-child{border:0}.field{width:100%;border:1px solid #cec5d1;background:#fff;border-radius:12px;padding:12px;margin:5px 0 10px}.qty{display:flex;align-items:center;gap:10px}.qty button{width:39px;height:39px;border:0;border-radius:12px;background:#eee}.summary{background:#f6f3f7;border-radius:16px;padding:13px;margin:10px 0}.summary small{display:block;color:var(--muted);margin-top:4px}
+.adminHead{background:linear-gradient(135deg,#34243a,#6f2388);color:#fff;border-radius:23px;padding:20px;margin-bottom:13px}.adminHead h2{margin:0 0 5px}
+.adminBottomNav{position:fixed;z-index:35;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding:7px 4px calc(7px + env(safe-area-inset-bottom));box-shadow:0 -5px 20px #00000012}
+.adminBottomNav button{border:0;background:transparent;color:#4f4952;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;font-size:11px;min-width:0}
+.adminBottomNav .navIcon{font-size:23px;line-height:25px;min-height:25px;font-weight:800}.adminBottomNav button.on{color:var(--p)}.adminBottomNav button.on .navIcon{transform:translateY(-1px)}
+.adminSubnav{display:flex;gap:7px;overflow:auto;margin:5px 0 14px}.adminSubnav button{border:0;border-radius:999px;padding:10px 13px;white-space:nowrap;background:#eee9f0}.adminSubnav button.on{background:var(--p);color:#fff}
+.adminPlaceholder{text-align:center;padding:30px 16px}.adminPlaceholder .bigIcon{font-size:48px;display:block;margin-bottom:8px}.adminPlaceholder p{color:var(--muted);margin:7px auto;max-width:430px}
+.panel{background:#fff;border-radius:20px;padding:15px;margin-bottom:13px;box-shadow:0 3px 14px #0000000c}.panel h3{margin:0 0 10px}.adminItem{display:grid;grid-template-columns:1fr auto;gap:8px;padding:11px 0;border-bottom:1px solid var(--line);align-items:center}.adminItem:last-child{border:0}.badge{font-size:11px;font-weight:800;padding:4px 7px;border-radius:999px;display:inline-block}.available{background:#dcf5e8;color:#176d45}.unavailable{background:#fde3e6;color:#922a34}.hidden{background:#eee9f0;color:#655d69}.miniBtns{display:flex;gap:5px}.miniBtns button{border:0;border-radius:10px;padding:7px 9px}.two{display:grid;grid-template-columns:1fr 1fr;gap:9px}.switchrow{display:flex;justify-content:space-between;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}.dangerBtn{background:#fde3e6;color:#922a34;border:0;border-radius:12px;padding:10px 12px}
+.login{max-width:420px;margin:50px auto;background:#fff;border-radius:24px;padding:22px;box-shadow:0 8px 30px #0001}.login h2{margin-top:0}
+
+.orderHero{background:#fff;border-radius:24px;padding:20px;margin-bottom:13px;box-shadow:0 3px 14px #0000000c}.orderHero h2{margin:0 0 16px;color:var(--p)}
+.orderBox{background:#f5f3f6;border-radius:18px;padding:16px;margin:12px 0}.orderBox h3{margin:0 0 4px}.orderBox p{margin:0 0 12px;color:var(--muted)}
+.storeState{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px;border-radius:18px;background:#def5e8;color:#177149;margin-top:16px}.storeState.paused{background:#fde4e7;color:#922a34}.storeState .stateDot{width:12px;height:12px;border-radius:50%;background:currentColor;display:inline-block;margin-right:8px}.storeState button{border:0;background:transparent;color:inherit;font-weight:800}
+.settingsTitle{font-size:26px;font-weight:500;margin:4px 0 16px}.settingsList{display:grid;gap:12px}.settingCard{width:100%;border:0;text-align:left;background:#f5f4f6;border-radius:17px;padding:15px 16px;display:grid;grid-template-columns:38px 1fr 20px;gap:10px;align-items:center;color:var(--ink)}.settingCard .si{font-size:23px;text-align:center}.settingCard b{display:block;font-size:15px}.settingCard small{display:block;color:var(--muted);font-size:12px;margin-top:3px;line-height:1.25}.settingCard .enabled{color:#2c9a59;font-weight:800}.settingCard .chev{font-size:26px;color:#9b969e;font-weight:300}.backBtn{border:0;background:transparent;color:var(--p);font-weight:800;padding:4px 0 12px}
+
+/* v0.8 · área do cliente conectada às configurações do admin */
+.clientBrand{background:#fff;border-radius:22px;padding:18px;margin-bottom:14px;box-shadow:0 3px 14px #0000000c;text-align:center}.clientBrandLogo{width:132px;height:132px;border-radius:50%;margin:0 auto 10px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;overflow:hidden}.clientBrandLogo img{width:100%;height:100%;object-fit:contain}.clientBrandLogo .fallback{font-weight:900;font-size:21px;line-height:1.05}.clientBrand h1{font-size:23px;margin:3px 0 2px}.clientBrand .sub{font-size:13px;color:var(--muted)}
+.clientInfoGrid{display:grid;grid-template-columns:1fr;gap:10px;margin:0 0 14px}.clientInfoCard{background:#fff;border-radius:18px;padding:14px;box-shadow:0 3px 14px #0000000c;display:grid;grid-template-columns:34px 1fr auto;gap:9px;align-items:center}.clientInfoCard .ci{font-size:24px}.clientInfoCard b{display:block;font-size:15px}.clientInfoCard small{display:block;color:var(--muted);margin-top:2px}.clientInfoCard a{color:var(--p);text-decoration:none;font-weight:800;font-size:12px}.clientStatusOpen{color:#198b57}.clientStatusClosed{color:#c53c49}.clientDetails{background:#fff;border-radius:20px;padding:18px;margin:18px 0 8px;box-shadow:0 3px 14px #0000000c}.clientDetails h3{margin:0 0 13px}.detailRow{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--line)}.detailRow:last-child{border-bottom:0}.detailRow .di{font-size:22px;width:28px}.detailRow b{display:block}.detailRow small{display:block;color:var(--muted);margin-top:3px;line-height:1.35}.socialBtn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:9px 12px;color:var(--ink);text-decoration:none;margin-top:8px}.clientFooter{text-align:center;color:var(--muted);font-size:12px;padding:20px 8px 95px}.clientFooter b{color:var(--ink)}
+@media(min-width:720px){.grid{grid-template-columns:repeat(3,1fr)}.photo{height:180px}.overlay{align-items:center;justify-content:center}.sheet{max-width:650px;border-radius:25px}}
+
+/* v0.6 · configurações avançadas de pedidos */
+.cfgPage{background:#fff;border-radius:22px;padding:14px 14px 22px;box-shadow:0 3px 14px #0000000c}.cfgPage h2{color:var(--p);font-size:24px;margin:2px 0 18px}.cfgBlock{background:#f5f4f6;border-radius:16px;padding:15px;margin:12px 0}.cfgBlock .switchrow{border:0;padding:0}.cfgLabel{display:block;font-weight:800;margin:14px 0 7px}.radioCard{display:flex;gap:10px;align-items:flex-start;border:1px solid #d5cfd7;border-radius:15px;padding:13px;margin:8px 0;background:#fff}.radioCard.on{border:2px solid var(--p);background:#f4eafb}.radioCard input{margin-top:4px}.radioCard small{display:block;color:var(--muted);margin-top:3px}.toolbarRow{display:flex;gap:8px}.toolbarRow .field{margin:0}.neighList{display:grid;gap:9px;max-height:54vh;overflow:auto;padding-right:2px}.neigh{display:grid;grid-template-columns:1fr 105px 40px;gap:8px;align-items:center;background:#f5f4f6;border-radius:14px;padding:11px}.neigh b{font-size:14px}.neigh .field{margin:0;padding:9px}.xbtn{border:0;background:#fde3e6;color:#922a34;border-radius:10px;height:38px}.payCard{background:#f5f4f6;border-radius:16px;padding:14px;margin:10px 0}.payTop{display:flex;align-items:center;justify-content:space-between;gap:10px}.payCard .subSwitch{margin-top:10px;padding-top:10px;border-top:1px solid var(--line)}.payMeta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.toggle{appearance:none;width:48px;height:28px;border-radius:99px;background:#cfcbd2;position:relative;transition:.2s;flex:0 0 auto}.toggle:after{content:"";position:absolute;width:22px;height:22px;border-radius:50%;background:#fff;top:3px;left:3px;box-shadow:0 1px 4px #0003;transition:.2s}.toggle:checked{background:var(--p)}.toggle:checked:after{left:23px}.modalActions{display:grid;grid-template-columns:1fr 1fr;gap:9px;position:sticky;bottom:-18px;background:#fff;padding:12px 0 0;margin-top:14px}.searchField{padding-left:13px}.sectionNote{color:var(--muted);font-size:13px;line-height:1.35}.pillfee{display:inline-block;background:#fde4e7;color:#a12f3a;border-radius:999px;padding:4px 8px;font-size:12px;font-weight:800}
+
+/* ===== v1.0: seções editáveis do cardápio ===== */
+.menuBuilderHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.sectionAdmin{background:#f4f1f5;border-radius:22px;padding:14px;margin:13px 0}.sectionAdminTop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.sectionAdmin h3{margin:0;font-size:22px}.sectionAdmin .sectionDesc{color:var(--muted);font-size:13px;margin:4px 0 10px;line-height:1.4}.sectionAdminProducts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.adminProdCard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:10px}.adminProdCard b{display:block}.sectionInsert{display:flex;justify-content:center;margin:10px 0}.sectionInsert button{border:1px solid #bdb4c1;background:#fff;border-radius:999px;padding:9px 14px;font-weight:800}.displayChoices{display:grid;grid-template-columns:1fr 1fr;gap:9px}.displayChoice{border:1px solid var(--line);background:#fff;border-radius:15px;padding:14px 8px;text-align:center}.displayChoice.on{border:2px solid #2796d2;background:#e7f5fc}.displayMock{font-size:26px;display:block;margin-bottom:6px;letter-spacing:2px}.accentPreview{height:44px;border-radius:12px;margin-top:6px}.clientSection{margin:22px 0 28px;scroll-margin-top:90px}.clientSectionHead{text-align:center;padding:16px 10px 13px;border-radius:18px 18px 0 0}.clientSectionHead h2{margin:0 0 5px;font-size:27px}.clientSectionHead p{margin:0 auto;color:var(--muted);max-width:680px;line-height:1.45}.clientSection .grid{margin-top:12px}.quickSections{display:flex;gap:8px;overflow:auto;padding:4px 0 12px;scrollbar-width:none}.quickSections button{white-space:nowrap}.sectionCompact .grid{grid-template-columns:1fr}.sectionCompact .card{display:grid;grid-template-columns:95px 1fr}.sectionCompact .photo{height:100%;min-height:100px}.sectionNoImages .photo{display:none}.sectionNoImages.sectionCompact .card{grid-template-columns:1fr}.emptySection{background:#fff;border:1px dashed var(--line);border-radius:16px;padding:22px;text-align:center;color:var(--muted)}
+@media(min-width:700px){.sectionAdminProducts{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+
+/* seleção do cliente: trava visual no limite e preços no estilo antigo */
+.choiceGroup.limitReached .option.locked{opacity:.35;filter:grayscale(.35);pointer-events:none}
+.choiceGroup .option{transition:opacity .18s ease,background .18s ease,border-color .18s ease}
+.choiceGroup .option.locked input{pointer-events:none}
+.choiceGroup .qtyOption.locked{opacity:.35}
+.choiceGroup .qtyOption.locked .optQty button.plusBtn{pointer-events:none}
+.optionPrice{display:block;margin-top:5px;font-size:14px;color:#3e3840;font-weight:650}
+.optionCard{background:#fff;border:1px solid #d8d1da;border-radius:15px;padding:13px 14px;margin:9px 0;align-items:center}
+.qtyOption[data-pv-taste]{position:relative;isolation:isolate;overflow:hidden;min-height:108px;border-width:1.5px;padding:17px 15px 17px 132px;box-shadow:0 8px 22px rgba(59,38,64,.10);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease;background:var(--taste-bg)}
+.qtyOption[data-pv-taste]::before,.qtyOption[data-pv-taste]::after{content:"";position:absolute;pointer-events:none;background-image:url('assets/pedevia-taste-sprite.webp');background-size:400% 300%;background-position:var(--taste-x) var(--taste-y);background-repeat:no-repeat;z-index:0;filter:saturate(1.06) drop-shadow(0 5px 6px rgba(55,34,24,.13))}
+.qtyOption[data-pv-taste]::before{width:132px;height:132px;left:-8px;bottom:-15px}
+.qtyOption[data-pv-taste]::after{width:76px;height:76px;right:-22px;top:-22px;opacity:.48;transform:rotate(12deg)}
+.qtyOption[data-pv-taste]>.pvTasteCopy{position:relative;z-index:2;min-width:0}
+.qtyOption[data-pv-taste]>.pvTasteCopy>b{color:var(--taste-ink);font-size:18px;line-height:1.15}
+.qtyOption[data-pv-taste] .optionPrice{color:var(--taste-price);font-weight:800;font-size:15px;margin-top:8px}
+.qtyOption[data-pv-taste]>.optQty{position:relative;z-index:3;margin-left:auto}
+.qtyOption[data-pv-taste]>.optQty button{background:var(--taste-button);color:var(--taste-button-ink);box-shadow:0 5px 14px rgba(45,30,48,.10)}
+.qtyOption[data-pv-taste].selected{border-color:var(--taste-border);box-shadow:0 10px 26px var(--taste-shadow);transform:translateY(-1px)}
+.pvTasteNutella{--taste-bg:linear-gradient(135deg,#fff8ef,#f7e3cf);--taste-glow:#c88458;--taste-ink:#6f3828;--taste-price:#8d4b32;--taste-button:#f0d5bf;--taste-button-ink:#713b2b;--taste-border:#b96f45;--taste-shadow:#b96f4530}
+.pvTasteNinho{--taste-bg:linear-gradient(135deg,#fffdf4,#eef7ff);--taste-glow:#b9dcf7;--taste-ink:#315b78;--taste-price:#50748a;--taste-button:#dceefb;--taste-button-ink:#315b78;--taste-border:#82b9dc;--taste-shadow:#82b9dc30}
+.pvTasteAvela{--taste-bg:linear-gradient(135deg,#fff9ed,#ead4b7);--taste-glow:#ab7652;--taste-ink:#65432f;--taste-price:#7e5438;--taste-button:#e8cfb1;--taste-button-ink:#65432f;--taste-border:#a97850;--taste-shadow:#a9785030}
+.pvTasteBis{--taste-bg:linear-gradient(135deg,#fff5ed,#f1c7ae);--taste-glow:#d95c32;--taste-ink:#71321f;--taste-price:#9b452a;--taste-button:#f5cfbd;--taste-button-ink:#843922;--taste-border:#d36d48;--taste-shadow:#d36d4830}
+.pvTasteOvomaltine{--taste-bg:linear-gradient(135deg,#fff5df,#edc07b);--taste-glow:#8f5429;--taste-ink:#623b22;--taste-price:#80502c;--taste-button:#f1d19a;--taste-button-ink:#643c21;--taste-border:#b87839;--taste-shadow:#b8783930}
+.pvTasteMorango{--taste-bg:linear-gradient(135deg,#fff5f7,#ffd9df);--taste-glow:#ef6d7c;--taste-ink:#8c2838;--taste-price:#b33b4d;--taste-button:#ffd1d9;--taste-button-ink:#a72f43;--taste-border:#e55d71;--taste-shadow:#e55d7130}
+.pvTasteBanana{--taste-bg:linear-gradient(135deg,#fffdf0,#fff0a8);--taste-glow:#f0c92d;--taste-ink:#6e5a16;--taste-price:#8a7016;--taste-button:#ffef9b;--taste-button-ink:#705b12;--taste-border:#dfbc26;--taste-shadow:#dfbc2630}
+.pvTasteUva{--taste-bg:linear-gradient(135deg,#fcf7ff,#e9d4fb);--taste-glow:#9660c9;--taste-ink:#5b3279;--taste-price:#77439c;--taste-button:#e4cef5;--taste-button-ink:#633585;--taste-border:#9a64c7;--taste-shadow:#9a64c730}
+.pvTasteChocoBall{--taste-bg:linear-gradient(135deg,#fff9f1,#ead7c5);--taste-glow:#71503b;--taste-ink:#50382c;--taste-price:#6e4a35;--taste-button:#dfc7b5;--taste-button-ink:#563b2c;--taste-border:#8c6650;--taste-shadow:#8c665030}
+.pvTasteFini{--taste-bg:linear-gradient(135deg,#fff4fb,#ffe0ed 48%,#e8f6ff);--taste-glow:#ee75ad;--taste-ink:#8d3261;--taste-price:#b34478;--taste-button:#f9d0e5;--taste-button-ink:#96365f;--taste-border:#df6ba0;--taste-shadow:#df6ba030}
+.pvTasteConfete{--taste-bg:radial-gradient(circle at 12% 78%,#ff7c8d 0 3px,transparent 4px),radial-gradient(circle at 34% 18%,#70c8f1 0 3px,transparent 4px),radial-gradient(circle at 57% 83%,#f2c94c 0 3px,transparent 4px),radial-gradient(circle at 76% 22%,#7ed6a8 0 3px,transparent 4px),linear-gradient(135deg,#fff8ed,#f8e5ff 48%,#e5f6ff);--taste-glow:#70c8f1;--taste-ink:#643b82;--taste-price:#8250a1;--taste-button:#ebd8f6;--taste-button-ink:#6c3d89;--taste-border:#ad6fc7;--taste-shadow:#ad6fc730}
+@media(max-width:430px){.qtyOption[data-pv-taste]{min-height:96px;padding:14px 11px 14px 96px}.qtyOption[data-pv-taste]::before{width:105px;height:105px;left:-12px;bottom:-10px}.qtyOption[data-pv-taste]::after{display:none}.qtyOption[data-pv-taste]>.pvTasteCopy>b{font-size:16px}.qtyOption[data-pv-taste]>.optQty{gap:5px}.qtyOption[data-pv-taste]>.optQty button{width:42px;height:42px}}
+.optionCard.selected{border-color:var(--p);background:#fbf5fd}
+.optQty{display:flex;align-items:center;gap:8px}
+.optQty button{width:44px;height:44px;border:0;border-radius:50%;background:#f3ddf7;color:var(--p);font-size:27px;font-weight:800}
+.optQty button:disabled{opacity:.25}
+.productFooter{position:sticky;bottom:-18px;background:#fff;padding:12px 0 0;margin-top:12px;display:grid;grid-template-columns:135px 1fr;gap:10px;z-index:6}
+.productQty{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;background:#f1daf4;border-radius:14px;overflow:hidden}
+.productQty button{height:54px;border:0;background:transparent;color:var(--p);font-size:25px;font-weight:800}.productQty b{text-align:center;background:var(--p);color:#fff;border-radius:50%;width:48px;height:48px;line-height:48px;margin:auto}
+.addPriceBtn{height:54px;border-radius:14px;font-size:17px}.addPriceBtn .liveTotal{font-weight:900}
+
+/* Carrinho / checkout em etapas */
+.cartItem{padding:14px 0;border-bottom:1px solid var(--line)}
+.cartItem:last-child{border-bottom:0}.cartItemHead{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.cartItemMeta{color:var(--muted);font-size:13px;line-height:1.45;margin-top:5px}.cartQty{display:flex;align-items:center;gap:7px;margin-top:10px}.cartQty button{width:34px;height:34px;border:0;border-radius:10px;background:#eee;font-weight:900}.cartQty .num{min-width:34px;text-align:center;font-weight:850}.cartRemove{margin-left:auto;border:0;background:#fde8eb;color:#b23442;border-radius:50%;width:34px;height:34px;font-weight:900}
+.cartTotals{border:1px solid var(--line);border-radius:15px;padding:13px;margin:14px 0}.cartTotals .row{margin:5px 0}.cartActions{display:grid;gap:9px;margin-top:14px}.cartActions .secondary{background:#e6f3fb;color:#087db6}.choiceTile{width:100%;display:flex;align-items:center;gap:13px;text-align:left;border:1px solid #d7d1d9;background:#fff;border-radius:15px;padding:15px;margin:9px 0}.choiceTile .bigIcon{font-size:25px;width:38px;text-align:center}.choiceTile small{display:block;color:var(--muted);margin-top:3px}.choiceTile .feeTag{margin-left:auto;background:#fde6e8;color:#a4313b;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:800}.checkoutTitle{font-size:25px;margin:0}.checkoutSub{color:var(--muted);margin:4px 0 14px}.addressChoice{background:#f7f5f8;border-radius:15px;padding:13px;margin:10px 0}.checkoutSticky{position:sticky;bottom:-18px;background:#fff;padding-top:12px;margin-top:12px}.checkoutSticky .btn{width:100%}
+</style>
+<style>
+.moreList{display:grid;gap:8px}.generalHead{font-size:18px;font-weight:800;margin:16px 0 10px}.moreCard{width:100%;border:0;background:#f5f6f7;border-radius:14px;padding:14px;display:grid;grid-template-columns:34px 1fr 20px;gap:10px;text-align:left;align-items:center;color:#252525}.moreCard b{display:block;font-size:15px}.moreCard small{display:block;color:#777;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.moreIc{font-size:20px;text-align:center}.chev{font-size:25px;color:#999}.brandPreview{height:220px;border-radius:16px;background:#f2f2f2;display:grid;place-items:center;margin:8px 0 12px;overflow:hidden}.brandPreview img{max-width:80%;max-height:90%;object-fit:contain}.brandFallback{width:150px;height:150px;border-radius:50%;background:white;border:2px solid #333;display:grid;place-items:center;text-align:center;font-weight:900;font-size:24px}.mapMock{height:180px;border-radius:15px;background:linear-gradient(135deg,#eef1f5,#dfe7ec);display:grid;place-items:center;text-align:center;font-size:32px;margin:12px 0}.mapMock small{display:block;font-size:13px;color:#777}.sharePreview{border:1px solid #ddd;border-radius:14px;overflow:hidden;margin:10px 0 18px}.sharePreview>div{height:170px;background:#118bd0;display:grid;place-items:center;font-size:70px}.sharePreview img{max-height:140px;max-width:70%;object-fit:contain}.sharePreview b,.sharePreview small{display:block;padding:10px 14px 0}.sharePreview small{padding-top:2px;padding-bottom:12px;color:#777}.linkPreview{padding:15px;border-radius:12px;background:#f1f1f1;margin:8px 0 15px;word-break:break-all}.qrMock{width:190px;height:190px;margin:25px auto 10px;border:12px solid #222;display:grid;place-items:center;font-size:130px;line-height:1}
+
+/* ===== v1.0: seções editáveis do cardápio ===== */
+.menuBuilderHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.sectionAdmin{background:#f4f1f5;border-radius:22px;padding:14px;margin:13px 0}.sectionAdminTop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.sectionAdmin h3{margin:0;font-size:22px}.sectionAdmin .sectionDesc{color:var(--muted);font-size:13px;margin:4px 0 10px;line-height:1.4}.sectionAdminProducts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.adminProdCard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:10px}.adminProdCard b{display:block}.sectionInsert{display:flex;justify-content:center;margin:10px 0}.sectionInsert button{border:1px solid #bdb4c1;background:#fff;border-radius:999px;padding:9px 14px;font-weight:800}.displayChoices{display:grid;grid-template-columns:1fr 1fr;gap:9px}.displayChoice{border:1px solid var(--line);background:#fff;border-radius:15px;padding:14px 8px;text-align:center}.displayChoice.on{border:2px solid #2796d2;background:#e7f5fc}.displayMock{font-size:26px;display:block;margin-bottom:6px;letter-spacing:2px}.accentPreview{height:44px;border-radius:12px;margin-top:6px}.clientSection{margin:22px 0 28px;scroll-margin-top:90px}.clientSectionHead{text-align:center;padding:16px 10px 13px;border-radius:18px 18px 0 0}.clientSectionHead h2{margin:0 0 5px;font-size:27px}.clientSectionHead p{margin:0 auto;color:var(--muted);max-width:680px;line-height:1.45}.clientSection .grid{margin-top:12px}.quickSections{display:flex;gap:8px;overflow:auto;padding:4px 0 12px;scrollbar-width:none}.quickSections button{white-space:nowrap}.sectionCompact .grid{grid-template-columns:1fr}.sectionCompact .card{display:grid;grid-template-columns:95px 1fr}.sectionCompact .photo{height:100%;min-height:100px}.sectionNoImages .photo{display:none}.sectionNoImages.sectionCompact .card{grid-template-columns:1fr}.emptySection{background:#fff;border:1px dashed var(--line);border-radius:16px;padding:22px;text-align:center;color:var(--muted)}
+@media(min-width:700px){.sectionAdminProducts{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+</style>
+<style>
+.prodHero{border-radius:18px;overflow:hidden;background:#f1edf2;min-height:150px;display:grid;place-items:center;margin:8px 0 12px}.prodHero img{width:100%;max-height:330px;object-fit:cover}.prodImageActions{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}.sectionTitle{font-size:20px;font-weight:850;margin:22px 0 4px}.subtle{color:var(--muted);font-size:13px}.assignedGroup{background:#f4f1f5;border-radius:16px;padding:13px;margin:10px 0}.assignedGroupHead{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.assignedGroup .names{font-size:13px;line-height:1.42;color:#4e4850;margin-top:5px}.groupChooser{display:grid;gap:8px;margin:10px 0}.groupChooser button{text-align:left}.ruleGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.ruleChoice{border:1px solid var(--line);background:#fff;border-radius:14px;padding:12px 8px;text-align:center}.ruleChoice.on{border:2px solid #2796d2;background:#e7f5fc}.optionEdit{background:#f4f1f5;border-radius:15px;padding:10px;margin:9px 0}.optionEdit .line{display:grid;grid-template-columns:1fr 110px 42px;gap:7px;align-items:center}.optionEdit .field{margin:4px 0}.stickySave{position:sticky;bottom:-1px;background:#fff;padding:12px 0 2px;display:flex;gap:8px;z-index:4}.stickySave>*{flex:1}.tinyTag{display:inline-block;font-size:11px;background:#e7f5fc;color:#1675a5;border-radius:999px;padding:3px 7px;margin-left:5px}.productAddMenu{display:grid;gap:8px}.productAddMenu button{padding:14px}.categoryPills{display:flex;gap:7px;overflow:auto;margin:8px 0 13px}.categoryPills button{white-space:nowrap}
+.pvVisualStyleLabel{display:block;margin:8px 0 4px;font-weight:750;color:var(--ink)}.pvVisualStyleLabel .goVisualStyle{margin-top:6px;font-weight:600;background:#fff}
+
+/* ===== v1.0: seções editáveis do cardápio ===== */
+.menuBuilderHead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.sectionAdmin{background:#f4f1f5;border-radius:22px;padding:14px;margin:13px 0}.sectionAdminTop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.sectionAdmin h3{margin:0;font-size:22px}.sectionAdmin .sectionDesc{color:var(--muted);font-size:13px;margin:4px 0 10px;line-height:1.4}.sectionAdminProducts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.adminProdCard{background:#fff;border:1px solid var(--line);border-radius:16px;padding:10px}.adminProdCard b{display:block}.sectionInsert{display:flex;justify-content:center;margin:10px 0}.sectionInsert button{border:1px solid #bdb4c1;background:#fff;border-radius:999px;padding:9px 14px;font-weight:800}.displayChoices{display:grid;grid-template-columns:1fr 1fr;gap:9px}.displayChoice{border:1px solid var(--line);background:#fff;border-radius:15px;padding:14px 8px;text-align:center}.displayChoice.on{border:2px solid #2796d2;background:#e7f5fc}.displayMock{font-size:26px;display:block;margin-bottom:6px;letter-spacing:2px}.accentPreview{height:44px;border-radius:12px;margin-top:6px}.clientSection{margin:22px 0 28px;scroll-margin-top:90px}.clientSectionHead{text-align:center;padding:16px 10px 13px;border-radius:18px 18px 0 0}.clientSectionHead h2{margin:0 0 5px;font-size:27px}.clientSectionHead p{margin:0 auto;color:var(--muted);max-width:680px;line-height:1.45}.clientSection .grid{margin-top:12px}.quickSections{display:flex;gap:8px;overflow:auto;padding:4px 0 12px;scrollbar-width:none}.quickSections button{white-space:nowrap}.sectionCompact .grid{grid-template-columns:1fr}.sectionCompact .card{display:grid;grid-template-columns:95px 1fr}.sectionCompact .photo{height:100%;min-height:100px}.sectionNoImages .photo{display:none}.sectionNoImages.sectionCompact .card{grid-template-columns:1fr}.emptySection{background:#fff;border:1px dashed var(--line);border-radius:16px;padding:22px;text-align:center;color:var(--muted)}
+@media(min-width:700px){.sectionAdminProducts{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+</style>
+<style>
+.cropViewport{position:relative;width:min(82vw,380px);aspect-ratio:1/1;margin:14px auto 18px;background:#111;overflow:hidden;touch-action:none;user-select:none}
+.cropViewport.cropCircle{border-radius:50%}
+.cropViewport.cropRect{border-radius:18px}
+.cropViewport canvas{width:100%;height:100%;display:block}
+.cropMask{position:absolute;inset:0;pointer-events:none;border:3px solid rgba(255,255,255,.95);box-shadow:0 0 0 9999px rgba(0,0,0,.28) inset}
+.cropMask.circle{border-radius:50%}
+</style>
+<style>
+.dup-inline,.duplicateProductBtn{white-space:nowrap}
+@media(max-width:520px){
+  .adminItem .dup-inline{margin-left:6px}
+  .stickySave{gap:8px;flex-wrap:wrap}
+}
+</style>
+<style>
+.orderBackupV111{min-height:330px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;line-height:1.45;white-space:pre-wrap}
+.pixCheckoutV111{margin:12px 0;border:1px solid #dcc3e3;background:#faf3fc;color:#52205e}
+.servicePixCardV111{display:contents}
+</style>
+<style>
+.loyaltyCustomerStatusV113{margin:12px 0;background:#f8f1fb;border:1px solid #e0c8e8;color:#622372}
+.loyaltyLookupV113{cursor:default}
+</style>
+<style>
+.loyaltyAfterOrderV114{background:#f7eef9;border:1px solid #ddc5e5;color:#642475}
+</style>
+<style>
+.loyaltyResultV115{margin-top:16px}
+.loyaltyBigV115{text-align:center;font-size:44px}
+.loyaltyProgressBarV115{height:14px;background:#eee2f2;border-radius:999px;overflow:hidden;margin:14px 0 8px}
+.loyaltyProgressBarV115 span{display:block;height:100%;background:linear-gradient(90deg,#792494,#b22ac0);border-radius:999px}
+.loyaltyNumbersV115{text-align:center;color:#712489}
+.loyaltyLookupV113:active{transform:scale(.99)}
+</style>
+<style id="v116Styles">
+:root{
+  --hero1:#562066;
+  --hero2:#9d3eb0;
+  --ease-ui:cubic-bezier(.22,.61,.36,1);
+}
+html{scroll-behavior:smooth}
+body{transition:background-color .28s var(--ease-ui),color .28s var(--ease-ui)}
+.top,.card,.clientInfoCard,.clientDetails,.panel,.sheet,.clientBrand,.orderHero{
+  transition:background-color .28s var(--ease-ui),color .28s var(--ease-ui),border-color .28s var(--ease-ui),box-shadow .28s var(--ease-ui);
+}
+.logoMark{
+  overflow:hidden;background:var(--card)!important;border:1px solid var(--line);
+  transition:transform .22s var(--ease-ui),box-shadow .22s var(--ease-ui);
+}
+.logoMark img{width:100%;height:100%;object-fit:cover;display:block}
+.logoMark:active{transform:scale(.94)}
+.hero{
+  background:linear-gradient(135deg,var(--hero1),var(--hero2))!important;
+  transition:background .35s var(--ease-ui),transform .28s var(--ease-ui),box-shadow .28s var(--ease-ui);
+}
+button,.tab,.card,.settingCard,.moreCard,.clientInfoCard,.socialBtn,.cartbar{
+  -webkit-tap-highlight-color:transparent;
+}
+button,.tab,.settingCard,.moreCard,.socialBtn{
+  transition:transform .16s var(--ease-ui),background-color .22s var(--ease-ui),color .22s var(--ease-ui),border-color .22s var(--ease-ui),box-shadow .22s var(--ease-ui);
+}
+button:active,.tab:active,.settingCard:active,.moreCard:active,.socialBtn:active{transform:scale(.975)}
+.card{transition:transform .22s var(--ease-ui),box-shadow .22s var(--ease-ui),opacity .25s var(--ease-ui);animation:v116CardIn .34s var(--ease-ui) both}
+.card:active{transform:scale(.985)}
+@keyframes v116CardIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.clientSection,.clientInfoGrid,.notice,.loyaltyLookupV113{animation:v116FadeUp .28s var(--ease-ui) both}
+@keyframes v116FadeUp{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+
+/* Modal com abertura/fechamento suave, inclusive ao voltar para adicionar produtos. */
+.overlay{
+  display:flex!important;
+  opacity:0;
+  visibility:hidden;
+  pointer-events:none;
+  transition:opacity .24s var(--ease-ui),visibility .24s linear;
+}
+.overlay.show{opacity:1;visibility:visible;pointer-events:auto}
+.sheet{
+  transform:translateY(105%);
+  opacity:.98;
+  transition:transform .34s var(--ease-ui),opacity .24s var(--ease-ui);
+  will-change:transform;
+}
+.overlay.show .sheet{transform:translateY(0);opacity:1}
+@media(min-width:720px){
+  .sheet{transform:translateY(22px) scale(.985)}
+  .overlay.show .sheet{transform:translateY(0) scale(1)}
+}
+.cartbar{transition:transform .25s var(--ease-ui),opacity .2s var(--ease-ui)}
+.cartbar.v116Pulse{animation:v116CartPulse .38s var(--ease-ui)}
+@keyframes v116CartPulse{50%{transform:translateX(-50%) scale(1.025)}}
+
+/* Cores do cliente passam a obedecer ao tema. */
+#shopView .card,#shopView .clientInfoCard,#shopView .clientDetails,#shopView .clientBrand{background:var(--card)}
+#shopView .card,#shopView .clientInfoCard,#shopView .clientDetails,#shopView .clientBrand,
+#shopView .clientSectionHead{color:var(--ink)}
+#shopView .desc,#shopView .hint,#shopView small,#shopView .clientBrand .sub{color:var(--muted)}
+#shopView .notice.bad{background:color-mix(in srgb,var(--bad) 14%,var(--card));color:var(--bad)}
+#shopView .clientStatusOpen{color:var(--ok)}
+#shopView .clientStatusClosed{color:var(--bad)}
+#shopView .tab{background:var(--card);border-color:var(--line);color:var(--ink)}
+#shopView .tab.on{background:var(--p);border-color:var(--p);color:#fff}
+#shopView .clientInfoCard a,#shopView .price{color:var(--p)}
+.cartbar .btn{background:var(--p)}
+
+/* Editor de aparência */
+.v116ColorGrid{display:grid;grid-template-columns:1fr;gap:10px}
+.v116ColorRow{display:grid;grid-template-columns:1fr 74px;gap:10px;align-items:center}
+.v116ColorRow input[type=color]{width:74px;height:46px;border:1px solid var(--line);border-radius:12px;padding:3px;background:#fff}
+.v116Preview{border:1px solid var(--line);border-radius:18px;padding:14px;margin:10px 0;background:var(--bg)}
+.v116PreviewHero{background:linear-gradient(135deg,var(--hero1),var(--hero2));color:white;border-radius:17px;padding:16px}
+.v116PreviewHero b{font-size:20px;display:block;margin-bottom:5px}
+.v116Actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
+</style>
+<style id="v1161ImageHotfix">
+/* v1.16.1: não sobrescreve background-image dos produtos */
+.photo{
+  background-color:var(--p2);
+  background-repeat:no-repeat;
+  background-position:center;
+  background-size:cover;
+}
+.photo[style*="background-image"]{
+  background-color:transparent;
+}
+</style>
+<style id="v1162RequiredFocus">
+.choiceGroup{
+  scroll-margin-top:110px;
+}
+.choiceGroup.v1162RequiredError{
+  border-color:var(--bad)!important;
+  animation:v1162RequiredBlink 1.15s ease-in-out 1;
+}
+.choiceGroup.v1162RequiredError .groupTitle{
+  color:var(--bad)!important;
+}
+.v1162RequiredMessage{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin:8px 0 4px;
+  padding:8px 10px;
+  border-radius:10px;
+  background:color-mix(in srgb,var(--bad) 12%,var(--card));
+  color:var(--bad);
+  font-weight:700;
+  font-size:14px;
+  animation:v1162MessageIn .22s ease both;
+}
+@keyframes v1162RequiredBlink{
+  0%,100%{
+    box-shadow:0 0 0 0 color-mix(in srgb,var(--bad) 0%,transparent);
+    transform:scale(1);
+  }
+  18%{
+    box-shadow:0 0 0 5px color-mix(in srgb,var(--bad) 32%,transparent);
+    transform:scale(1.008);
+  }
+  34%{
+    box-shadow:0 0 0 0 color-mix(in srgb,var(--bad) 0%,transparent);
+    transform:scale(1);
+  }
+  58%{
+    box-shadow:0 0 0 5px color-mix(in srgb,var(--bad) 32%,transparent);
+    transform:scale(1.008);
+  }
+  76%{
+    box-shadow:0 0 0 0 color-mix(in srgb,var(--bad) 0%,transparent);
+    transform:scale(1);
+  }
+}
+@keyframes v1162MessageIn{
+  from{opacity:0;transform:translateY(-4px)}
+  to{opacity:1;transform:translateY(0)}
+}
+</style>
+<style id="v1163GranularTheme">
+:root{
+  --header-bg:#ffffff;
+  --header-text:#28232b;
+  --info-bg:#ffffff;
+  --info-text:#28232b;
+  --info-detail-text:#7c7480;
+  --info-link-text:#712489;
+  --loyalty-bg:#ffffff;
+  --loyalty-text:#28232b;
+  --notice-bg:#fdebed;
+  --notice-text:#a53643;
+  --category-bg:#ffffff;
+  --category-text:#28232b;
+  --category-active-bg:#712489;
+  --category-active-text:#ffffff;
+  --section-bg:#f7f4f8;
+  --section-title:#28232b;
+  --product-bg:#ffffff;
+  --product-text:#28232b;
+  --product-price:#712489;
+  --cart-bg:#712489;
+  --cart-text:#ffffff;
+  --modal-bg:#ffffff;
+  --modal-text:#28232b;
+  --button-bg:#712489;
+  --button-text:#ffffff;
+  --secondary-button-bg:#ffffff;
+  --secondary-button-text:#712489;
+  --top-card-bg:#ffffff;
+}
+
+/* Cabeçalho superior */
+.top{background:var(--header-bg)!important;color:var(--header-text)!important}
+.top .brand{color:var(--header-text)!important}
+.top .brand small{color:var(--muted)!important}
+
+/* Cartões iniciais: marca, horário, contato e endereço */
+.clientBrand,
+.clientInfoCard,
+.clientDetails{
+  background:var(--top-card-bg)!important;
+  color:var(--info-text)!important;
+}
+.clientInfoCard b,
+.clientDetails b,
+.clientDetails h3,
+.clientBrand b{color:var(--info-text)!important}
+.clientInfoCard small,
+.clientDetails small,
+.clientBrand .sub{color:var(--info-detail-text)!important}
+.clientInfoCard a,
+.clientDetails .socialBtn{color:var(--info-link-text)!important}
+
+/* Fidelidade */
+.loyaltyLookupV113,
+#shopView .clientSection:has(.loyaltyLookupV113),
+#shopView .clientSection:has(.loyaltyCard){
+  background:var(--loyalty-bg)!important;
+  color:var(--loyalty-text)!important;
+}
+.loyaltyLookupV113 *{color:inherit}
+
+/* Aviso de loja fechada / alertas do cliente */
+#shopView .notice.bad{
+  background:var(--notice-bg)!important;
+  color:var(--notice-text)!important;
+}
+
+/* Categorias */
+#shopView .tab{
+  background:var(--category-bg)!important;
+  color:var(--category-text)!important;
+}
+#shopView .tab.on{
+  background:var(--category-active-bg)!important;
+  color:var(--category-active-text)!important;
+  border-color:var(--category-active-bg)!important;
+}
+
+/* Fundo da área de catálogo e títulos */
+#shopView,
+#shopContent,
+#clientSections,
+.clientSection{
+  background:var(--section-bg);
+}
+.clientSectionHead,
+.clientSectionHead h2,
+#shopView .clientSection h2{
+  color:var(--section-title)!important;
+}
+
+/* Produtos */
+#shopView .card{
+  background:var(--product-bg)!important;
+  color:var(--product-text)!important;
+}
+#shopView .card .price{
+  color:var(--product-price)!important;
+}
+#shopView .card .desc{
+  color:var(--muted)!important;
+}
+
+/* Carrinho inferior */
+.cartbar,
+.cartbar .btn{
+  background:var(--cart-bg)!important;
+  color:var(--cart-text)!important;
+}
+.cartbar *{color:var(--cart-text)!important}
+
+/* Modal / montagem do produto */
+.sheet{
+  background:var(--modal-bg)!important;
+  color:var(--modal-text)!important;
+}
+.sheet h1,.sheet h2,.sheet h3,.sheet .groupTitle,.sheet label{
+  color:var(--modal-text)!important;
+}
+
+/* Botões principais e secundários */
+.btn{
+  background:var(--button-bg)!important;
+  color:var(--button-text)!important;
+}
+.ghost{
+  background:var(--secondary-button-bg)!important;
+  color:var(--secondary-button-text)!important;
+}
+
+/* Editor */
+.v1163Section{
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:14px;
+  margin:12px 0;
+  background:color-mix(in srgb,var(--card) 94%,var(--p) 6%);
+}
+.v1163Section h4{
+  margin:0 0 10px;
+  font-size:16px;
+}
+.v1163Section .hint{
+  margin:-4px 0 10px;
+}
+</style>
+<style id="v1164MiniPreviewStyles">
+.v116ColorRow{grid-template-columns:1fr 78px!important;gap:12px!important;align-items:start}
+.v116ColorRow>div:first-child{min-width:0}
+.v116MiniPreview{margin-top:9px;width:100%;max-width:300px;min-height:118px;border:1px solid var(--line);border-radius:16px;overflow:hidden;background:#f7f4f8;box-shadow:0 4px 14px rgba(0,0,0,.07);position:relative;padding:8px}
+.v116MiniPreview *{box-sizing:border-box}
+.v116MiniPreview .mpPhone{height:100%;border-radius:11px;overflow:hidden;background:#f7f4f8;position:relative;border:1px solid rgba(0,0,0,.05)}
+.v116MiniPreview .mpHeader{height:25px;display:flex;align-items:center;justify-content:space-between;padding:0 8px;font-size:8px;font-weight:800}
+.v116MiniPreview .mpLogo{display:flex;align-items:center;gap:4px}.v116MiniPreview .mpLogoDot{width:12px;height:12px;border-radius:50%;background:#6f2584;display:inline-block}
+.v116MiniPreview .mpStatus{font-size:7px;padding:2px 5px;border-radius:99px;background:#dff6e9;color:#137247}
+.v116MiniPreview .mpInfo{margin:5px 6px;padding:6px 7px;border-radius:8px;font-size:7px;line-height:1.25}
+.v116MiniPreview .mpHero{margin:5px 6px;padding:8px;border-radius:10px;color:#fff;min-height:48px;display:flex;flex-direction:column;justify-content:center}
+.v116MiniPreview .mpHero b{font-size:10px}.v116MiniPreview .mpHero span{font-size:7px;margin-top:2px;opacity:.95}
+.v116MiniPreview .mpLoyalty{margin:5px 6px;padding:7px;border-radius:9px;display:flex;gap:6px;align-items:center;font-size:7px}.v116MiniPreview .mpStar{font-size:15px}
+.v116MiniPreview .mpNotice{margin:5px 6px;padding:7px;border-radius:8px;font-size:7px;font-weight:800}
+.v116MiniPreview .mpTabs{display:flex;gap:4px;padding:5px 6px}.v116MiniPreview .mpTab{padding:4px 7px;border-radius:99px;border:1px solid rgba(0,0,0,.08);font-size:7px;font-weight:800}
+.v116MiniPreview .mpSection{padding:5px 6px}.v116MiniPreview .mpTitle{font-size:9px;font-weight:900;margin-bottom:4px}
+.v116MiniPreview .mpProduct{display:grid;grid-template-columns:38px 1fr;gap:6px;margin:4px 6px;padding:5px;border-radius:8px}.v116MiniPreview .mpPhoto{height:38px;border-radius:7px;background:linear-gradient(135deg,#4a0c58,#a348b3)}.v116MiniPreview .mpProdName{font-size:8px;font-weight:900}.v116MiniPreview .mpProdDesc{font-size:6px;opacity:.7}.v116MiniPreview .mpPrice{font-size:8px;font-weight:900;margin-top:2px}
+.v116MiniPreview .mpCart{margin:5px 6px;padding:7px 8px;border-radius:9px;display:flex;justify-content:space-between;align-items:center;font-size:7px;font-weight:900}
+.v116MiniPreview .mpModalBackdrop{padding:7px;background:rgba(0,0,0,.16);height:100%}.v116MiniPreview .mpModal{padding:8px;border-radius:10px;min-height:78px}.v116MiniPreview .mpModalTitle{font-size:9px;font-weight:900}.v116MiniPreview .mpChoice{margin-top:5px;padding:5px;border-radius:7px;border:1px solid rgba(0,0,0,.08);font-size:7px}.v116MiniPreview .mpButton{margin-top:6px;padding:6px;border-radius:8px;text-align:center;font-size:7px;font-weight:900}
+.v116MiniPreview .mpGeneralCard{margin:6px;padding:7px;border-radius:9px}.v116MiniPreview .mpGeneralTitle{font-size:8px;font-weight:900}.v116MiniPreview .mpGeneralSub{font-size:7px;margin-top:2px}.v116MiniPreview .mpLineDemo{height:1px;margin:5px 0}
+.v116MiniPreview .mpPalette{display:flex;gap:5px;padding:8px}.v116MiniPreview .mpPalette>div{flex:1;height:30px;border-radius:8px}
+.v116MiniPreview .mpBadge{margin:10px 7px;padding:8px;border-radius:8px;color:#fff;font-size:8px;font-weight:900;text-align:center}
+.v116MiniPreview .mpInfoExact{border-radius:9px;padding:7px;display:grid;gap:4px;position:relative}.mpInfoExactTitle{font-size:8px;font-weight:900;margin-bottom:1px}.mpInfoExactRow{display:grid;grid-template-columns:12px 1fr;gap:4px;align-items:start;border-top:1px solid #00000012;padding-top:4px;position:relative}.mpInfoExactRow:first-of-type{border-top:0}.mpInfoExactRow span{font-size:8px}.mpInfoExactRow b{display:block;font-size:6.8px;line-height:1.1}.mpInfoExactRow small{display:block;font-size:5.9px;line-height:1.15;margin-top:1px}.mpInfoExactRow em{display:inline-block;font-size:5.7px;font-style:normal;font-weight:900;margin-top:2px}
+.v116Target{position:relative;outline:3px solid #ffb000!important;outline-offset:1px;box-shadow:0 0 0 2px rgba(255,176,0,.25),0 0 16px rgba(255,176,0,.45)!important;z-index:2}
+.v116MiniPreview .v116Target::after{content:'ALTERANDO';position:absolute;top:-8px;right:-4px;background:#ffb000;color:#251800;font-size:6px;line-height:1;padding:2px 4px;border-radius:5px;font-weight:1000;letter-spacing:.2px;z-index:5}
+.v116MiniPreview .v116TargetText{text-decoration:underline 2px #ffb000;text-underline-offset:2px;text-decoration-thickness:2px;text-shadow:0 0 5px rgba(255,176,0,.35)}
+.v116MiniPreview .mpCaption{font-size:6px;text-align:center;color:#6e6672;margin-top:4px;font-weight:700}
+</style>
+<link href="/manifest.webmanifest" rel="manifest"/><meta content="#712489" name="theme-color"/><style id="pedevia-v130-styles">
+/* ===== Pedevia v1.30.2 ===== */
+.v130ShopTools{position:sticky;top:0;z-index:16;padding:8px 12px;background:var(--bg);border-bottom:1px solid var(--line)}
+.v130Search{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:0 12px;box-shadow:0 4px 16px rgba(0,0,0,.04)}
+.v130Search input{width:100%;border:0;outline:0;background:transparent;color:inherit;padding:13px 0;font-size:15px}
+.quickSections{position:sticky;top:57px;z-index:15;background:var(--bg);padding-top:7px;padding-bottom:7px;box-shadow:0 5px 12px rgba(0,0,0,.04)}
+.card{position:relative}.v130Badges{position:absolute;z-index:3;top:8px;left:8px;display:flex;gap:5px;flex-wrap:wrap;max-width:85%}.v130Badges span{background:rgba(255,255,255,.94);color:#2c1631;border-radius:999px;padding:5px 8px;font-size:10px;font-weight:900;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+#storeStatus.v130Open{font-weight:850}
+.v130OrdersHead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}.v130OrdersHead h2{margin:0}.v130HeadBtns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.v130Today{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.v130Today>div{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px}.v130Today b{display:block;font-size:18px}.v130Today span{font-size:11px;color:var(--muted)}
+.v130Board{display:grid;grid-template-columns:repeat(4,minmax(230px,1fr));gap:10px;overflow-x:auto;padding-bottom:10px}.v130OrderCol{min-width:230px;background:rgba(0,0,0,.025);border:1px solid var(--line);border-radius:18px;padding:8px}.v130OrderCol>header{display:flex;justify-content:space-between;padding:8px 7px;font-weight:900}.v130OrderCol>header b{background:var(--card);border-radius:999px;padding:2px 8px}
+.v130OrderCard{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:11px;margin-bottom:8px;box-shadow:0 3px 12px rgba(0,0,0,.04)}.v130OrderCard.warn{border-color:#e3a028}.v130OrderCard.late{border-color:#d94b4b;box-shadow:0 0 0 2px rgba(217,75,75,.08)}.v130OrderTop,.v130Customer{display:flex;justify-content:space-between;gap:8px;align-items:center}.v130OrderTop b{font-size:18px}.v130Age{font-size:10px;color:var(--muted);margin-left:6px}.v130Customer{margin-top:7px}.v130Customer small{color:var(--muted)}.v130Mini{font-size:11px;color:var(--muted);margin:8px 0;line-height:1.4}.v130Address{border:0;background:transparent;color:var(--p);padding:4px 0;text-align:left;font-size:11px;cursor:pointer}.v130Next{margin-top:8px}.v130CardActions{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:6px}.v130CardActions button,.v130ProdTools button{border:1px solid var(--line);background:var(--card);color:inherit;border-radius:10px;padding:7px;font-size:11px}.v130Empty{text-align:center;color:var(--muted);padding:24px 6px;font-size:12px}.v130NavBadge{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:#d92d20;color:#fff;font-size:10px;margin-left:5px}
+.v130ProdTools{display:flex;gap:5px;margin-top:7px}.v130Flags{margin:12px 0}.v130Flags h3{margin-top:0}.v130HoursQuick{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.v130HoursQuick button{min-height:43px}
+.v130InstallCard{margin-top:10px}
+@media(max-width:700px){.v130Board{grid-template-columns:repeat(4,82vw);scroll-snap-type:x proximity}.v130OrderCol{scroll-snap-align:start}.v130Today{grid-template-columns:1fr 1fr}.v130Today>div:last-child{grid-column:1/-1}.v130OrdersHead{display:block}.v130HeadBtns{margin-top:8px;justify-content:flex-start}}
+@media(min-width:900px){#shopView .wrap{max-width:1180px}.grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+</style>
+<style id="pedevia-v130-extra-styles">
+.v130PixBox{display:grid;grid-template-columns:140px 1fr;gap:12px;align-items:center}.v130PixQr{width:132px;height:132px;background:#fff;display:grid;place-items:center;padding:4px;border-radius:10px}.v130PixBox small{display:block;margin:5px 0;color:var(--muted);overflow-wrap:anywhere}.v130PixActions{display:flex;gap:6px;flex-wrap:wrap}@media(max-width:520px){.v130PixBox{grid-template-columns:1fr;text-align:center}.v130PixQr{margin:auto}.v130PixActions{justify-content:center}}
+</style><style id="pedevia-v130-catalog-tools">.v130BulkToolbar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;padding:10px 0;margin-bottom:8px}.v130BulkToolbar b{margin-right:auto}.v130SelectWrap{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);margin-bottom:7px}.v130SelectWrap input{width:17px;height:17px}
+</style></head>
+<body>
+<header class="top">
+<div class="logo"><div class="logoMark" id="headerLogoMark"><span aria-hidden="true" style="font-size:25px;line-height:1;font-weight:900">P</span></div><div class="brand" id="headerBrandName">PEDEVIA<small>Cardápio online</small></div></div>
+<button class="iconbtn" id="modeBtn" data-pedevia-action="switch-mode">⚙️</button>
+</header>
+<main class="wrap">
+<section id="shopView">
+<div id="clientBrand"></div>
+<div id="clientInfoTop"></div>
+<div class="hero"><h1>Seu açaí, do seu jeito 💜</h1><p>Monte seu pedido com os complementos que você gosta e finalize pelo WhatsApp.</p><span class="status" id="storeStatus"></span></div>
+<div id="closedNotice"></div>
+<div class="tabs" id="categoryTabs"></div>
+<div class="grid" id="productGrid"></div>
+<div id="clientInfoBottom"></div>
+<div id="clientFooter"></div>
+</section>
+<section class="hide" id="adminView">
+<div class="login" id="loginBox">
+<h2>🔐 Administração</h2><p class="hint">Entre com o usuário administrador cadastrado no Supabase.</p>
+<input autocomplete="username" class="field" id="loginEmail" placeholder="E-mail" type="email"/>
+<input autocomplete="current-password" class="field" id="loginPass" placeholder="Senha" type="password"/>
+<button class="btn full" id="loginBtn" data-pedevia-action="login">Entrar</button>
+<p class="hint" id="loginMsg"></p>
+</div>
+<div class="hide" id="adminPanel">
+<div class="adminHead"><h2>Painel da loja</h2><div id="adminStatus">Gerencie cardápio, estoque e atendimento.<br/><small id="syncStatus">☁️ Sincronização online ativa</small></div><button class="ghost" data-pedevia-action="logout-admin" style="margin-top:10px">Sair</button></div>
+<div id="adminContent"></div><nav aria-label="Menu administrativo" class="adminBottomNav" id="adminBottomNav"></nav>
+</div>
+</section>
+</main>
+<div class="cartbar" id="cartBar"><button class="btn" data-pedevia-action="show-cart"><span>🛒 Carrinho · <b id="cartCount">0</b></span><b id="cartTotal">R$ 0,00</b></button></div>
+<div class="overlay" id="modal"><div class="sheet" id="sheet"></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/pedevia-inline-02.js?v=13504stable1"></script>
+<script src="assets/pedevia-inline-03.js?v=13301stable1"></script>
+<script src="assets/pedevia-inline-04.js?v=13301stable1"></script>
+<style id="v1170Styles">
+/* ===== v1.18.0: DESIGN SYSTEM, TEMPLATES E DEGRADÊS ===== */
+:root{
+  --site-bg:var(--bg);--header-surface:var(--header-bg);--button-surface:var(--button-bg);
+  --radius-card:20px;--radius-button:13px;--radius-hero:25px;
+  --shadow-card:0 4px 16px #00000010;--shadow-float:0 10px 30px #00000020;
+  --space-scale:1;--font-ui:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+body{font-family:var(--font-ui);background:var(--site-bg)!important;transition:background .25s ease}
+header{background:var(--header-surface)!important;box-shadow:0 4px 20px #0000000b}
+.hero{border-radius:var(--radius-hero)!important;box-shadow:var(--shadow-card)!important}
+.card,.clientBrand,.clientInfoCard,.clientDetails,.panel,.orderHero,.cfgPage{border-radius:var(--radius-card)!important;box-shadow:var(--shadow-card)!important}
+.btn,.ghost,.iconbtn,.field,.tab,.settingCard,.moreCard{border-radius:var(--radius-button)!important}
+.btn{background:var(--button-surface)!important}
+.cartbar button{background:var(--button-surface)!important;box-shadow:var(--shadow-float)!important}
+.wrap{padding-left:calc(14px * var(--space-scale));padding-right:calc(14px * var(--space-scale))}
+.grid{gap:calc(12px * var(--space-scale))}
+body[data-card-style="glass"] .card,body[data-card-style="glass"] .clientBrand,body[data-card-style="glass"] .clientInfoCard,body[data-card-style="glass"] .clientDetails{backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid #ffffff7a;background:color-mix(in srgb,var(--card) 82%,transparent)!important}
+body[data-card-style="outline"] .card,body[data-card-style="outline"] .clientBrand,body[data-card-style="outline"] .clientInfoCard,body[data-card-style="outline"] .clientDetails{box-shadow:none!important;border:1px solid var(--line)}
+body[data-card-style="elevated"] .card,body[data-card-style="elevated"] .clientBrand,body[data-card-style="elevated"] .clientInfoCard,body[data-card-style="elevated"] .clientDetails{box-shadow:0 12px 34px #2a123118!important}
+body[data-photo-shape="soft"] .photo{border-radius:18px;margin:8px;height:137px}
+body[data-photo-shape="pill"] .photo{border-radius:999px;margin:12px;height:130px}
+body[data-font-style="classic"]{--font-ui:Georgia,"Times New Roman",serif}
+body[data-font-style="rounded"]{--font-ui:"Trebuchet MS",system-ui,sans-serif}
+body[data-font-style="modern"]{--font-ui:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+
+.v117TemplateGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0 16px}
+.v117Template{border:1px solid var(--line);background:#fff;border-radius:18px;padding:10px;text-align:left;position:relative;overflow:hidden}
+.v117Template.on{border:2px solid var(--p);box-shadow:0 8px 24px #00000012}
+.v117TemplatePreview{height:105px;border-radius:14px;overflow:hidden;position:relative;margin-bottom:9px;padding:8px;display:flex;flex-direction:column;justify-content:space-between}
+.v117MiniTop{height:19px;border-radius:8px;display:flex;align-items:center;gap:5px;padding:3px 5px;font-size:7px;font-weight:900}
+.v117MiniHero{height:40px;border-radius:10px;padding:6px;color:white;font-size:9px;font-weight:900;box-shadow:0 4px 10px #0002}
+.v117MiniCards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px}.v117MiniCards i{display:block;height:18px;border-radius:7px;background:#fff;box-shadow:0 2px 6px #0001}
+.v117Template b{display:block;font-size:13px}.v117Template small{display:block;color:var(--muted);font-size:10px;line-height:1.25;margin-top:2px}
+.v117Template .sel{position:absolute;top:7px;right:7px;background:var(--p);color:#fff;border-radius:999px;font-size:9px;font-weight:900;padding:3px 6px}
+.v117Section{background:#f6f4f7;border-radius:18px;padding:13px;margin:13px 0}.v117Section h3{margin:0 0 4px}.v117Section>.hint{margin-bottom:10px}
+.v117ChoiceGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.v117Choice{border:1px solid #d8d1da;background:#fff;border-radius:14px;padding:11px;text-align:center;font-weight:800}.v117Choice.on{border:2px solid var(--p);background:#f8effb;color:var(--p)}
+.v117RangeRow{display:grid;grid-template-columns:1fr 95px;gap:10px;align-items:center;margin:10px 0}.v117RangeRow input[type="range"]{width:100%}
+.v117GradientBox{border:1px solid var(--line);border-radius:16px;padding:12px;background:#fff;margin:10px 0}.v117GradientPreview{height:55px;border-radius:13px;margin:8px 0 10px;border:1px solid #00000012}
+.v117ColorPair{display:grid;grid-template-columns:1fr 1fr;gap:8px}.v117ColorPair label{font-size:11px;color:var(--muted);font-weight:700}.v117ColorPair input[type=color]{width:100%;height:42px;border:0;background:transparent;padding:0}
+.v117Toggle{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0}.v117Toggle b{font-size:13px}
+.v117Manual summary{cursor:pointer;font-weight:900;padding:13px 0;color:var(--p)}
+.v117LiveNote{background:linear-gradient(135deg,#f4e8f7,#fff);border:1px solid #ead8ef;border-radius:14px;padding:10px 12px;font-size:12px;line-height:1.4;margin:10px 0}
+@media(min-width:720px){.v117TemplateGrid{grid-template-columns:repeat(4,1fr)}.v117ChoiceGrid{grid-template-columns:repeat(4,1fr)}}
+</style>
+<script src="assets/pedevia-inline-05.js?v=13301stable1"></script>
+<style>
+/* ===== v1.18.0: temas mais ousados e decoração estrutural ===== */
+body[data-decor="acai"] #shopView .hero:before,
+body[data-decor="acai"] #shopView .hero:after{
+  position:absolute;pointer-events:none;z-index:0
+}
+body[data-decor="acai"] #shopView .hero:before{
+  content:"🍇";left:-18px;top:-28px;font-size:118px;opacity:.16;transform:rotate(17deg)
+}
+body[data-decor="acai"] #shopView .hero:after{
+  content:"🍇";right:-18px;bottom:-35px;font-size:132px;opacity:.22;transform:rotate(-19deg)
+}
+body[data-decor="bubbles"] #shopView:before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;
+  background:
+    radial-gradient(circle at 12% 18%,#ffffff55 0 18px,transparent 19px),
+    radial-gradient(circle at 88% 28%,#ffffff45 0 30px,transparent 31px),
+    radial-gradient(circle at 24% 74%,#ffffff38 0 24px,transparent 25px),
+    radial-gradient(circle at 82% 84%,#ffffff45 0 34px,transparent 35px);
+}
+body[data-decor="sprinkles"] #shopView:before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.34;
+  background-image:
+    linear-gradient(35deg,transparent 46%,var(--p2) 47% 52%,transparent 53%),
+    linear-gradient(125deg,transparent 46%,var(--p) 47% 52%,transparent 53%);
+  background-size:78px 78px,96px 96px;
+}
+body[data-decor="waves"] #shopView:before{
+  content:"";position:fixed;left:0;right:0;top:0;height:320px;pointer-events:none;z-index:-1;
+  background:
+    radial-gradient(ellipse at 25% -10%,color-mix(in srgb,var(--p) 20%,transparent) 0 42%,transparent 43%),
+    radial-gradient(ellipse at 85% -15%,color-mix(in srgb,var(--p2) 24%,transparent) 0 38%,transparent 39%);
+}
+body[data-decor="luxe"] #shopView:before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.28;
+  background:
+    linear-gradient(135deg,transparent 48%,#ffffff25 49% 50%,transparent 51%),
+    linear-gradient(45deg,transparent 48%,#00000008 49% 50%,transparent 51%);
+  background-size:28px 28px;
+}
+body[data-decor="checker"] #shopView:before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.12;
+  background:
+    linear-gradient(45deg,var(--p) 25%,transparent 25% 75%,var(--p) 75%),
+    linear-gradient(45deg,var(--p) 25%,transparent 25% 75%,var(--p) 75%);
+  background-size:42px 42px;background-position:0 0,21px 21px;
+}
+body[data-decor="dots"] #shopView:before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;opacity:.13;
+  background-image:radial-gradient(var(--p) 1.6px,transparent 1.7px);background-size:19px 19px
+}
+
+body[data-hero-style="spotlight"] #shopView .hero{
+  text-align:center;padding:34px 24px 30px;min-height:190px;display:flex;flex-direction:column;justify-content:center
+}
+body[data-hero-style="spotlight"] #shopView .hero h1{font-size:34px;letter-spacing:-1.2px}
+body[data-hero-style="spotlight"] #shopView .hero p{margin-left:auto;margin-right:auto}
+body[data-hero-style="ribbon"] #shopView .hero{
+  border-radius:8px 28px 8px 28px;transform:rotate(-.35deg);margin-top:5px
+}
+body[data-hero-style="ribbon"] #shopView .hero>*{transform:rotate(.35deg)}
+body[data-hero-style="editorial"] #shopView .hero{
+  border-radius:0;border-left:7px solid #fff8;padding:30px 24px;box-shadow:none
+}
+body[data-hero-style="editorial"] #shopView .hero h1{font-family:Georgia,"Times New Roman",serif;font-size:32px}
+body[data-hero-style="compact"] #shopView .hero{padding:16px 18px;border-radius:18px}
+body[data-hero-style="compact"] #shopView .hero h1{font-size:23px}
+
+body[data-product-style="poster"] .card{overflow:visible}
+body[data-product-style="poster"] .photo{margin:9px 9px 0;border-radius:calc(var(--radius-card) - 6px)}
+body[data-product-style="poster"] .cardbody{padding-top:10px}
+body[data-product-style="bordered"] .card{border:2px solid color-mix(in srgb,var(--p) 22%,var(--line));box-shadow:none!important}
+body[data-product-style="floating"] .card{transform:translateY(0);transition:.22s}
+body[data-product-style="floating"] .card:active{transform:translateY(-3px) scale(.99)}
+body[data-product-style="ticket"] .card{border-radius:10px 24px 10px 24px}
+body[data-product-style="ticket"] .photo{border-radius:10px 24px 0 0}
+
+body[data-header-style="solid"] .clientHeader{border-bottom:0}
+body[data-header-style="floating"] .clientHeader{
+  margin:10px 12px 0;border-radius:22px;left:12px;right:12px;top:0;width:auto;
+  box-shadow:0 10px 30px #0002;border:1px solid #ffffff55
+}
+body[data-header-style="floating"] #shopView{padding-top:6px}
+body[data-header-style="minimal"] .clientHeader{box-shadow:none;border-bottom:1px solid var(--line)}
+body[data-header-style="bold"] .clientHeader{border-bottom:4px solid color-mix(in srgb,var(--p2) 65%,white)}
+
+body[data-accent="glow"] .btn,
+body[data-accent="glow"] .cartbar{box-shadow:0 0 0 1px #ffffff22,0 10px 28px color-mix(in srgb,var(--p) 35%,transparent)}
+body[data-accent="neon"] .btn,
+body[data-accent="neon"] .cartbar{box-shadow:0 0 18px color-mix(in srgb,var(--p2) 62%,transparent)}
+body[data-accent="ink"] .btn{border:2px solid #00000025}
+body[data-accent="soft"] .btn{box-shadow:0 8px 20px #00000012}
+
+.v118Section{background:linear-gradient(145deg,#f8f5fa,#fff);border:1px solid var(--line);border-radius:20px;padding:14px;margin:14px 0}
+.v118Section h3{margin:0 0 4px}
+.v118StyleGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:9px}
+.v118StyleBtn{border:1px solid #d9d2dc;background:#fff;border-radius:15px;padding:12px 8px;font-weight:850;text-align:center}
+.v118StyleBtn.on{border:2px solid var(--p);background:color-mix(in srgb,var(--p) 8%,white);color:var(--p)}
+.v118StyleBtn small{display:block;font-size:9px;font-weight:650;color:var(--muted);margin-top:3px;line-height:1.25}
+.v118Badge{display:inline-block;background:linear-gradient(135deg,var(--p),var(--p2));color:#fff;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:900;margin-bottom:6px}
+.v117Template[data-bold="1"]{box-shadow:0 8px 26px #00000012}
+.v117Template[data-bold="1"] b:after{content:" ✦";color:var(--p)}
+@media(min-width:720px){.v118StyleGrid{grid-template-columns:repeat(4,1fr)}}
+</style>
+<script src="assets/pedevia-inline-06.js?v=13301stable1"></script>
+<script src="assets/pedevia-inline-07.js?v=13301stable1"></script>
+<script src="assets/pedevia-inline-08.js?v=13301stable1"></script>
+<script src="assets/pedevia-inline-09.js?v=13301stable1"></script>
+<!-- v1.31.2: pedido mínimo validado pelo subtotal de produtos, excluindo taxa de entrega. -->
+<script src="assets/pedevia-inline-10.js?v=13301stable1"></script>
+<!-- v1.31.3: somente formatação profissional da mensagem enviada ao WhatsApp. -->
+<script src="assets/pedevia-inline-11.js?v=13301stable1"></script>
+<!-- v1.31.4: acompanhamento administrativo dos clientes do Clube de Fidelidade. -->
+<script src="assets/pedevia-inline-12.js?v=13301stable1"></script>
+<!-- v1.31.5: confirmação visual ao salvar pagamentos e feedback imediato de quantidade no carrinho. -->
+<script src="assets/pedevia-inline-13.js?v=13301stable1"></script>
+<!-- v1.31.6: quantidade do item atualizada e redesenhada imediatamente no carrinho. -->
+<script src="assets/pedevia-inline-14.js?v=13301stable1"></script>
+<!-- v1.31.7: elimina flash do Point em tenants e adiciona recuperação segura de senha. -->
+<script src="assets/pedevia-inline-15.js?v=13301stable1"></script>
+<!-- v1.31.11: dinheiro integrado diretamente ao checkout; nenhum MutationObserver usado. -->
+<script src="assets/pedevia-inline-16.js?v=13301stable1"></script>
+<!-- v1.31.12: autenticação unificada para Point e clientes; mostrar senha, redefinição e erros claros. -->
+<script src="assets/pedevia-inline-17.js?v=13301stable1"></script>
+<!-- v1.31.13: pedidos lidos por RPC segura; fechamento da loja não altera pedidos existentes. -->
+<script src="assets/pedevia-inline-18.js?v=13301stable1"></script>
+<!-- v1.31.14: inicialização no ponto correto + cache stale-while-revalidate para lojas. -->
+<script src="assets/pedevia-inline-19.js?v=13301stable1"></script>
+<!-- v1.31.15: versão centralizada em window.PEDEVIA_VERSION. -->
+<script src="assets/pedevia-inline-20.js?v=13301stable1"></script>
+<!-- v1.31.18: seleção da logo gera prévia local; upload/persistência somente no botão Salvar. -->
+<script src="assets/pedevia-inline-21.js?v=13301stable1"></script>
+<!-- v1.31.19: fila de salvamento recuperável e bloco de logo centralizado. -->
+<script src="assets/pedevia-inline-22.js?v=13301stable1"></script>
+<!-- v1.32.0: aparência por ramo, produtos em rascunho, upload no save, horários e feedback global. -->
+<script src="assets/pedevia-inline-23.js?v=13301stable1"></script>
+<!-- v1.32.1: consolida o grande conserto solicitado e reforça os pontos auditados. -->
+<script src="assets/pedevia-inline-24.js?v=13301stable1"></script>
+<!-- v1.32.2: elimina erro textContent/null após salvar produto sem alterar a persistência. -->
+<script src="assets/pedevia-inline-25.js?v=13301stable1"></script>
+<!-- v1.32.3: engrenagem/configurações de pedidos funcional no Point e em todos os tenants. -->
+<script src="assets/pedevia-inline-26.js?v=13301stable1"></script>
+<!-- v1.32.4: após atualização/publicação basta recarregar a página; sessão válida é reaproveitada. -->
+<script src="assets/pedevia-inline-27.js?v=13301stable1"></script>
+<!-- v1.32.5: engrenagem de Pedidos usa rota direta para adminOrderSettings em todas as lojas. -->
+<script src="assets/pedevia-inline-28.js?v=13301stable1"></script>
+<!-- v1.32.6: corrige causa raiz da tela de configurações em tenants: orderConfig incompleto. -->
+<!-- bloco histórico de zonas por km removido na v1.32.13 -->
+<!-- bloco histórico de zonas por km removido na v1.32.13 -->
+<!-- v1.32.8: endereço do cliente -> geocodificação -> rota -> zona -> taxa automática. -->
+<!-- bloco histórico de zonas por km removido na v1.32.13 -->
+<!-- bloco histórico de zonas por km removido na v1.32.13 -->
+<script src="assets/pedevia-inline-29.js?v=13301stable1"></script>
+<!-- v1.32.13: zonas por km/geocodificação/roteamento retirados do fluxo; taxa fixa e bairros permanecem. -->
+<script src="assets/pedevia-inline-30.js?v=13301stable1"></script>
+<!-- v1.32.14: removidas da UI taxa por áreas e taxa por distância; endereço salvo propagado nos cartões públicos/admin. -->
+<script src="assets/pedevia-inline-31.js?v=13301stable1"></script>
+<script src="assets/pedevia-inline-32.js?v=13301stable1"></script>
+<script src="assets/pedevia-inline-33.js?v=13301stable1"></script>
+<style>
+/* v1.32.21 — ícone de ajustes sem invadir o texto */
+.otherSettingsIconV13221{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;font-size:23px;line-height:1;
+}
+</style>
+<script src="assets/pedevia-inline-34.js?v=13301stable1"></script>
+<style>
+/* v1.32.22 — refinamento comercial */
+.settingCard .si{flex:0 0 42px;min-width:42px;text-align:center;overflow:hidden}
+.settingCard .si .otherSettingsIconV13221{width:100%;height:auto}
+</style>
+<script src="assets/pedevia-inline-35.js?v=13301stable1"></script>
+<!-- v1.32.23 FINAL 13/09/2026 — hardening de publicação -->
+<style>
+/* Garante que opções aposentadas de entrega nunca ocupem espaço visual. */
+[data-pedevia-obsolete-delivery="1"],[data-pedevia-removed-km-zones="1"]{display:none!important}
+</style>
+<script src="assets/pedevia-inline-36.js?v=13301stable1"></script>
+<!-- v1.32.24 FINAL 13/09/2026 — navegação administrativa consolidada -->
+<script src="assets/pedevia-inline-37.js?v=13301stable1"></script>
+<!-- v1.32.30 FINAL 13/09/2026 — versão visual unificada -->
+<script src="assets/pedevia-inline-38.js?v=13301stable1"></script>
+<!-- v1.32.30 FINAL 13/09/2026 — troca de abas sem frame intermediário -->
+<script src="assets/pedevia-inline-39.js?v=13301stable1"></script>
+<!-- v1.32.30 FINAL 13/09/2026 — tenant billing card rendered synchronously to prevent navigation layout flash -->
+<!-- v1.32.30 FINAL 13/09/2026 — compartilhamento e QR Code funcionais -->
+<style id="pedeviaShareQrV13228Css">
+.pv-share-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.pv-share-actions .fullrow{grid-column:1/-1}
+.pv-share-preview{border:1px solid #ddd;border-radius:20px;overflow:hidden;background:#fff;margin:12px 0 18px}
+.pv-share-preview .media{height:170px;display:grid;place-items:center;background:#f4f1f6;overflow:hidden}
+.pv-share-preview .media img{width:100%;height:100%;object-fit:cover}
+.pv-share-preview .copy{padding:14px 16px}.pv-share-preview .copy b{display:block;font-size:20px}.pv-share-preview .copy small{display:block;margin-top:4px;color:#6e6872;line-height:1.35}
+.pv-urlbox{padding:13px;border-radius:14px;background:#f3f3f3;word-break:break-all;margin:8px 0 12px;font-size:14px}
+.pv-qr-wrap{display:grid;place-items:center;background:#fff;border:1px solid #e4e0e5;border-radius:22px;padding:18px;margin:14px 0}
+#pvQrCanvasV13228 canvas,#pvQrCanvasV13228 img{max-width:100%;height:auto!important;border-radius:4px}
+.pv-qr-options{display:grid;grid-template-columns:1fr 1fr;gap:10px}.pv-qr-options label{margin:0}.pv-qr-options .field{margin-top:5px}
+@media(max-width:430px){.pv-share-actions{grid-template-columns:1fr}.pv-share-actions .fullrow{grid-column:auto}.pv-qr-options{grid-template-columns:1fr 1fr}}
+</style>
+<script src="assets/pedevia-inline-40.js?v=13301stable1"></script>
+<!-- v1.32.30 FINAL 13/09/2026 — assinatura do tenant lê campos comerciais autenticados -->
+<script src="assets/pedevia-inline-41.js?v=13301stable1"></script>
+<!-- v1.32.30 FINAL 13/09/2026 — commercial tenant row + stable platform-master visibility -->
+<script src="assets/pedevia-inline-42.js?v=13301stable1"></script>
+<!-- v1.32.52 FINAL 13/09/2026 — deleted tenant cache invalidation -->
+<script src="assets/pedevia-inline-43.js?v=13301stable1"></script>
+<!-- v1.32.52 FINAL 13/09/2026 — estado único de identidade pública; sem disputa de observers -->
+<script src="assets/pedevia-inline-44.js?v=13301stable1"></script>
+<!-- v1.32.52 FINAL 13/09/2026 — estabilização do primeiro paint do cardápio público -->
+
+
+<!-- v1.32.52 FINAL 13/09/2026 — auditoria geral: feedback Admin isolado do cardápio público -->
+<script src="assets/pedevia-inline-45.js?v=13301stable1"></script>
+<!-- v1.32.52 FINAL 13/09/2026 — diagnóstico real e tolerância numérica do registro de pedidos -->
+<script src="assets/pedevia-inline-46.js?v=13301stable1"></script>
+<!-- v1.32.52 DIAGNÓSTICO 13/09/2026 — captura a causa real do Supabase -->
+
+<!-- v1.32.52 FINAL 13/09/2026 — render público coalescido, sem espera artificial -->
+<script src="assets/pedevia-inline-47.js?v=13301stable1"></script>
+
+
+<!-- v1.32.52 FINAL 13/09/2026 — painel de pedidos sincronizado após UPDATE/DELETE -->
+<script src="assets/pedevia-inline-48.js?v=13301stable1"></script>
+
+
+<!-- v1.32.52 FINAL 14/09/2026 — CSP/headers de segurança sem quebrar a arquitetura atual -->
+<script src="assets/pedevia-inline-49.js?v=13301stable1"></script>
+
+
+<!-- v1.32.52 FINAL 14/09/2026 — botão "Adicionar mais produtos" robusto -->
+<script src="assets/pedevia-inline-50.js?v=13301stable1"></script>
+
+<!-- v1.33.0 FINAL 22/09/2026 — fidelidade creditada somente após concluir o pedido -->
+<script src="assets/pedevia-inline-51.js?v=13301stable1"></script>
+
+<!-- v1.33.0 FINAL 24/09/2026 — edição da fidelidade e salvamento resiliente de imagens -->
+<script src="assets/pedevia-inline-52.js?v=13301stable1"></script>
+
+<!-- v1.33.0 FINAL 24/09/2026 — exclusão de rascunho, fidelidade e histórico estável -->
+<script src="assets/pedevia-inline-53.js?v=13301stable1"></script>
+
+<!-- v1.33.0 FINAL 24/09/2026 — exclusão real e fidelidade com criação segura -->
+<script src="assets/pedevia-inline-54.js?v=13301stable1"></script>
+
+<!-- v1.33.0 FINAL 24/09/2026 — navegação estável e aceite automático -->
+<script src="assets/pedevia-inline-55.js?v=13301stable1"></script>
+
+<!-- v1.33.0 — central de gestão, CRM, relatórios e experiência do cliente -->
+<script src="assets/pedevia-inline-56.js?v=13303stable1"></script>
+
+<!-- v1.33.3 — fonte única de versão, nomes legíveis e horário sem duplicação -->
+<script src="assets/pedevia-inline-57.js?v=13303stable1"></script>
+
+<!-- v1.33.5 — comanda numerada e observações logo após os produtos -->
+<script src="assets/pedevia-inline-58.js?v=13305stable1"></script>
+
+<!-- v1.34.3 — recuperação do carrinho, recomendações e carrinho alinhado -->
+<script src="assets/pedevia-inline-59.js?v=13403stable1"></script>
+
+<!-- v1.34.4 — ciclos, histórico auditável e clientes separados por celular -->
+<script src="assets/pedevia-inline-60.js?v=13404stable1"></script>
+
+<!-- v1.35.0 — editor de produtos consolidado; substitui as camadas 61–65 -->
+<script src="assets/pedevia-inline-61.js?v=13500stable1"></script>
+
+</body></html>
