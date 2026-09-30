@@ -94,12 +94,12 @@
   // Nos cartões dos grupos fica somente Editar. A exclusão pertence ao editor do grupo.
   productGroupsHTML=function(p){
     p.groups=Array.isArray(p.groups)?p.groups:[];
-    return p.groups.map(gid=>{
+    return p.groups.map((gid,i)=>{
       const g=group(gid);
       if(!g)return'';
       const required=g.required||Number(g.min)>0;
       const rule=g.selectionMode==='single'?'Uma única opção':g.selectionMode==='quantity'?'Opção de quantidade':'Uma ou mais opções';
-      return `<div class="assignedGroup"><div class="assignedGroupHead"><div><b>${esc(g.name)}</b> <span class="tinyTag">${required?'Obrigatório':'Opcional'}</span><div class="names">${esc(groupNames(g))}</div><div class="hint">${rule} · ${g.unlimited?'sem limite':'máx. '+g.max}</div></div><button type="button" class="ghost" onclick="editGroupForProduct('${p.id}','${g.id}')">Editar</button></div></div>`;
+      return `<div class="assignedGroup"><div class="assignedGroupHead"><div><b>${esc(g.name)}</b> <span class="tinyTag">${required?'Obrigatório':'Opcional'}</span><div class="names">${esc(groupNames(g))}</div><div class="hint">${rule} · ${g.unlimited?'sem limite':'máx. '+g.max}</div></div>${productGroupOrderActions(p,g,i)}</div></div>`;
     }).join('');
   };
   window.productGroupsHTML=productGroupsHTML;

@@ -363,7 +363,17 @@ function adminProducts(){
 function productImagePreview(p){let src=p.image||(p.images&&p.images[0])||'';return src?`<img src="${esc(src)}" alt="${esc(p.name)}">`:`<div class="hint">Sem imagem do produto</div>`}
 function groupNames(g){return (g.options||[]).filter(o=>o.status!=='hidden').slice(0,8).map(o=>o.name).join(', ')+((g.options||[]).length>8?'…':'')}
 function productGroupsHTML(p){p.groups=Array.isArray(p.groups)?p.groups:[];return p.groups.map((gid,i)=>{let g=cfg.groups.find(x=>x.id===gid);if(!g)return'';let req=g.required||g.min>0;return `<div class="assignedGroup"><div class="assignedGroupHead"><div><b>${esc(g.name)}</b> <span class="tinyTag">${req?'Obrigatório':'Opcional'}</span><div class="names">${esc(groupNames(g))}</div><div class="hint">${g.selectionMode==='single'?'Uma única opção':g.selectionMode==='quantity'?'Opção de quantidade':'Uma ou mais opções'} · ${g.unlimited?'sem limite':'máx. '+g.max}</div></div><div class="pvGroupActions"><button type="button" onclick="moveProductGroup('${p.id}','${g.id}',-1)" ${i===0?'disabled':''} aria-label="Mover grupo para cima">↑</button><button type="button" onclick="moveProductGroup('${p.id}','${g.id}',1)" ${i===p.groups.length-1?'disabled':''} aria-label="Mover grupo para baixo">↓</button><button class="ghost" onclick="editGroupForProduct('${p.id}','${g.id}')">Editar</button></div></div></div>`}).join('')}
-function moveProductGroup(pid,gid,delta){let p=cfg.products.find(x=>x.id===pid);if(!p)return;let from=(p.groups||[]).indexOf(gid),to=from+delta;if(from<0||to<0||to>=p.groups.length)return;[p.groups[from],p.groups[to]]=[p.groups[to],p.groups[from]];save();renderShop();editProduct(pid)}
+function productGroupOrderActions(p,g,i){return `<div class="pvGroupActions"><button type="button" class="ghost" onclick="moveProductGroup('${p.id}','${g.id}',-1)" ${i===0?'disabled':''}>↑ Subir</button><button type="button" class="ghost" onclick="moveProductGroup('${p.id}','${g.id}',1)" ${i===p.groups.length-1?'disabled':''}>↓ Descer</button><button type="button" class="ghost" onclick="editGroupForProduct('${p.id}','${g.id}')">Editar</button></div>`}
+function moveProductGroup(pid,gid,delta){
+ const p=cfg.products.find(x=>String(x.id)===String(pid));
+ if(!p||!Array.isArray(p.groups)||![-1,1].includes(delta))return;
+ const from=p.groups.indexOf(gid),to=from+delta;
+ if(from<0||to<0||to>=p.groups.length)return;
+ [p.groups[from],p.groups[to]]=[p.groups[to],p.groups[from]];
+ const list=document.getElementById('productGroupList');
+ if(list)list.innerHTML=productGroupsHTML(p);
+}
+
 function moveGroupOptionEditor(btn,delta){let card=btn.closest('.optionEdit'),box=card?.parentElement;if(!card||!box)return;let target=delta<0?card.previousElementSibling:card.nextElementSibling;if(!target||!target.classList.contains('optionEdit'))return;if(delta<0)box.insertBefore(card,target);else box.insertBefore(target,card);refreshGroupOptionMoveButtons(box)}
 function refreshGroupOptionMoveButtons(box=$('#ggOptions')){if(!box)return;let cards=$$('.optionEdit',box);cards.forEach((card,i)=>{let up=card.querySelector('.pvMoveOptionUp'),down=card.querySelector('.pvMoveOptionDown');if(up)up.disabled=i===0;if(down)down.disabled=i===cards.length-1})}
 
