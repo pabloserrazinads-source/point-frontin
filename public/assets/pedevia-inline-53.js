@@ -2,35 +2,8 @@
 (function(){
   window.PEDEVIA_VERSION='1.33.0';
 
-  // Um produto novo ainda é um rascunho local. Mesmo assim, a ação esperada
-  // pelo administrador é Excluir, e não um Cancelar ambíguo.
-  const editProductBaseV13256=editProduct;
-  editProduct=function(id){
-    const result=editProductBaseV13256.apply(this,arguments);
-    setTimeout(()=>{
-      const p=(cfg.products||[]).find(x=>String(x.id)===String(id));
-      if(!p?._draftNewV132)return;
-      const footer=document.querySelector('#sheet .stickySave');
-      if(!footer)return;
-      const cancel=[...footer.querySelectorAll('button.ghost')]
-        .find(btn=>!btn.classList.contains('duplicateProductBtn'));
-      if(!cancel)return;
-      cancel.textContent='Excluir';
-      cancel.classList.remove('ghost');
-      cancel.classList.add('dangerBtn');
-      cancel.removeAttribute('data-pedevia-call');
-      cancel.onclick=()=>{
-        if(!confirm('Excluir este novo produto?'))return;
-        cfg.products=cfg.products.filter(x=>String(x.id)!==String(id));
-        window._editingProductV132=null;
-        window._newProductLockV132=false;
-        closeModal();
-        renderAdmin();
-        renderShop();
-      };
-    },0);
-    return result;
-  };
+  // A montagem dos botões do produto foi consolidada no módulo de produtos.
+  // Este arquivo permanece responsável apenas pela estabilidade do histórico.
 
   // Depois que o Histórico foi carregado, os timers/realtime não devem
   // reconstruir a lista inteira: isso fazia a tela piscar e voltar ao topo.

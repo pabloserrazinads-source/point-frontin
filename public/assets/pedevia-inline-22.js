@@ -574,6 +574,9 @@
   document.addEventListener('click',ev=>{
     const btn=ev.target?.closest?.('button');
     if(!btn || !btn.closest('#adminView') || btn.disabled || btn.dataset.noAutoBusy==='1')return;
+    // O editor de produtos controla o próprio estado. O feedback genérico não
+    // pode manter Editar/Duplicar/Salvar bloqueados depois que o modal fechar.
+    if(btn.closest('.adminProdCard') || btn.closest('#sheet')?.querySelector('#epn'))return;
     const busy=actionBusyTextV132(btn.textContent);
     if(!busy)return;
 

@@ -99,6 +99,9 @@
   document.addEventListener('click',ev=>{
     const b=ev.target?.closest?.('button');
     if(!b || !b.closest('#adminView') || b.disabled || b.dataset.pedeviaWorking==='1')return;
+    // Produtos possuem ciclo assíncrono próprio. Aplicar aqui o timeout de 12 s
+    // deixava os botões presos em "Abrindo edição..." após fechar o modal.
+    if(b.closest('.adminProdCard') || b.closest('#sheet')?.querySelector('#epn'))return;
     const original=(b.textContent||'').trim();
     const hit=verbs.find(([rx])=>rx.test(original));
     if(!hit)return;
