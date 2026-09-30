@@ -227,16 +227,16 @@ renderClientStoreInfo=function(){
   const logo=s.brandImage
     ? `<img src="${esc(s.brandImage)}" alt="Logo ${esc(s.name)}">`
     : `<div class="fallback" style="font-size:13px;line-height:1.15">LOGO DO<br>ESTABELECIMENTO</div>`;
-  const subtitle=s.address?esc(clientAddressShort()):'';
+  const subtitle=s.showAddressOnMenu!==false&&s.address?esc(clientAddressShort()):'';
   $('#clientBrand').innerHTML=`<div class="clientBrand"><div class="clientBrandLogo">${logo}</div><h1>${esc(s.name)}</h1>${subtitle?`<div class="sub">${subtitle}</div>`:''}</div>`;
   const wa=formatWa(s.whatsapp),waDigits=String(s.whatsapp||'').replace(/\D/g,''),waUrl='https://wa.me/'+waDigits;
   const insta=s.socialUrl||('https://instagram.com/'+cleanInstagramHandle());
   $('#clientInfoTop').innerHTML=`<div class="clientInfoGrid">
     <div class="clientInfoCard"><div class="ci">◷</div><div><b class="${st.open?'clientStatusOpen':'clientStatusClosed'}">${esc(st.text)}</b><small>${esc(nextCloseText())}${s.modes?.pickup&&s.orderConfig?.pickupTime?' · Retirada: '+esc(s.orderConfig.pickupTime)+' min':''}</small></div><span></span></div>
     <div class="clientInfoCard"><div class="ci">☏</div><div><b>${waDigits?esc(wa):'Contato não informado'}</b><small>WhatsApp</small></div>${waDigits?`<a href="${waUrl}" target="_blank">CONTATO</a>`:'<span></span>'}</div>
-    <div class="clientInfoCard"><div class="ci">⌖</div><div><b>${esc(clientAddressShort()||'Endereço não informado')}</b><small>${esc(s.address||'')}</small></div>${s.address?`<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.address)}" target="_blank">DIREÇÕES</a>`:'<span></span>'}</div>
+    ${s.showAddressOnMenu!==false?`<div class="clientInfoCard"><div class="ci">⌖</div><div><b>${esc(clientAddressShort()||'Endereço não informado')}</b><small>${esc(s.address||'')}</small></div>${s.address?`<a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.address)}" target="_blank">DIREÇÕES</a>`:'<span></span>'}</div>`:''}
   </div>`;
-  $('#clientInfoBottom').innerHTML=`<div class="clientDetails"><h3>Informações da loja</h3><div class="detailRow"><div class="di">◷</div><div><b>Horário de atendimento</b><small>${esc(todayScheduleText())}</small></div></div><div class="detailRow"><div class="di">⌖</div><div><b>Endereço</b><small>${esc(s.address||'Não informado')}</small></div></div><div class="detailRow"><div class="di">☏</div><div><b>Contato</b><small>${waDigits?esc(wa):'Não informado'}${s.email?' · '+esc(s.email):''}</small></div></div>${(s.instagram||s.socialUrl)?`<div class="detailRow"><div class="di">◎</div><div><b>Redes sociais</b><small>${esc(s.instagram||cleanInstagramHandle())}</small><a class="socialBtn" href="${esc(insta)}" target="_blank">◎ Instagram</a></div></div>`:''}</div>`;
+  $('#clientInfoBottom').innerHTML=`<div class="clientDetails"><h3>Informações da loja</h3><div class="detailRow"><div class="di">◷</div><div><b>Horário de atendimento</b><small>${esc(todayScheduleText())}</small></div></div>${s.showAddressOnMenu!==false?`<div class="detailRow"><div class="di">⌖</div><div><b>Endereço</b><small>${esc(s.address||'Não informado')}</small></div></div>`:''}<div class="detailRow"><div class="di">☏</div><div><b>Contato</b><small>${waDigits?esc(wa):'Não informado'}${s.email?' · '+esc(s.email):''}</small></div></div>${(s.instagram||s.socialUrl)?`<div class="detailRow"><div class="di">◎</div><div><b>Redes sociais</b><small>${esc(s.instagram||cleanInstagramHandle())}</small><a class="socialBtn" href="${esc(insta)}" target="_blank">◎ Instagram</a></div></div>`:''}</div>`;
   $('#clientFooter').innerHTML=`<div class="clientFooter"><b>${esc(s.name)}</b><br>Cardápio e pedidos online · Pedevia</div>`;
 };
 
