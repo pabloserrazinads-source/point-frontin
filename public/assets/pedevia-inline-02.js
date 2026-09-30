@@ -514,13 +514,19 @@ function optionVisualTheme(name,selected){
   if(key==='confete')return['pvTasteConfete','confete','66.667%','100%'];
   return['','','',''];
 }
+function groupOptionVisualTheme(g,o){
+ const norm=value=>String(value||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+ const groupName=norm(g?.name),groupId=norm(g?.id),optionName=norm(o?.name);
+ if(/\bcaldas?\b/.test(groupName)||/^caldas?(?:$|[_-])/.test(groupId)||/^calda\b/.test(optionName))return['','','',''];
+ return optionVisualTheme(o.name,o.visualStyle);
+}
 function quantityOptionRow(g,o){
-  let [theme,taste,x,y]=optionVisualTheme(o.name,o.visualStyle);
+  let [theme,taste,x,y]=groupOptionVisualTheme(g,o);
   let visual=theme?` data-pv-taste="${taste}" style="--taste-x:${x};--taste-y:${y}"`:'';
   return `<div class="option optionCard qtyOption ${theme}" data-oid="${o.id}"${visual}><span class="pvTasteCopy"><b>${esc(o.name)}</b>${o.desc?`<small class="hint">${esc(o.desc)}</small>`:''}${o.price?`<span class="optionPrice">+ ${brl(o.price)}</span>`:'<span class="optionPrice">Grátis</span>'}</span><div class="optQty"><button type="button" class="minusBtn" onclick="changeOptionQty(this,-1)">−</button><b class="optQtyValue">0</b><button type="button" class="plusBtn" onclick="changeOptionQty(this,1)">+</button></div></div>`;
 }
 function choiceOptionRow(g,o,type){
- let [theme,taste,x,y]=optionVisualTheme(o.name,o.visualStyle);
+ let [theme,taste,x,y]=groupOptionVisualTheme(g,o);
  let visual=theme?` data-pv-taste="${taste}" style="--taste-x:${x};--taste-y:${y}"`:'';
  return `<label class="option optionCard ${theme}"${visual}><span class="pvTasteCopy"><b>${esc(o.name)}</b>${o.desc?`<small class="hint">${esc(o.desc)}</small>`:''}${o.price?`<span class="optionPrice">+ ${brl(o.price)}</span>`:'<span class="optionPrice">Grátis</span>'}</span><input type="${type}" name="g_${g.id}" value="${o.id}" onchange="handleChoiceChange(this)"></label>`;
 }
