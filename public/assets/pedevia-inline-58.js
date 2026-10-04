@@ -53,9 +53,11 @@
     lines.push(`*TOTAL: ${brl(t.total)}*`,'');
 
     lines.push('💳 *FORMA DE PAGAMENTO*',paymentKeyLabel(st.payment));
-    if(typeof isCashV13111==='function'&&isCashV13111()&&typeof cashNumbersV13111==='function'){
-      const cash=cashNumbersV13111();
-      if(cash.paid>0)lines.push(`Vai pagar com: ${brl(cash.paid)}`,`Troco: ${brl(cash.change)}`);
+    if(['cash','dinheiro'].includes(cleanV1334(st.payment).toLowerCase())){
+      let raw=cleanV1334(st.cashPaid).replace(/[R$\s]/g,'');
+      if(raw.includes(','))raw=raw.replace(/\./g,'').replace(',','.');
+      const paid=Number(raw);
+      if(raw&&Number.isFinite(paid)&&paid>0)lines.push(`Vai pagar com: ${brl(paid)}`,`Troco: ${brl(Math.max(0,paid-Number(t.total||0)))}`);
     }
     lines.push('');
 
@@ -109,7 +111,15 @@
     if(delivery)lines.push(`Taxa de entrega: ${brl(delivery)}`);
     if(pay)lines.push(`${pay>0?'Taxa':'Desconto'} de pagamento: ${pay<0?'- ':''}${brl(Math.abs(pay))}`);
     if(service)lines.push(`Taxa de serviço: ${brl(service)}`);
-    lines.push(`*TOTAL: ${brl(total)}*`,'','💳 *FORMA DE PAGAMENTO*',paymentKeyLabel(order.payment_method),'');
+    lines.push(`*TOTAL: ${brl(total)}*`,'','💳 *FORMA DE PAGAMENTO*',paymentKeyLabel(order.payment_method));
+    if(['cash','dinheiro'].includes(cleanV1334(order.payment_method).toLowerCase())){
+      const original=cleanV1334(order.whatsapp_text);
+      for(const label of ['Vai pagar com','Troco']){
+        const value=original.match(new RegExp('(?:^|\\n)'+label+':\\s*([^\\n]+)','i'))?.[1];
+        if(value)lines.push(`${label}: ${cleanV1334(value)}`);
+      }
+    }
+    lines.push('');
 
     if(order.order_mode==='delivery'){
       lines.push('📍 *ENTREGA*');
