@@ -1,7 +1,7 @@
 // Fonte única de versão do Pedevia. Este arquivo deve ser carregado antes dos módulos.
 (function(){
   'use strict';
-  const CURRENT='1.35.15';
+  const CURRENT='1.35.16';
   const parts=v=>String(v||'0').split('.').map(n=>Number(n)||0);
   const compare=(a,b)=>{const x=parts(a),y=parts(b);for(let i=0;i<Math.max(x.length,y.length);i++){if((x[i]||0)!==(y[i]||0))return(x[i]||0)-(y[i]||0)}return 0};
   let active=CURRENT;
