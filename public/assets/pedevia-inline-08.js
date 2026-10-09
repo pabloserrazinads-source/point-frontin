@@ -1047,6 +1047,17 @@ async function createOnlineOrderV125(){
   return row;
 }
 
+// Dia contábil do pedido: criação no fuso da loja, nunca conclusão.
+function orderBusinessDayV13517(value){
+  if(!value)return '';
+  const date=new Date(value);
+  if(!Number.isFinite(date.getTime()))return '';
+  return new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(date);
+}
+function completedOrdersForDayV13517(rows,now=new Date()){
+  const day=orderBusinessDayV13517(now);
+  return rows.filter(o=>o.status==='completed'&&orderBusinessDayV13517(o.created_at)===day);
+}
 async function fetchOrdersV125(){
   const key=currentStoreKeyV125();
   const {data,error}=await supabaseClient.from('pedevia_orders').select('*').eq('store_key',key).order('created_at',{ascending:false}).limit(200);
@@ -1525,7 +1536,7 @@ window.PedeviaV130 = window.PedeviaV130 || {
     try{
       const rows=await fetchOrdersV125(); window.pedeviaOrdersV125=rows;
       const active=rows.filter(o=>!['completed','cancelled'].includes(o.status));
-      const completedToday=rows.filter(o=>o.status==='completed'&&new Date(o.completed_at||o.updated_at).toDateString()===new Date().toDateString());
+      const completedToday=completedOrdersForDayV13517(rows);
       const revenue=completedToday.reduce((a,o)=>a+(+o.total||0),0);
       const groups=[['new','Novos'],['accepted','Aceitos'],['preparing','Preparando'],['ready','Prontos']];
       const cols=groups.map(([s,label])=>{const list=active.filter(o=>o.status===s);return `<section class="v130OrderCol"><header><span>${this.statusEmoji(s)} ${label}</span><b>${list.length}</b></header><div>${list.length?list.map(o=>this.orderCard(o)).join(''):`<div class="v130Empty">Nenhum pedido</div>`}</div></section>`}).join('');

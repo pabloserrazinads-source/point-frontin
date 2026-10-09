@@ -43,7 +43,7 @@
       try{
         const rows=await fetchOrdersV125();window.pedeviaOrdersV125=rows;
         const active=rows.filter(o=>!['completed','cancelled'].includes(o.status));
-        const completedToday=rows.filter(o=>o.status==='completed'&&new Date(o.completed_at||o.updated_at).toDateString()===new Date().toDateString());
+        const completedToday=completedOrdersForDayV13517(rows);
         const revenue=completedToday.reduce((a,o)=>a+(+o.total||0),0);
         const groups=[
           {label:'Pedidos aceitos',emoji:'✓',list:active}
