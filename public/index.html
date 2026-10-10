@@ -632,6 +632,11 @@ label.optionCard.pvTasteIngredient[data-pv-taste]>input,label.optionCard.pvTaste
 <style>
 .choiceGroup.pvCompleteActive .optionCard:not(.pvCompleteCard){opacity:.35;pointer-events:none}
 </style>
+<style>
+/* Recorte explícito e estável do painel durante repinturas dos cards. */
+#modal>.sheet{border-radius:25px 25px 0 0;clip-path:inset(0 round 25px 25px 0 0)}
+@media(min-width:720px){#modal>.sheet{border-radius:25px;clip-path:inset(0 round 25px)}}
+</style>
 </head>
 <body>
 <header class="top">
