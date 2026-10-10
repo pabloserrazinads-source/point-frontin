@@ -637,6 +637,14 @@ label.optionCard.pvTasteIngredient[data-pv-taste]>input,label.optionCard.pvTaste
 #modal>.sheet{border-radius:25px 25px 0 0;clip-path:inset(0 round 25px 25px 0 0)}
 @media(min-width:720px){#modal>.sheet{border-radius:25px;clip-path:inset(0 round 25px)}}
 </style>
+<style>
+/* Painel estável: evita alternar camadas compostas durante cada toque. */
+#modal,#modal.show{transition:none;opacity:1}
+#modal>.sheet,#modal.show>.sheet{transform:none!important;opacity:1!important;transition:none!important;will-change:auto}
+#modal .optQty button,#modal .productQty button{transition:background-color .15s,color .15s}
+#modal .optQty button:active,#modal .productQty button:active{transform:none!important}
+#modal .optionCard[data-pv-taste],#modal .optionCard[data-pv-taste].selected{transform:none;transition:border-color .15s}
+</style>
 </head>
 <body>
 <header class="top">
