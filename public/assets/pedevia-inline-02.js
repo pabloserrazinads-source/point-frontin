@@ -484,10 +484,12 @@ function effectiveGroupRules(g){
   return {mode,required,unlimited,max,min};
 }
 function clientRuleText(g){
-  let r=effectiveGroupRules(g);
-  if(r.mode==='single') return r.required?'Escolha 1 opção.':'Escolha até 1 opção (opcional).';
-  if(r.mode==='quantity') return r.unlimited?(r.required?'Escolha a quantidade desejada.':'Adicione quantidades se quiser.'):(r.required?`Escolha de 1 até ${r.max} unidade(s).`:`Até ${r.max} unidade(s), opcional.`);
-  return r.unlimited?(r.required?'Escolha uma ou mais opções.':'Escolha quantas opções quiser (opcional).'):(r.required?`Escolha de 1 até ${r.max} opção(ões).`:`Escolha até ${r.max} opção(ões), opcional.`);
+ const r=effectiveGroupRules(g),unit=r.mode==='quantity'?'unidade':'opção',plural=r.mode==='quantity'?'unidades':'opções';
+ if(r.mode==='single')return r.required?'Selecione 1 opção.':'Selecione até 1 opção, opcional.';
+ if(r.unlimited)return r.required?'Selecione uma ou mais '+plural+'.':'Selecione quantas '+plural+' quiser, opcional.';
+ const noun=Number(r.max)===1?unit:plural;
+ if(r.required&&Number(r.max)===1)return 'Selecione 1 '+unit+'.';
+ return r.required?`Selecione de ${r.min||1} até ${r.max} ${noun}.`:`Selecione até ${r.max} ${noun}, opcional.`;
 }
 function optionVisualTheme(name,selected){
   let normalized=String(name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
@@ -1065,7 +1067,7 @@ function variantChoiceHTML(v){
   if(v.allowedModes?.delivery)labels.push('Delivery');
   if(v.allowedModes?.pickup)labels.push('Retirada');
   if(v.allowedModes?.dinein)labels.push('Consumo local');
-  return `<label class="variantChoice ${ok?'':'variantDisabled'}"><span><b>${esc(v.name)}</b><small>${brl(v.price)}</small>${labels.length?`<small class="modeAvailability">${labels.join(' · ')}</small>`:''}</span><input type="radio" name="productVariant" value="${esc(v.id)}" ${ok?'':'disabled'} data-pedevia-event="change" data-pedevia-call="handleVariantChange"></label>`;
+  return `<label class="variantChoice ${ok?'':'variantDisabled'}"><span><b>${esc(v.name)}</b><small>${brl(v.price)}</small></span><input type="radio" name="productVariant" value="${esc(v.id)}" ${ok?'':'disabled'} data-pedevia-event="change" data-pedevia-call="handleVariantChange"></label>`;
 }
 
 function renderShop(){

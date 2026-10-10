@@ -1250,6 +1250,14 @@ async function loadOrdersPanelV126(){
 }
 loadOrdersPanelV125=loadOrdersPanelV126;
 
+function statisticsPeriodV13534(all,range,selectedDay,cutoff){
+ if(range==='custom')return all.filter(o=>orderBusinessDayV13517(o.created_at)===selectedDay);
+ return cutoff?all.filter(o=>{const d=safeDateV126(o.created_at);return d&&d>=cutoff}):all;
+}
+function selectStatisticsDayV13534(value){
+ if(!/^\d{4}-\d{2}-\d{2}$/.test(value))return;
+ window.statsDayV13534=value;window.statsRangeV126='custom';loadStatisticsV126();
+}
 function statsCutoffV126(){
   if(statsRangeV126==='all')return null;const n=+statsRangeV126||30,d=new Date();d.setDate(d.getDate()-n);return d;
 }
@@ -1262,7 +1270,8 @@ function aggregateProductsV126(rows){
   const m=new Map();rows.filter(statusRevenueV126).forEach(o=>(o.items||[]).forEach(i=>{const key=String(i.product_id||i.name||'Produto');let p=m.get(key);if(!p)p={name:i.name||'Produto',qty:0,revenue:0};const q=+i.quantity||1;p.qty+=q;p.revenue+=(+i.unit_price||0)*q;m.set(key,p)}));return [...m.values()].sort((a,b)=>b.qty-a.qty);
 }
 function customerHistoryV126(key){
-  const customers=aggregateCustomersV126(window.statsOrdersV126||[]),c=customers.find(x=>x.key===key);if(!c)return;
+  const source=window.statsOrdersV126||[];
+  const customers=aggregateCustomersV126(statsRangeV126==='custom'?statisticsPeriodV13534(source,'custom',window.statsDayV13534||orderBusinessDayV13517(new Date()),null):source),c=customers.find(x=>x.key===key);if(!c)return;
   const rows=[...c.all].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
   showModal(`<div class="row"><div><h2 style="margin:0">${esc(c.name)}</h2><div class="hint">${esc(c.phone||'Sem telefone')}</div></div><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div><div class="v126StatsGrid"><div class="v126Stat"><b>${c.orders}</b><small>Pedidos registrados</small></div><div class="v126Stat"><b>${c.completed}</b><small>Pedidos concluídos</small></div><div class="v126Stat"><b>${brl(c.spent)}</b><small>Total faturado</small></div></div><h3>Histórico de pedidos</h3>${rows.map(o=>`<div class="summary"><div class="row"><b>${orderNumberV125(o)}</b><b>${brl(+o.total||0)}</b></div><small>${orderDateV125(o.created_at)} · ${orderStatusLabelV125(o.status)} · ${orderModeLabelV125(o.order_mode)}</small></div>`).join('')||'<p class="hint">Sem pedidos.</p>'}`);
 }
@@ -1271,8 +1280,9 @@ async function loadStatisticsV126(){
   const host=document.getElementById('statsHostV126');if(!host)return;host.innerHTML='<div class="panel"><p class="hint">Calculando estatísticas...</p></div>';
   try{
     const all=await fetchAllStoreOrdersV126();window.statsOrdersV126=all;
-    const cutoff=statsCutoffV126(),period=cutoff?all.filter(o=>{const d=safeDateV126(o.created_at);return d&&d>=cutoff}):all;
-    const completed=period.filter(statusRevenueV126),lifeCompleted=all.filter(statusRevenueV126),cancelled=period.filter(o=>o.status==='cancelled'),active=all.filter(activeOrderV126);
+    const selectedDay=window.statsDayV13534||orderBusinessDayV13517(new Date());
+    const cutoff=statsCutoffV126(),period=statisticsPeriodV13534(all,statsRangeV126,selectedDay,cutoff);
+    const completed=period.filter(statusRevenueV126),lifeCompleted=all.filter(statusRevenueV126),cancelled=period.filter(o=>o.status==='cancelled'),active=period.filter(activeOrderV126);
     const revenue=completed.reduce((s,o)=>s+(+o.total||0),0),lifeRevenue=lifeCompleted.reduce((s,o)=>s+(+o.total||0),0),ticket=completed.length?revenue/completed.length:0;
     const customers=aggregateCustomersV126(period).sort((a,b)=>b.completed-a.completed||b.spent-a.spent),products=aggregateProductsV126(period).slice(0,10);
     const ranges=[['7','7 dias'],['30','30 dias'],['90','90 dias'],['all','Todo período']].map(([v,n])=>`<button class="${statsRangeV126===v?'on':''}" onclick="statsRangeV126='${v}';loadStatisticsV126()">${n}</button>`).join('');
@@ -1280,7 +1290,9 @@ async function loadStatisticsV126(){
     const topCustomers=rankedCustomers.map((c,i)=>`<div class="v126Rank"><div class="v126RankNum">${i+1}</div><div><b>${esc(c.name)}</b><small>${esc(c.phone||'Sem telefone')} · ${c.completed} concluído(s)</small></div><div class="v126Right"><b>${brl(c.spent)}</b><button type="button" class="ghost v126TopCustomerHistory" data-customer-index="${i}" style="padding:5px 8px;margin-top:4px">Histórico</button></div></div>`).join('')||'<p class="hint">Ainda não há clientes com pedidos concluídos neste período.</p>';
     const allCustomers=listedCustomers.map((c,i)=>`<div class="adminItem"><div><b>${esc(c.name)}</b><small>${esc(c.phone||'Sem telefone')} · último pedido ${orderDateV125(c.last)}</small></div><button type="button" class="ghost v126AllCustomerHistory" data-customer-index="${i}">Ver histórico</button></div>`).join('')||'<p class="hint">Nenhum cliente registrado.</p>';
     const topProducts=products.map((p,i)=>`<div class="v126Rank"><div class="v126RankNum">${i+1}</div><div><b>${esc(p.name)}</b><small>${p.qty} unidade(s) vendida(s)</small></div><div class="v126Right"><b>${brl(p.revenue)}</b></div></div>`).join('')||'<p class="hint">Ainda não há produtos vendidos neste período.</p>';
-    host.innerHTML=`<div class="v126Filters">${ranges}</div><div class="v126StatsGrid"><div class="v126Stat"><b>${brl(revenue)}</b><small>Faturamento no período</small></div><div class="v126Stat"><b>${completed.length}</b><small>Vendas concluídas</small></div><div class="v126Stat"><b>${brl(ticket)}</b><small>Ticket médio</small></div><div class="v126Stat"><b>${brl(lifeRevenue)}</b><small>Faturamento geral</small></div></div><div class="panel"><div class="row"><h3 style="margin:0">Situação dos pedidos</h3><span class="hint">${active.length} ativos · ${cancelled.length} cancelados no período</span></div></div><div class="panel"><h3>Clientes que mais pedem</h3>${topCustomers}</div><div class="panel"><h3>Produtos mais vendidos</h3>${topProducts}</div><div class="panel"><h3>Histórico dos clientes</h3><p class="hint">Veja todos os pedidos registrados para cada cliente, inclusive cancelados.</p>${allCustomers}</div>`;
+    const datePicker=`<div class="panel"><label for="statsDayV13534">Data personalizada</label><input id="statsDayV13534" type="date" class="field" value="${selectedDay}" onchange="selectStatisticsDayV13534(this.value)">${statsRangeV126==='custom'?`<div class="hint">Exibindo pedidos feitos em ${selectedDay.split('-').reverse().join('/')}, no horário de Brasília.</div>`:''}</div>`;
+    const dayHistory=statsRangeV126==='custom'?`<div class="panel"><h3>Pedidos do dia</h3>${period.map(o=>`<div class="summary"><div class="row"><b>${esc(orderNumberV125(o))} · ${esc(o.customer_name||'Cliente')}</b><b>${brl(+o.total||0)}</b></div><small>${orderDateV125(o.created_at)} · ${esc(orderStatusLabelV125(o.status))}</small></div>`).join('')||'<p class="hint">Nenhum pedido nesta data.</p>'}</div>`:'';
+    host.innerHTML=`<div class="v126Filters">${ranges}</div>${datePicker}<div class="v126StatsGrid"><div class="v126Stat"><b>${brl(revenue)}</b><small>Faturamento no período</small></div><div class="v126Stat"><b>${completed.length}</b><small>Vendas concluídas</small></div><div class="v126Stat"><b>${brl(ticket)}</b><small>Ticket médio</small></div><div class="v126Stat"><b>${brl(lifeRevenue)}</b><small>Faturamento geral</small></div></div><div class="panel"><div class="row"><h3 style="margin:0">Situação dos pedidos</h3><span class="hint">${active.length} ativos · ${cancelled.length} cancelados no período</span></div></div><div class="panel"><h3>Clientes que mais pedem</h3>${topCustomers}</div><div class="panel"><h3>Produtos mais vendidos</h3>${topProducts}</div><div class="panel"><h3>Histórico dos clientes</h3><p class="hint">Veja todos os pedidos registrados para cada cliente, inclusive cancelados.</p>${allCustomers}</div>${dayHistory}`;
     host.querySelectorAll('.v126TopCustomerHistory').forEach(button=>button.addEventListener('click',()=>{const customer=rankedCustomers[Number(button.dataset.customerIndex)];if(customer)customerHistoryV126(customer.key)}));
     host.querySelectorAll('.v126AllCustomerHistory').forEach(button=>button.addEventListener('click',()=>{const customer=listedCustomers[Number(button.dataset.customerIndex)];if(customer)customerHistoryV126(customer.key)}));
   }catch(e){console.error(e);host.innerHTML='<div class="notice bad"><b>Não foi possível carregar as estatísticas.</b><br>Confirme se o SQL da versão 1.26.0 foi executado.</div>'}
