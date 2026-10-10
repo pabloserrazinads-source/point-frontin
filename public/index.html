@@ -10,7 +10,7 @@ html.pedeviaTenantBoot::before{
 }
 
 </style>
-<script src="assets/pedevia-version.js?v=13523stable1"></script>
+<script src="assets/pedevia-version.js?v=13524stable1"></script>
 <script src="assets/pedevia-inline-01.js?v=13301stable1"></script>
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
@@ -504,9 +504,9 @@ button:active,.tab:active,.settingCard:active,.moreCard:active,.socialBtn:active
 
 </style>
 <style>
-/* Foto à esquerda sem máscara/degradê; nome e preço com espaço próprio. */
+/* Foto integrada ao fundo do sabor, sem divisão reta; nomes com espaço próprio. */
 .optionCard.pvTasteIce[data-pv-taste]{--ice-space:104px;position:relative;isolation:isolate;overflow:hidden;padding:12px 12px 12px calc(var(--ice-space) + 12px);min-height:116px;background:var(--ice-tint,#fff8ef);grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:7px}
-.optionCard.pvTasteIce[data-pv-taste]::before{content:'';display:block;position:absolute;inset:0 auto 0 0;width:var(--ice-space);height:100%;z-index:0;background-image:var(--ice-image);background-repeat:no-repeat;background-size:calc(var(--ice-space) * 2.1) 100%;background-position:right center;mask-image:none;filter:none;transform:none;opacity:1;pointer-events:none}
+.optionCard.pvTasteIce[data-pv-taste]::before{content:'';display:block;position:absolute;inset:0 auto 0 0;width:calc(var(--ice-space) + 24px);height:100%;z-index:0;background-image:var(--ice-image);background-repeat:no-repeat;background-size:calc(var(--ice-space) * 2.1) 100%;background-position:right center;mask-image:linear-gradient(90deg,#000 0%,#000 65%,rgba(0,0,0,.85) 75%,rgba(0,0,0,.4) 88%,transparent 100%);filter:none;transform:none;opacity:1;pointer-events:none}
 .optionCard.pvTasteIce[data-pv-taste]::after{display:none}
 .optionCard.pvTasteIce[data-pv-taste]>.pvTasteCopy{display:contents;background:transparent;padding:0}
 .optionCard.pvTasteIce[data-pv-taste]>.pvTasteCopy>b{position:relative;z-index:2;grid-column:1/-1;min-width:0;color:#302632;font-size:16px;line-height:1.25;white-space:normal;overflow-wrap:break-word;word-break:normal}
