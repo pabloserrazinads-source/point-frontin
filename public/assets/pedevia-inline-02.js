@@ -530,9 +530,10 @@ function groupOptionVisualTheme(g,o){
 }
 function optionVisualName(theme,name){
  if(theme!=='pvTasteIce')return esc(name);
+ const displayName=value=>{const text=String(value||'').trim().toLocaleLowerCase('pt-BR');return text.charAt(0).toLocaleUpperCase('pt-BR')+text.slice(1)};
  const match=String(name||'').match(/^(metade\s+(?:de\s+)?sorvete\s+(?:de\s+)?)(.+)$/i);
- if(!match)return `<span class="pvIceFlavor">${esc(name)}</span>`;
- return `<span class="pvIcePrefix">${esc(match[1].trim())}</span><span class="pvIceFlavor">${esc(match[2])}</span>`;
+ if(!match)return `<span class="pvIceFlavor">${esc(displayName(name))}</span>`;
+ return `<span class="pvIcePrefix">${esc(match[1].trim())}</span><span class="pvIceFlavor">${esc(displayName(match[2]))}</span>`;
 }
 function quantityOptionRow(g,o){
   let [theme,taste,x,y]=groupOptionVisualTheme(g,o);
