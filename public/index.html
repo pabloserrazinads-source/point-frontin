@@ -613,6 +613,11 @@ label.optionCard.pvTasteIngredient[data-pv-taste]>input,label.optionCard.pvTaste
 .optionCard[data-pv-taste="iceacainutella"]{--ice-image:url("assets/pedevia-ice-acainutella-left.webp?v=13527")}
 </style>
 
+<style>
+/* Afasta o nome da fotografia sem deslocar preço e quantidade. */
+.optionCard.pvTasteIce[data-pv-taste]>.pvTasteCopy>b{padding-left:12px;box-sizing:border-box}
+@media(max-width:360px){.optionCard.pvTasteIce[data-pv-taste]>.pvTasteCopy>b{padding-left:10px}}
+</style>
 </head>
 <body>
 <header class="top">
