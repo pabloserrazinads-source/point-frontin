@@ -548,7 +548,7 @@ function choiceOptionRow(g,o,type){
 function isMainComplements(g){return String(g?.name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase()==='complementos'}
 function completeComplementCard(g){
  if(!isMainComplements(g))return '';
- return `<label class="option optionCard pvCompleteCard"><span><b>Completo</b><small>Todos os complementos</small></span><input type="checkbox" data-pv-complete="1" aria-label="Completo: todos os complementos" onchange="toggleCompleteComplements(this)"></label>`;
+ return `<label class="option optionCard pvCompleteCard"><span><b>Completo</b></span><input type="checkbox" data-pv-complete="1" aria-label="Completo: todos os complementos" onchange="toggleCompleteComplements(this)"></label>`;
 }
 function toggleCompleteComplements(input){
  const group=input.closest('.choiceGroup'),active=input.checked;
@@ -557,7 +557,7 @@ function toggleCompleteComplements(input){
   const choice=row.querySelector('input'),value=row.querySelector('.optQtyValue');
   if(active){row.dataset.pvPrevious=choice?String(choice.checked):(value?.textContent||'0');if(choice)choice.checked=true;if(value)value.textContent='1'}
   else{if(choice)choice.checked=row.dataset.pvPrevious==='true';if(value)value.textContent=row.dataset.pvPrevious||'0';delete row.dataset.pvPrevious}
-  row.hidden=active;
+  row.hidden=false;
  });
  refreshGroupLimit(group);updateProductLiveTotal();
 }
@@ -574,20 +574,23 @@ function groupSelectedCount(group){
 function refreshGroupLimit(group){
   if(!group)return;
   let max=group.dataset.max==='inf'?Infinity:+group.dataset.max, mode=group.dataset.mode, count=groupSelectedCount(group), reached=Number.isFinite(max)&&count>=max;
+  const completeActive=!!group.querySelector('[data-pv-complete]:checked');
   group.classList.toggle('limitReached',reached);
+  group.classList.toggle('pvCompleteActive',completeActive);
   if(mode==='quantity'){
     group.querySelectorAll('.qtyOption').forEach(row=>{
       let q=+row.querySelector('.optQtyValue').textContent||0;
       let plus=row.querySelector('.plusBtn');
-      if(plus) plus.disabled=reached;
-      row.classList.toggle('locked',reached && q===0);
+      if(plus) plus.disabled=reached||completeActive;
+      const minus=row.querySelector('.minusBtn');if(minus)minus.disabled=completeActive;
+      row.classList.toggle('locked',completeActive||(reached && q===0));
       row.classList.toggle('selected',q>0);
     });
   }else{
     group.querySelectorAll('.optionCard').forEach(row=>{
       let inp=row.querySelector('input'); if(!inp)return;
       if(inp.dataset.pvComplete){row.classList.toggle('selected',inp.checked);return}
-      let lock=reached && !inp.checked;
+      let lock=completeActive||(reached && !inp.checked);
       inp.disabled=lock;
       row.classList.toggle('locked',lock);
       row.classList.toggle('selected',inp.checked);
@@ -597,6 +600,7 @@ function refreshGroupLimit(group){
 function refreshAllGroupLimits(){ document.querySelectorAll('.choiceGroup').forEach(refreshGroupLimit); updateProductLiveTotal(); }
 function changeOptionQty(btn,delta){
   let group=btn.closest('.choiceGroup'), row=btn.closest('.qtyOption'), val=row.querySelector('.optQtyValue');
+  if(group.querySelector('[data-pv-complete]:checked'))return;
   let current=+val.textContent||0, max=group.dataset.max==='inf'?Infinity:+group.dataset.max, total=groupSelectedCount(group);
   if(delta>0 && total>=max) return;
   val.textContent=Math.max(0,current+delta);
