@@ -511,7 +511,7 @@ button:active,.tab:active,.settingCard:active,.moreCard:active,.socialBtn:active
 .optionCard.pvTasteIce[data-pv-taste]>.pvTasteCopy{display:contents;background:transparent;padding:0}
 .optionCard.pvTasteIce[data-pv-taste]>.pvTasteCopy>b{position:relative;z-index:2;grid-column:1/-1;min-width:0;color:#302632;font-size:16px;line-height:1.25;white-space:normal;overflow-wrap:break-word;word-break:normal}
 .optionCard.pvTasteIce[data-pv-taste] .pvIcePrefix{display:block;margin-bottom:3px;font-size:11px;line-height:1.25;font-weight:500;color:#64545c}
-.optionCard.pvTasteIce[data-pv-taste] .pvIceFlavor{display:block;font-size:16px;font-weight:750;line-height:1.25;text-transform:uppercase}
+.optionCard.pvTasteIce[data-pv-taste] .pvIceFlavor{display:block;font-size:16px;font-weight:750;line-height:1.25;text-transform:none}
 .optionCard.pvTasteIce[data-pv-taste] .hint{position:relative;z-index:2;grid-column:1/-1}
 .optionCard.pvTasteIce[data-pv-taste] .optionPrice{position:relative;z-index:2;grid-column:1;color:#302632;font-size:13px;margin:0;white-space:nowrap}
 .optionCard.pvTasteIce[data-pv-taste]>.optQty{position:relative;z-index:3;grid-column:2;padding:3px;background:rgba(255,255,255,.92);border-radius:99px;gap:3px;color:#302632}
@@ -605,6 +605,14 @@ label.optionCard.pvTasteIngredient[data-pv-taste]>input,label.optionCard.pvTaste
 .optionCard[data-pv-taste="syr20"]{--visual-photo:url("assets/pedevia-calda-caixinha.webp?v=13521");--visual-tint:#fffaed;--visual-border:#fffaed}
 .optionCard[data-pv-taste="syr21"]{--visual-photo:url("assets/pedevia-calda-banana.webp?v=13521");--visual-tint:#fff5e7;--visual-border:#fff5e7}
 </style>
+
+<style>
+.optionCard.pvTasteIce[data-pv-taste] .optionPrice{justify-self:start;background:#fff;color:#352337;border-radius:999px;padding:5px 9px;box-shadow:0 2px 9px rgba(48,30,40,.14);font-weight:800}
+.optionCard.pvTasteIce[data-pv-taste="icegalak"]::before,.optionCard.pvTasteIce[data-pv-taste="iceacainutella"]::before{transform:none}
+.optionCard[data-pv-taste="icegalak"]{--ice-image:url("assets/pedevia-ice-galak-left.webp?v=13527")}
+.optionCard[data-pv-taste="iceacainutella"]{--ice-image:url("assets/pedevia-ice-acainutella-left.webp?v=13527")}
+</style>
+
 </head>
 <body>
 <header class="top">
@@ -639,7 +647,7 @@ label.optionCard.pvTasteIngredient[data-pv-taste]>input,label.optionCard.pvTaste
 <div class="cartbar" id="cartBar"><button class="btn" data-pedevia-action="show-cart"><span>🛒 Carrinho · <b id="cartCount">0</b></span><b id="cartTotal">R$ 0,00</b></button></div>
 <div class="overlay" id="modal"><div class="sheet" id="sheet"></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/pedevia-inline-02.js?v=13523stable1"></script>
+<script src="assets/pedevia-inline-02.js?v=13527"></script>
 <script src="assets/pedevia-inline-03.js?v=13301stable1"></script>
 <script src="assets/pedevia-inline-04.js?v=13301stable1"></script>
 <style id="v1170Styles">
@@ -937,7 +945,7 @@ body[data-accent="soft"] .btn{box-shadow:0 8px 20px #00000012}
 <script src="assets/pedevia-inline-55.js?v=13520stable1"></script>
 
 <!-- v1.33.0 — central de gestão, CRM, relatórios e experiência do cliente -->
-<script src="assets/pedevia-inline-56.js?v=13303stable1"></script>
+<script src="assets/pedevia-inline-56.js?v=13527"></script>
 
 <!-- v1.33.3 — fonte única de versão, nomes legíveis e horário sem duplicação -->
 <script src="assets/pedevia-inline-57.js?v=13520stable1"></script>
@@ -946,7 +954,7 @@ body[data-accent="soft"] .btn{box-shadow:0 8px 20px #00000012}
 <script src="assets/pedevia-inline-58.js?v=13305stable1"></script>
 
 <!-- v1.34.3 — recuperação do carrinho, recomendações e carrinho alinhado -->
-<script src="assets/pedevia-inline-59.js?v=13403stable1"></script>
+<script src="assets/pedevia-inline-59.js?v=13527"></script>
 
 <!-- v1.34.4 — ciclos, histórico auditável e clientes separados por celular -->
 <script src="assets/pedevia-inline-60.js?v=13404stable1"></script>
