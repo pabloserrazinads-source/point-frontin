@@ -528,15 +528,21 @@ function groupOptionVisualTheme(g,o){
  if(selected==='auto'&&complements[optionName])return['pvTasteIngredient','comp'+complements[optionName],'',''];
  return optionVisualTheme(o.name,o.visualStyle);
 }
+function optionVisualName(theme,name){
+ if(theme!=='pvTasteIce')return esc(name);
+ const match=String(name||'').match(/^(metade\s+(?:de\s+)?sorvete\s+(?:de\s+)?)(.+)$/i);
+ if(!match)return `<span class="pvIceFlavor">${esc(name)}</span>`;
+ return `<span class="pvIcePrefix">${esc(match[1].trim())}</span><span class="pvIceFlavor">${esc(match[2])}</span>`;
+}
 function quantityOptionRow(g,o){
   let [theme,taste,x,y]=groupOptionVisualTheme(g,o);
   let visual=theme?` data-pv-taste="${taste}" style="--taste-x:${x};--taste-y:${y}"`:'';
-  return `<div class="option optionCard qtyOption ${theme}" data-oid="${o.id}"${visual}><span class="pvTasteCopy"><b>${esc(o.name)}</b>${o.desc?`<small class="hint">${esc(o.desc)}</small>`:''}${o.price?`<span class="optionPrice">+ ${brl(o.price)}</span>`:'<span class="optionPrice">Grátis</span>'}</span><div class="optQty"><button type="button" class="minusBtn" onclick="changeOptionQty(this,-1)">−</button><b class="optQtyValue">0</b><button type="button" class="plusBtn" onclick="changeOptionQty(this,1)">+</button></div></div>`;
+  return `<div class="option optionCard qtyOption ${theme}" data-oid="${o.id}"${visual}><span class="pvTasteCopy"><b>${optionVisualName(theme,o.name)}</b>${o.desc?`<small class="hint">${esc(o.desc)}</small>`:''}${o.price?`<span class="optionPrice">+ ${brl(o.price)}</span>`:'<span class="optionPrice">Grátis</span>'}</span><div class="optQty"><button type="button" class="minusBtn" onclick="changeOptionQty(this,-1)">−</button><b class="optQtyValue">0</b><button type="button" class="plusBtn" onclick="changeOptionQty(this,1)">+</button></div></div>`;
 }
 function choiceOptionRow(g,o,type){
  let [theme,taste,x,y]=groupOptionVisualTheme(g,o);
  let visual=theme?` data-pv-taste="${taste}" style="--taste-x:${x};--taste-y:${y}"`:'';
- return `<label class="option optionCard ${theme}"${visual}><span class="pvTasteCopy"><b>${esc(o.name)}</b>${o.desc?`<small class="hint">${esc(o.desc)}</small>`:''}${o.price?`<span class="optionPrice">+ ${brl(o.price)}</span>`:'<span class="optionPrice">Grátis</span>'}</span><input type="${type}" name="g_${g.id}" value="${o.id}" onchange="handleChoiceChange(this)"></label>`;
+ return `<label class="option optionCard ${theme}"${visual}><span class="pvTasteCopy"><b>${optionVisualName(theme,o.name)}</b>${o.desc?`<small class="hint">${esc(o.desc)}</small>`:''}${o.price?`<span class="optionPrice">+ ${brl(o.price)}</span>`:'<span class="optionPrice">Grátis</span>'}</span><input type="${type}" name="g_${g.id}" value="${o.id}" onchange="handleChoiceChange(this)"></label>`;
 }
 function groupSelectedCount(group){
   let mode=group.dataset.mode;
