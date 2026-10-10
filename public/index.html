@@ -10,7 +10,7 @@ html.pedeviaTenantBoot::before{
 }
 
 </style>
-<script src="assets/pedevia-version.js?v=13519stable1"></script>
+<script src="assets/pedevia-version.js?v=13521stable1"></script>
 <script src="assets/pedevia-inline-01.js?v=13301stable1"></script>
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
@@ -522,7 +522,7 @@ button:active,.tab:active,.settingCard:active,.moreCard:active,.socialBtn:active
 .qtyOption[data-pv-taste="icekitkat"]{--ice-image:url("assets/pedevia-ice-kitkat.webp")}
 .qtyOption[data-pv-taste="icegalak"]{--ice-image:url("assets/pedevia-ice-galak.webp")}
 .qtyOption[data-pv-taste="icecreme"]{--ice-image:url("assets/pedevia-ice-creme.webp")}
-.optionCard[data-pv-taste="icecupuacu"]{--ice-image:url("assets/pedevia-ice-cupuacu.webp?v=13519")}
+.optionCard[data-pv-taste="icecupuacu"]{--ice-image:url("assets/pedevia-ice-cupuacu.webp?v=13520")}
 </style>
 <style>
 /* A mesma personalização atende seleção única, múltipla e quantidade. */
@@ -530,12 +530,59 @@ label.optionCard[data-pv-taste]{grid-template-columns:minmax(0,1fr) 44px}
 label.optionCard[data-pv-taste]>.pvTasteCopy{max-width:none}
 label.optionCard[data-pv-taste]>input{position:relative;z-index:3;justify-self:center;width:24px;height:24px;accent-color:var(--p);box-shadow:0 0 0 7px rgba(255,255,255,.9);border-radius:4px}
 </style>
-<style>.optionCard[data-pv-taste="iceacainutella"]{--ice-image:url("assets/pedevia-ice-acainutella.webp?v=13519")}
-.optionCard[data-pv-taste="iceflocos"]{--ice-image:url("assets/pedevia-ice-flocos.webp?v=13519")}
-.optionCard[data-pv-taste="iceferrero"]{--ice-image:url("assets/pedevia-ice-ferrero.webp?v=13519")}</style>
-<style>.optionCard[data-pv-taste="iceninhotrufado"]{--ice-image:url("assets/pedevia-ice-ninhotrufado.webp?v=13519")}</style>
-<style>.optionCard[data-pv-taste="icepistache"]{--ice-image:url("assets/pedevia-ice-pistache.webp?v=13519")}</style>
-<style>.optionCard[data-pv-taste="icesonhovalsa"]{--ice-image:url("assets/pedevia-ice-sonhovalsa.webp?v=13519")}</style>
+<style>.optionCard[data-pv-taste="iceacainutella"]{--ice-image:url("assets/pedevia-ice-acainutella.webp?v=13520")}
+.optionCard[data-pv-taste="iceflocos"]{--ice-image:url("assets/pedevia-ice-flocos.webp?v=13520")}
+.optionCard[data-pv-taste="iceferrero"]{--ice-image:url("assets/pedevia-ice-ferrero.webp?v=13520")}</style>
+<style>.optionCard[data-pv-taste="iceninhotrufado"]{--ice-image:url("assets/pedevia-ice-ninhotrufado.webp?v=13520")}</style>
+<style>.optionCard[data-pv-taste="icepistache"]{--ice-image:url("assets/pedevia-ice-pistache.webp?v=13520")}</style>
+<style>.optionCard[data-pv-taste="icesonhovalsa"]{--ice-image:url("assets/pedevia-ice-sonhovalsa.webp?v=13520")}</style>
+<style>
+/* Fotos por sabor com transição suave e fundo do card na mesma paleta. */
+.optionCard.pvTasteIngredient[data-pv-taste],.optionCard.pvTasteSyrup[data-pv-taste]{--art-space:112px;position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:14px 12px 14px var(--art-space);min-height:88px;background:linear-gradient(90deg,var(--visual-tint,#fff) 0%,var(--visual-tint,#fff) 26%,#fff 78%);border:1px solid var(--visual-border,var(--line))}
+.optionCard.pvTasteIngredient[data-pv-taste]::before,.optionCard.pvTasteSyrup[data-pv-taste]::before{content:'';position:absolute;inset:0;z-index:0;width:100%;height:100%;border-radius:0;background:var(--visual-photo) left center/210px 100% no-repeat;mask-image:linear-gradient(90deg,#000 0px,#000 65px,rgba(0,0,0,.85) 86px,transparent 136px);filter:none;opacity:1;transform:none;mix-blend-mode:multiply}
+.optionCard.pvTasteSyrup[data-pv-taste]{background:linear-gradient(90deg,#fff 0%,var(--visual-tint,#fff) 65%,var(--visual-tint,#fff) 100%)}
+.optionCard.pvTasteSyrup[data-pv-taste]::before{background-size:100% 100%;mask-image:linear-gradient(90deg,#000 0px,#000 calc(var(--art-space) - 24px),transparent calc(var(--art-space) + 12px));mix-blend-mode:normal}
+.optionCard.pvTasteIngredient[data-pv-taste]::after,.optionCard.pvTasteSyrup[data-pv-taste]::after{display:none}
+.optionCard.pvTasteIngredient[data-pv-taste]>.pvTasteCopy,.optionCard.pvTasteSyrup[data-pv-taste]>.pvTasteCopy{position:relative;z-index:2;min-width:0;max-width:none;background:transparent;padding:0}
+.optionCard.pvTasteIngredient[data-pv-taste]>.pvTasteCopy>b,.optionCard.pvTasteSyrup[data-pv-taste]>.pvTasteCopy>b{color:#28232b;line-height:1.25;font-size:16px;overflow-wrap:anywhere}
+.optionCard.pvTasteIngredient[data-pv-taste] .optionPrice,.optionCard.pvTasteSyrup[data-pv-taste] .optionPrice{color:#635d66}
+.optionCard.pvTasteIngredient[data-pv-taste]>.optQty,.optionCard.pvTasteSyrup[data-pv-taste]>.optQty{position:relative;z-index:2;gap:4px}
+.optionCard.pvTasteIngredient[data-pv-taste]>.optQty button,.optionCard.pvTasteSyrup[data-pv-taste]>.optQty button{width:36px;height:36px}
+label.optionCard.pvTasteIngredient[data-pv-taste]>input,label.optionCard.pvTasteSyrup[data-pv-taste]>input{box-shadow:none}
+@media(max-width:360px){.optionCard.pvTasteIngredient[data-pv-taste],.optionCard.pvTasteSyrup[data-pv-taste]{--art-space:86px;gap:5px}.optionCard.pvTasteIngredient[data-pv-taste]::before{mask-image:linear-gradient(90deg,#000 0px,#000 48px,rgba(0,0,0,.8) 65px,transparent 108px);background-size:170px 100%}.optionCard.pvTasteIngredient[data-pv-taste]>.pvTasteCopy>b,.optionCard.pvTasteSyrup[data-pv-taste]>.pvTasteCopy>b{font-size:14px}}
+.optionCard[data-pv-taste="compjujuba"]{--visual-photo:url("assets/pedevia-comp-jujuba.webp?v=13520");--visual-tint:#fff0f4}
+.optionCard[data-pv-taste="compleitepo"]{--visual-photo:url("assets/pedevia-comp-leitepo.webp?v=13520");--visual-tint:#fff9e6}
+.optionCard[data-pv-taste="compamendoim"]{--visual-photo:url("assets/pedevia-comp-amendoim.webp?v=13520");--visual-tint:#fff1df}
+.optionCard[data-pv-taste="comppacoca"]{--visual-photo:url("assets/pedevia-comp-pacoca.webp?v=13520");--visual-tint:#fff1de}
+.optionCard[data-pv-taste="compgranola"]{--visual-photo:url("assets/pedevia-comp-granola.webp?v=13520");--visual-tint:#fff1de}
+.optionCard[data-pv-taste="compsucrilhos"]{--visual-photo:url("assets/pedevia-comp-sucrilhos.webp?v=13520");--visual-tint:#fff6d7}
+.optionCard[data-pv-taste="compchocoboll"]{--visual-photo:url("assets/pedevia-comp-chocoboll.webp?v=13520");--visual-tint:#f6ece6}
+.optionCard[data-pv-taste="compgranulado"]{--visual-photo:url("assets/pedevia-comp-granulado.webp?v=13520");--visual-tint:#f7ece8}
+.optionCard[data-pv-taste="compaveia"]{--visual-photo:url("assets/pedevia-comp-aveia.webp?v=13520");--visual-tint:#fff7e9}
+.optionCard[data-pv-taste="comparroz"]{--visual-photo:url("assets/pedevia-comp-arroz.webp?v=13520");--visual-tint:#fff8eb}
+.optionCard[data-pv-taste="syr0"]{--visual-photo:url("assets/pedevia-calda-morango.webp?v=13521");--visual-tint:#fff0f3;--visual-border:#fff0f3}
+.optionCard[data-pv-taste="syr1"]{--visual-photo:url("assets/pedevia-calda-chocolate.webp?v=13521");--visual-tint:#f7efe8;--visual-border:#f7efe8}
+.optionCard[data-pv-taste="syr2"]{--visual-photo:url("assets/pedevia-calda-condensado.webp?v=13521");--visual-tint:#fff9e9;--visual-border:#fff9e9}
+.optionCard[data-pv-taste="syr3"]{--visual-photo:url("assets/pedevia-calda-menta.webp?v=13521");--visual-tint:#edfaf0;--visual-border:#edfaf0}
+.optionCard[data-pv-taste="syr4"]{--visual-photo:url("assets/pedevia-calda-branco.webp?v=13521");--visual-tint:#fffaef;--visual-border:#fffaef}
+.optionCard[data-pv-taste="syr5"]{--visual-photo:url("assets/pedevia-calda-amora.webp?v=13521");--visual-tint:#f7effa;--visual-border:#f7effa}
+.optionCard[data-pv-taste="syr6"]{--visual-photo:url("assets/pedevia-calda-chocomenta.webp?v=13521");--visual-tint:#f0f8ee;--visual-border:#f0f8ee}
+.optionCard[data-pv-taste="syr7"]{--visual-photo:url("assets/pedevia-calda-maca.webp?v=13521");--visual-tint:#f4fae7;--visual-border:#f4fae7}
+.optionCard[data-pv-taste="syr8"]{--visual-photo:url("assets/pedevia-calda-blue.webp?v=13521");--visual-tint:#eefaff;--visual-border:#eefaff}
+.optionCard[data-pv-taste="syr9"]{--visual-photo:url("assets/pedevia-calda-caramelo.webp?v=13521");--visual-tint:#fff4e5;--visual-border:#fff4e5}
+.optionCard[data-pv-taste="syr10"]{--visual-photo:url("assets/pedevia-calda-tuti.webp?v=13521");--visual-tint:#fff0f5;--visual-border:#fff0f5}
+.optionCard[data-pv-taste="syr11"]{--visual-photo:url("assets/pedevia-calda-malte.webp?v=13521");--visual-tint:#f9eee4;--visual-border:#f9eee4}
+.optionCard[data-pv-taste="syr12"]{--visual-photo:url("assets/pedevia-calda-floresta.webp?v=13521");--visual-tint:#faedf0;--visual-border:#faedf0}
+.optionCard[data-pv-taste="syr13"]{--visual-photo:url("assets/pedevia-calda-pistache.webp?v=13521");--visual-tint:#f4f7e8;--visual-border:#f4f7e8}
+.optionCard[data-pv-taste="syr14"]{--visual-photo:url("assets/pedevia-calda-maracuja.webp?v=13521");--visual-tint:#fff9de;--visual-border:#fff9de}
+.optionCard[data-pv-taste="syr15"]{--visual-photo:url("assets/pedevia-calda-limao.webp?v=13521");--visual-tint:#f7fbdf;--visual-border:#f7fbdf}
+.optionCard[data-pv-taste="syr16"]{--visual-photo:url("assets/pedevia-calda-uva.webp?v=13521");--visual-tint:#f6effc;--visual-border:#f6effc}
+.optionCard[data-pv-taste="syr17"]{--visual-photo:url("assets/pedevia-calda-beijos.webp?v=13521");--visual-tint:#fff0f5;--visual-border:#fff0f5}
+.optionCard[data-pv-taste="syr18"]{--visual-photo:url("assets/pedevia-calda-dentadura.webp?v=13521");--visual-tint:#fff1f4;--visual-border:#fff1f4}
+.optionCard[data-pv-taste="syr19"]{--visual-photo:url("assets/pedevia-calda-bananinha.webp?v=13521");--visual-tint:#fff9df;--visual-border:#fff9df}
+.optionCard[data-pv-taste="syr20"]{--visual-photo:url("assets/pedevia-calda-caixinha.webp?v=13521");--visual-tint:#fffaed;--visual-border:#fffaed}
+.optionCard[data-pv-taste="syr21"]{--visual-photo:url("assets/pedevia-calda-banana.webp?v=13521");--visual-tint:#fff5e7;--visual-border:#fff5e7}
+</style>
 </head>
 <body>
 <header class="top">
@@ -570,7 +617,7 @@ label.optionCard[data-pv-taste]>input{position:relative;z-index:3;justify-self:c
 <div class="cartbar" id="cartBar"><button class="btn" data-pedevia-action="show-cart"><span>🛒 Carrinho · <b id="cartCount">0</b></span><b id="cartTotal">R$ 0,00</b></button></div>
 <div class="overlay" id="modal"><div class="sheet" id="sheet"></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/pedevia-inline-02.js?v=13519stable1"></script>
+<script src="assets/pedevia-inline-02.js?v=13520stable1"></script>
 <script src="assets/pedevia-inline-03.js?v=13301stable1"></script>
 <script src="assets/pedevia-inline-04.js?v=13301stable1"></script>
 <style id="v1170Styles">
@@ -725,7 +772,7 @@ body[data-accent="soft"] .btn{box-shadow:0 8px 20px #00000012}
 </style>
 <script src="assets/pedevia-inline-06.js?v=13301stable1"></script>
 <script src="assets/pedevia-inline-07.js?v=13301stable1"></script>
-<script src="assets/pedevia-inline-08.js?v=13519stable1"></script>
+<script src="assets/pedevia-inline-08.js?v=13520stable1"></script>
 <script src="assets/pedevia-inline-09.js?v=13301stable1"></script>
 <!-- v1.31.2: pedido mínimo validado pelo subtotal de produtos, excluindo taxa de entrega. -->
 <script src="assets/pedevia-inline-10.js?v=13301stable1"></script>
@@ -865,13 +912,13 @@ body[data-accent="soft"] .btn{box-shadow:0 8px 20px #00000012}
 <script src="assets/pedevia-inline-54.js?v=13301stable1"></script>
 
 <!-- v1.33.0 FINAL 24/09/2026 — navegação estável e aceite automático -->
-<script src="assets/pedevia-inline-55.js?v=13519stable1"></script>
+<script src="assets/pedevia-inline-55.js?v=13520stable1"></script>
 
 <!-- v1.33.0 — central de gestão, CRM, relatórios e experiência do cliente -->
 <script src="assets/pedevia-inline-56.js?v=13303stable1"></script>
 
 <!-- v1.33.3 — fonte única de versão, nomes legíveis e horário sem duplicação -->
-<script src="assets/pedevia-inline-57.js?v=13519stable1"></script>
+<script src="assets/pedevia-inline-57.js?v=13520stable1"></script>
 
 <!-- v1.33.5 — comanda numerada e observações logo após os produtos -->
 <script src="assets/pedevia-inline-58.js?v=13305stable1"></script>
@@ -883,6 +930,6 @@ body[data-accent="soft"] .btn{box-shadow:0 8px 20px #00000012}
 <script src="assets/pedevia-inline-60.js?v=13404stable1"></script>
 
 <!-- v1.35.0 — editor de produtos consolidado; substitui as camadas 61–65 -->
-<script src="assets/pedevia-inline-61.js?v=13519-13500stable1"></script>
+<script src="assets/pedevia-inline-61.js?v=13520-13500stable1"></script>
 
 </body></html>
