@@ -1571,10 +1571,7 @@ window.PedeviaV130 = window.PedeviaV130 || {
   },
   filterProducts(v){const q=String(v||'').trim().toLowerCase();document.querySelectorAll('#productGrid .card').forEach(c=>c.style.display=!q||(c.dataset.search||'').includes(q)?'':'none');document.querySelectorAll('#productGrid .clientSection').forEach(s=>{const any=[...s.querySelectorAll('.card')].some(c=>c.style.display!=='none');s.style.display=any?'':'none'})},
   enhanceAdminProducts(){
-    document.querySelectorAll('#adminContent .adminProdCard').forEach(card=>{
-      const edit=card.querySelector('button[onclick*="editProduct"]');if(!edit||card.querySelector('.v130ProdTools'))return;const m=(edit.getAttribute('onclick')||'').match(/editProduct\('([^']+)'\)/),id=m?.[1];if(!id)return;
-      const tools=document.createElement('div');tools.className='v130ProdTools';tools.innerHTML=`<button class="ghost" onclick="PedeviaV130.toggleProduct('${id}')">Disponível ↔</button>`;card.appendChild(tools)
-    })
+    document.querySelectorAll('#adminContent .adminProdCard .v130ProdTools').forEach(tools=>tools.remove());
   },
   async duplicateProduct(id){const p=(cfg.products||[]).find(x=>String(x.id)===String(id));if(!p)return;const copy=JSON.parse(JSON.stringify(p));copy.id='p'+Date.now();copy.name=(p.name||'Produto')+' — cópia';copy.status='hidden';cfg.products.push(copy);if(await this.persist(true,'Produto duplicado.')){renderAdmin();renderShop()}},
   async toggleProduct(id){const p=(cfg.products||[]).find(x=>String(x.id)===String(id));if(!p)return;p.status=p.status==='available'?'unavailable':'available';if(await this.persist(true,'Status do produto atualizado.')){renderAdmin();renderShop()}},

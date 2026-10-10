@@ -9,7 +9,7 @@
     return (g.options||[]).map((o,i,a)=>`<div class="optionEdit" data-option-id="${esc(o.id||'')}">
       <div class="pvOptionOrder"><button type="button" class="pvMoveOptionUp" onclick="moveGroupOptionEditor(this,-1)" ${i===0?'disabled':''}>↑ Subir</button><button type="button" class="pvMoveOptionDown" onclick="moveGroupOptionEditor(this,1)" ${i===a.length-1?'disabled':''}>↓ Descer</button></div>
       <label class="v1331OptionLabel">Nome do adicional</label>
-      <textarea class="field goName v1331OptionName" rows="2" placeholder="Nome do adicional">${esc(o.name)}</textarea>
+      <textarea class="field goName v1331OptionName" rows="1" placeholder="Nome do adicional">${esc(o.name)}</textarea>
       <div class="v1331OptionPriceLine">
         <label><span>Valor adicional</span><input class="field goPrice" type="number" step=".01" value="${o.price||0}" placeholder="R$ 0,00"></label>
         <button class="ghost v1331RemoveOption" type="button" onclick="this.closest('.optionEdit').remove()" aria-label="Remover adicional">×</button>
@@ -24,7 +24,7 @@
     const box=document.getElementById('ggOptions');box?.insertAdjacentHTML('beforeend',`<div class="optionEdit" data-option-id="">
       <div class="pvOptionOrder"><button type="button" class="pvMoveOptionUp" onclick="moveGroupOptionEditor(this,-1)">↑ Subir</button><button type="button" class="pvMoveOptionDown" onclick="moveGroupOptionEditor(this,1)" disabled>↓ Descer</button></div>
       <label class="v1331OptionLabel">Nome do adicional</label>
-      <textarea class="field goName v1331OptionName" rows="2" placeholder="Nome do adicional"></textarea>
+      <textarea class="field goName v1331OptionName" rows="1" placeholder="Nome do adicional"></textarea>
       <div class="v1331OptionPriceLine">
         <label><span>Valor adicional</span><input class="field goPrice" type="number" step=".01" value="0" placeholder="R$ 0,00"></label>
         <button class="ghost v1331RemoveOption" type="button" onclick="this.closest('.optionEdit').remove()" aria-label="Remover adicional">×</button>
@@ -47,12 +47,22 @@
   css.id='pedeviaV1331Css';
   css.textContent=`
     .optionEdit .v1331OptionLabel{display:block;margin:2px 2px 0;font-size:13px;font-weight:750;color:var(--muted)}
-    .optionEdit .v1331OptionName{display:block;width:100%;min-height:76px;line-height:1.35;resize:vertical;overflow-wrap:anywhere}
+    .optionEdit .v1331OptionName{display:block;width:100%;min-height:44px;line-height:1.35;resize:vertical;overflow-wrap:anywhere}
     .optionEdit .v1331OptionPriceLine{display:grid;grid-template-columns:minmax(0,1fr) 52px;gap:9px;align-items:end}
     .optionEdit .v1331OptionPriceLine label span{display:block;margin:2px 2px 0;font-size:13px;font-weight:750;color:var(--muted)}
     .optionEdit .v1331OptionPriceLine .field{margin-bottom:10px}
     .optionEdit .v1331RemoveOption{height:52px;margin-bottom:10px;font-size:22px}
     .pvOptionOrder{display:flex;gap:8px;margin-bottom:9px}.pvOptionOrder button,.pvGroupActions>button{border:1px solid var(--line);background:#fff;color:var(--p);border-radius:12px;padding:8px 11px;font-weight:750}.pvOptionOrder button:disabled,.pvGroupActions>button:disabled{opacity:.35}.pvGroupActions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;min-width:118px}.pvGroupActions .ghost{padding:9px 12px}
+    #ggOptions .optionEdit{padding:10px;margin:8px 0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px 8px}
+    #ggOptions .optionEdit .field{margin:0!important;padding:9px 10px;min-height:42px;border-radius:12px;font-size:14px;width:100%;min-width:0}
+    #ggOptions .optionEdit .pvOptionOrder,#ggOptions .optionEdit .v1331OptionLabel,#ggOptions .optionEdit .goName,#ggOptions .optionEdit .v1331OptionPriceLine,#ggOptions .optionEdit .goDesc{grid-column:1/-1}
+    #ggOptions .optionEdit .goName{height:44px;min-height:44px;line-height:1.35}
+    #ggOptions .optionEdit .pvOptionOrder{margin:0;gap:6px}
+    #ggOptions .optionEdit .pvOptionOrder button{padding:7px 10px;min-height:38px;font-size:13px}
+    #ggOptions .optionEdit .v1331OptionPriceLine{grid-template-columns:minmax(0,1fr) 42px;gap:6px}
+    #ggOptions .optionEdit .v1331RemoveOption{height:42px;margin:0;align-self:end}
+    #ggOptions .optionEdit .pvVisualStyleLabel{font-size:12px;margin:0;min-width:0}
+    #ggOptions .optionEdit .goStatus{align-self:end}
     .clientInfoCard small:empty{display:none}
   `;
   document.head.appendChild(css);
