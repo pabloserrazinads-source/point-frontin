@@ -82,7 +82,7 @@ function openProduct(id){let p=cfg.products.find(x=>x.id===id),h=`<div class="ro
  p.groups.forEach(gid=>{let g=cfg.groups.find(x=>x.id===gid);if(!g)return;let os=g.options.filter(o=>o.status==="available");if(!os.length)return;h+=`<div class="group choiceGroup" data-gid="${g.id}" data-min="${g.min}" data-max="${g.max}"><div class="groupTitle">${g.name}</div><div class="hint">${g.min?`Escolha no mínimo ${g.min}. `:""}Máximo ${g.max}.</div>${os.map(o=>`<label class="option"><span>${esc(o.name)} ${o.price?`<small>+ ${brl(o.price)}</small>`:""}</span><input type="${g.max===1?"radio":"checkbox"}" name="g_${g.id}" value="${o.id}"></label>`).join("")}</div>`});
  h+=`<label>Observação</label><textarea id="itemObs" class="field" placeholder="Ex.: sem granola"></textarea><div class="row"><div class="qty"><button onclick="qty(-1)">−</button><b id="qty">1</b><button onclick="qty(1)">+</button></div><button class="btn" onclick="addCart('${p.id}')">Adicionar</button></div>`;showModal(h)}
 function qty(n){$("#qty").textContent=Math.max(1,+$("#qty").textContent+n)}
-function addCart(pid){let p=cfg.products.find(x=>x.id===pid),groups=[],extra=0;for(let box of $$(".choiceGroup")){let g=cfg.groups.find(x=>x.id===box.dataset.gid),sel=$$("input:checked",box),min=+box.dataset.min,max=+box.dataset.max;if(sel.length<min||sel.length>max){alert(`Em "${g.name}", escolha entre ${min} e ${max}.`);return}let items=sel.map(i=>g.options.find(o=>o.id===i.value));items.forEach(o=>extra+=+o.price);if(items.length)groups.push({name:g.name,items:items.map(o=>({name:o.name,price:o.price}))})}cart.push({pid,qty:+$("#qty").textContent,unit:p.price+extra,groups,obs:$("#itemObs").value});closeModal();updateCart()}
+function addCart(pid){let p=cfg.products.find(x=>x.id===pid),groups=[],extra=0;for(let box of $$(".choiceGroup")){let g=cfg.groups.find(x=>x.id===box.dataset.gid),sel=$$("input:not([data-pv-complete]):checked",box),min=+box.dataset.min,max=+box.dataset.max;if(sel.length<min||sel.length>max){alert(`Em "${g.name}", escolha entre ${min} e ${max}.`);return}let items=sel.map(i=>g.options.find(o=>o.id===i.value));items.forEach(o=>extra+=+o.price);if(items.length)groups.push({name:g.name,items:items.map(o=>({name:o.name,price:o.price}))})}cart.push({pid,qty:+$("#qty").textContent,unit:p.price+extra,groups,obs:$("#itemObs").value});closeModal();updateCart()}
 function sum(){return cart.reduce((s,i)=>s+i.unit*i.qty,0)}function updateCart(){$("#cartCount").textContent=cart.reduce((s,i)=>s+i.qty,0);$("#cartTotal").textContent=brl(sum())}
 function showCart(){let sub=sum(),fee=+cfg.store.deliveryFee;let h=`<div class="row"><h2>Carrinho</h2><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div>`;if(!cart.length){showModal(h+"<p>Seu carrinho está vazio.</p>");return}
  h+=cart.map((i,n)=>{let p=cfg.products.find(x=>x.id===i.pid);return`<div class="summary"><div class="row"><b>${i.qty}x ${esc(p.name)}</b><b>${brl(i.unit*i.qty)}</b></div>${i.groups.map(g=>`<small><b>${g.name}:</b> ${g.items.map(x=>esc(x.name)).join(", ")}</small>`).join("")}${i.obs?`<small>Obs.: ${esc(i.obs)}</small>`:""}<button class="ghost" style="margin-top:8px" onclick="cart.splice(${n},1);updateCart();showCart()">Remover</button></div>`}).join("");
@@ -545,10 +545,31 @@ function choiceOptionRow(g,o,type){
  let visual=theme?` data-pv-taste="${taste}" style="--taste-x:${x};--taste-y:${y}"`:'';
  return `<label class="option optionCard ${theme}"${visual}><span class="pvTasteCopy"><b>${optionVisualName(theme,o.name)}</b>${o.desc?`<small class="hint">${esc(o.desc)}</small>`:''}${o.price?`<span class="optionPrice">+ ${brl(o.price)}</span>`:'<span class="optionPrice">Grátis</span>'}</span><input type="${type}" name="g_${g.id}" value="${o.id}" onchange="handleChoiceChange(this)"></label>`;
 }
+function isMainComplements(g){return String(g?.name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase()==='complementos'}
+function completeComplementCard(g){
+ if(!isMainComplements(g))return '';
+ return `<label class="option optionCard pvCompleteCard"><span><b>Completo</b><small>Todos os complementos</small></span><input type="checkbox" data-pv-complete="1" aria-label="Completo: todos os complementos" onchange="toggleCompleteComplements(this)"></label>`;
+}
+function toggleCompleteComplements(input){
+ const group=input.closest('.choiceGroup'),active=input.checked;
+ input.closest('.pvCompleteCard').classList.toggle('selected',active);
+ group.querySelectorAll('.optionCard:not(.pvCompleteCard)').forEach(row=>{
+  const choice=row.querySelector('input'),value=row.querySelector('.optQtyValue');
+  if(active){row.dataset.pvPrevious=choice?String(choice.checked):(value?.textContent||'0');if(choice)choice.checked=true;if(value)value.textContent='1'}
+  else{if(choice)choice.checked=row.dataset.pvPrevious==='true';if(value)value.textContent=row.dataset.pvPrevious||'0';delete row.dataset.pvPrevious}
+  row.hidden=active;
+ });
+ refreshGroupLimit(group);updateProductLiveTotal();
+}
+function completeCartItems(box,items){
+ if(!box.querySelector('[data-pv-complete]:checked'))return items;
+ return [{name:'Completo ('+items.map(item=>item.name).join(', ')+')',price:items.reduce((sum,item)=>sum+(+item.price||0)*(item.qty||1),0),qty:1}];
+}
+
 function groupSelectedCount(group){
   let mode=group.dataset.mode;
   if(mode==='quantity') return [...group.querySelectorAll('.optQtyValue')].reduce((a,x)=>a+(+x.textContent||0),0);
-  return group.querySelectorAll('input:checked').length;
+  return group.querySelectorAll('input:not([data-pv-complete]):checked').length;
 }
 function refreshGroupLimit(group){
   if(!group)return;
@@ -565,6 +586,7 @@ function refreshGroupLimit(group){
   }else{
     group.querySelectorAll('.optionCard').forEach(row=>{
       let inp=row.querySelector('input'); if(!inp)return;
+      if(inp.dataset.pvComplete){row.classList.toggle('selected',inp.checked);return}
       let lock=reached && !inp.checked;
       inp.disabled=lock;
       row.classList.toggle('locked',lock);
@@ -587,7 +609,7 @@ function currentProductExtra(){
     let g=cfg.groups.find(x=>x.id===box.dataset.gid); if(!g)return;
     if(box.dataset.mode==='quantity'){
       box.querySelectorAll('.qtyOption').forEach(row=>{let q=+row.querySelector('.optQtyValue').textContent||0,o=g.options.find(x=>x.id===row.dataset.oid);if(o)extra+=(+o.price||0)*q});
-    }else box.querySelectorAll('input:checked').forEach(i=>{let o=g.options.find(x=>x.id===i.value);if(o)extra+=+o.price||0});
+    }else box.querySelectorAll('input:not([data-pv-complete]):checked').forEach(i=>{let o=g.options.find(x=>x.id===i.value);if(o)extra+=+o.price||0});
   });
   return extra;
 }
@@ -612,7 +634,7 @@ function openProduct(id){
       let type=r.mode==='single'?'radio':'checkbox';
       h+=os.map(o=>choiceOptionRow(g,o,type)).join('');
     }
-    h+='</div>';
+    h+=completeComplementCard(g);h+='</div>';
   });
   h+=`<label>Observação</label><textarea id="itemObs" class="field" placeholder="Ex.: sem granola"></textarea><div class="productFooter"><div class="productQty"><button onclick="qty(-1)">−</button><b id="qty">1</b><button onclick="qty(1)">+</button></div><button class="btn addPriceBtn" data-base="${+p.price||0}" onclick="addCart('${p.id}')">Adicionar • <span class="liveTotal">${brl(p.price)}</span></button></div>`;
   showModal(h); setTimeout(refreshAllGroupLimits,0);
@@ -628,11 +650,11 @@ function addCart(pid){
       for(let row of $$('.qtyOption',box)){let q=+row.querySelector('.optQtyValue').textContent||0;if(!q)continue;let o=g.options.find(x=>x.id===row.dataset.oid);if(!o)continue;total+=q;extra+=(+o.price||0)*q;items.push({name:o.name,price:+o.price||0,qty:q})}
       if(total<min){focusRequiredGroupV1162(box,g);return}
     }else{
-      let sel=$$('input:checked',box);
+      let sel=$$('input:not([data-pv-complete]):checked',box);
       if(sel.length<min){focusRequiredGroupV1162(box,g);return}
       items=sel.map(i=>{let o=g.options.find(x=>x.id===i.value);return o?{name:o.name,price:+o.price||0,qty:1}:null}).filter(Boolean);items.forEach(o=>extra+=o.price);
     }
-    if(items.length)groups.push({name:g.name,items});
+    if(items.length)groups.push({name:g.name,items:completeCartItems(box,items)});
   }
   cart.push({pid,qty:+$('#qty').textContent,unit:(+p.price||0)+extra,groups,obs:$('#itemObs').value});closeModal();updateCart();
 }
@@ -994,13 +1016,13 @@ function openProduct(id){
   let base=firstVar?+firstVar.price||0:+p.price||0;
   let h=`<div class="row"><div><h2 style="margin:0">${esc(p.name)}</h2>${hasVariants(p)?'<span class="price selectedVariantPrice">Escolha o tamanho</span>':`<span class="price">${brl(p.price)}</span>`}</div><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div><p>${esc(p.desc||'')}</p>${p.detailedDesc?`<p class="hint">${esc(p.detailedDesc)}</p>`:''}`;
   if(hasVariants(p)) h+=`<div class="group variantGroup"><div class="groupTitle">Escolha o tamanho</div><div class="hint">${(mode==='pickup'||mode==='dinein')?'Para esta modalidade, aceitamos somente pote de 1 litro.':'Escolha o tamanho desejado.'}</div>${vars.map(v=>variantChoiceHTML(v,mode)).join('')}</div>`;
-  (p.groups||[]).forEach(gid=>{let g=cfg.groups.find(x=>x.id===gid);if(!g)return;let os=(g.options||[]).filter(o=>o.status==='available');if(!os.length)return;let r=effectiveGroupRules(g),maxAttr=Number.isFinite(r.max)?r.max:'inf';h+=`<div class="group choiceGroup" data-gid="${g.id}" data-mode="${r.mode}" data-min="${r.min}" data-max="${maxAttr}"><div class="groupTitle">${esc(g.name)} ${r.required?'<span class="tinyTag">Obrigatório</span>':'<span class="tinyTag">Opcional</span>'}</div><div class="hint">${clientRuleText(g)}</div>`;if(r.mode==='quantity')h+=os.map(o=>quantityOptionRow(g,o)).join('');else{let type=r.mode==='single'?'radio':'checkbox';h+=os.map(o=>choiceOptionRow(g,o,type)).join('')}h+='</div>'});
+  (p.groups||[]).forEach(gid=>{let g=cfg.groups.find(x=>x.id===gid);if(!g)return;let os=(g.options||[]).filter(o=>o.status==='available');if(!os.length)return;let r=effectiveGroupRules(g),maxAttr=Number.isFinite(r.max)?r.max:'inf';h+=`<div class="group choiceGroup" data-gid="${g.id}" data-mode="${r.mode}" data-min="${r.min}" data-max="${maxAttr}"><div class="groupTitle">${esc(g.name)} ${r.required?'<span class="tinyTag">Obrigatório</span>':'<span class="tinyTag">Opcional</span>'}</div><div class="hint">${clientRuleText(g)}</div>`;if(r.mode==='quantity')h+=os.map(o=>quantityOptionRow(g,o)).join('');else{let type=r.mode==='single'?'radio':'checkbox';h+=os.map(o=>choiceOptionRow(g,o,type)).join('')}h+=completeComplementCard(g);h+='</div>'});
   h+=`<label>Observação</label><textarea id="itemObs" class="field" placeholder="Ex.: sem granola"></textarea><div class="productFooter"><div class="productQty"><button onclick="qty(-1)">−</button><b id="qty">1</b><button onclick="qty(1)">+</button></div><button class="btn addPriceBtn" data-base="${base}" onclick="addCart('${p.id}')">Adicionar • <span class="liveTotal">${brl(base)}</span></button></div>`;
   showModal(h);setTimeout(()=>{refreshAllGroupLimits();if(firstVar){let i=document.querySelector(`input[name="productVariant"][value="${CSS.escape(firstVar.id)}"]`);if(i){i.checked=true;handleVariantChange()}}},0);
 }
 function addCart(pid){
   let p=cfg.products.find(x=>x.id===pid);if(!p)return;let variant=hasVariants(p)?selectedVariant():null;if(hasVariants(p)&&!variant){alert('Escolha o tamanho.');return}
-  let groups=[],extra=0;for(let box of $$('.choiceGroup')){let g=cfg.groups.find(x=>x.id===box.dataset.gid);if(!g)continue;let mode=box.dataset.mode,min=+box.dataset.min,items=[];if(mode==='quantity'){let total=0;for(let row of $$('.qtyOption',box)){let q=+row.querySelector('.optQtyValue').textContent||0;if(!q)continue;let o=g.options.find(x=>x.id===row.dataset.oid);if(!o)continue;total+=q;extra+=(+o.price||0)*q;items.push({name:o.name,price:+o.price||0,qty:q})}if(total<min){focusRequiredGroupV1162(box,g);return}}else{let sel=$$('input:checked',box);if(sel.length<min){focusRequiredGroupV1162(box,g);return}items=sel.map(i=>{let o=g.options.find(x=>x.id===i.value);return o?{name:o.name,price:+o.price||0,qty:1}:null}).filter(Boolean);items.forEach(o=>extra+=o.price)}if(items.length)groups.push({name:g.name,items})}
+  let groups=[],extra=0;for(let box of $$('.choiceGroup')){let g=cfg.groups.find(x=>x.id===box.dataset.gid);if(!g)continue;let mode=box.dataset.mode,min=+box.dataset.min,items=[];if(mode==='quantity'){let total=0;for(let row of $$('.qtyOption',box)){let q=+row.querySelector('.optQtyValue').textContent||0;if(!q)continue;let o=g.options.find(x=>x.id===row.dataset.oid);if(!o)continue;total+=q;extra+=(+o.price||0)*q;items.push({name:o.name,price:+o.price||0,qty:q})}if(total<min){focusRequiredGroupV1162(box,g);return}}else{let sel=$$('input:not([data-pv-complete]):checked',box);if(sel.length<min){focusRequiredGroupV1162(box,g);return}items=sel.map(i=>{let o=g.options.find(x=>x.id===i.value);return o?{name:o.name,price:+o.price||0,qty:1}:null}).filter(Boolean);items.forEach(o=>extra+=o.price)}if(items.length)groups.push({name:g.name,items:completeCartItems(box,items)})}
   let base=variant?+variant.price||0:+p.price||0;cart.push({pid,variantId:variant?.id||null,variantName:variant?.name||'',qty:+$('#qty').textContent,unit:base+extra,groups,obs:$('#itemObs').value});closeModal();updateCart();renderShop();
 }
 
@@ -1023,7 +1045,7 @@ function showCart(){let h=`<div class="row"><div><h2 style="margin:0">Seu pedido
 function serviceRestrictionMessage(m){return (m==='pickup'||m==='dinein')?'Para retirada ou consumo no local, aceitamos somente pote de 1 litro. Nos sorvetes, escolha primeiro o sabor e depois o tamanho de 1 litro.':''}
 
 (function(){let st=document.createElement('style');st.textContent=`
-.variantAdminRow{border:1px solid var(--line);background:#faf8fb;border-radius:15px;padding:12px;margin:10px 0}.variantModeChecks{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px}.variantModeChecks label{display:flex;align-items:center;gap:5px}.variantModeChecks .dangerBtn{margin-left:auto}.variantGroup{margin-top:14px}.variantChoice{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:14px;padding:13px;margin:8px 0;background:#fff}.variantChoice span{display:flex;flex-direction:column;gap:3px}.variantChoice small{color:var(--muted)}.variantChoice input{width:22px;height:22px;accent-color:var(--p)}.variantChoice.variantDisabled{opacity:.36;background:#f2f0f2;pointer-events:none}.variantChoice:not(.variantDisabled):has(input:checked){border-color:var(--p);background:#f4e8f7}.cartActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.cartActions button{min-height:52px}@media(max-width:520px){.variantModeChecks{align-items:flex-start}.cartActions{grid-template-columns:1fr}}
+.variantAdminRow{border:1px solid var(--line);background:#faf8fb;border-radius:15px;padding:12px;margin:10px 0}.variantModeChecks{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px}.variantModeChecks label{display:flex;align-items:center;gap:5px}.variantModeChecks .dangerBtn{margin-left:auto}.variantGroup{margin-top:14px}.variantChoice{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--line);border-radius:14px;padding:13px;margin:8px 0;background:#fff}.variantChoice span{display:flex;flex-direction:column;gap:3px}.variantChoice small{color:var(--muted)}.variantChoice input{width:22px;height:22px;accent-color:var(--p)}.variantChoice.variantDisabled{opacity:.36;background:#f2f0f2;pointer-events:none}.variantChoice:not(.variantDisabled):has(input:not([data-pv-complete]):checked){border-color:var(--p);background:#f4e8f7}.cartActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.cartActions button{min-height:52px}@media(max-width:520px){.variantModeChecks{align-items:flex-start}.cartActions{grid-template-columns:1fr}}
 `;document.head.appendChild(st)})();
 
 
@@ -1065,7 +1087,7 @@ function openProduct(id){
   let base=firstVar?+firstVar.price||0:+p.price||0;
   let h=`<div class="row"><div><h2 style="margin:0">${esc(p.name)}</h2>${hasVariants(p)?'<span class="price selectedVariantPrice">Escolha o tamanho</span>':`<span class="price">${brl(p.price)}</span>`}</div><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div><p>${esc(p.desc||'')}</p>${p.detailedDesc?`<p class="hint">${esc(p.detailedDesc)}</p>`:''}`;
   if(hasVariants(p))h+=`<div class="group variantGroup"><div class="groupTitle">Escolha o tamanho</div><div class="hint">A forma de recebimento será escolhida ao finalizar o pedido e dependerá dos tamanhos adicionados ao carrinho.</div>${vars.map(v=>variantChoiceHTML(v)).join('')}</div>`;
-  (p.groups||[]).forEach(gid=>{let g=cfg.groups.find(x=>x.id===gid);if(!g)return;let os=(g.options||[]).filter(o=>o.status==='available');if(!os.length)return;let r=effectiveGroupRules(g),maxAttr=Number.isFinite(r.max)?r.max:'inf';h+=`<div class="group choiceGroup" data-gid="${g.id}" data-mode="${r.mode}" data-min="${r.min}" data-max="${maxAttr}"><div class="groupTitle">${esc(g.name)} ${r.required?'<span class="tinyTag">Obrigatório</span>':'<span class="tinyTag">Opcional</span>'}</div><div class="hint">${clientRuleText(g)}</div>`;if(r.mode==='quantity')h+=os.map(o=>quantityOptionRow(g,o)).join('');else{let type=r.mode==='single'?'radio':'checkbox';h+=os.map(o=>choiceOptionRow(g,o,type)).join('')}h+='</div>'});
+  (p.groups||[]).forEach(gid=>{let g=cfg.groups.find(x=>x.id===gid);if(!g)return;let os=(g.options||[]).filter(o=>o.status==='available');if(!os.length)return;let r=effectiveGroupRules(g),maxAttr=Number.isFinite(r.max)?r.max:'inf';h+=`<div class="group choiceGroup" data-gid="${g.id}" data-mode="${r.mode}" data-min="${r.min}" data-max="${maxAttr}"><div class="groupTitle">${esc(g.name)} ${r.required?'<span class="tinyTag">Obrigatório</span>':'<span class="tinyTag">Opcional</span>'}</div><div class="hint">${clientRuleText(g)}</div>`;if(r.mode==='quantity')h+=os.map(o=>quantityOptionRow(g,o)).join('');else{let type=r.mode==='single'?'radio':'checkbox';h+=os.map(o=>choiceOptionRow(g,o,type)).join('')}h+=completeComplementCard(g);h+='</div>'});
   h+=`<label>Observação</label><textarea id="itemObs" class="field" placeholder="Ex.: sem granola"></textarea><div class="productFooter"><div class="productQty"><button onclick="qty(-1)">−</button><b id="qty">1</b><button onclick="qty(1)">+</button></div><button class="btn addPriceBtn" data-base="${base}" onclick="addCart('${p.id}')">Adicionar • <span class="liveTotal">${brl(base)}</span></button></div>`;
   showModal(h);setTimeout(()=>{refreshAllGroupLimits();if(firstVar){let i=document.querySelector(`input[name="productVariant"][value="${CSS.escape(firstVar.id)}"]`);if(i){i.checked=true;handleVariantChange()}}},0);
 }
