@@ -645,6 +645,17 @@ label.optionCard.pvTasteIngredient[data-pv-taste]>input,label.optionCard.pvTaste
 #modal .optQty button:active,#modal .productQty button:active{transform:none!important}
 #modal .optionCard[data-pv-taste],#modal .optionCard[data-pv-taste].selected{transform:none;transition:border-color .15s}
 </style>
+<style>
+/* Mantém a mesma borda neutra também na última opção do grupo. */
+.choiceGroup>.optionCard:not([data-pv-taste]):not(.pvCompleteCard){border-width:1px;border-style:solid}
+.choiceGroup>.optionCard:not([data-pv-taste]):not(.pvCompleteCard):not(.selected){border-color:#d8d1da}
+.optionCard[data-pv-taste="syr17"]{--visual-photo:url("assets/pedevia-calda-fini-beijos-v2.webp?v=13533")}
+.optionCard[data-pv-taste="syr18"]{--visual-photo:url("assets/pedevia-calda-fini-dentadura-v2.webp?v=13533")}
+.optionCard[data-pv-taste="syr19"]{--visual-photo:url("assets/pedevia-calda-fini-bananinha-v2.webp?v=13533")}
+</style>
+<style>
+.optionCard.pvTasteSyrup[data-pv-taste="syr17"]::before,.optionCard.pvTasteSyrup[data-pv-taste="syr18"]::before,.optionCard.pvTasteSyrup[data-pv-taste="syr19"]::before{background-size:300px 100%}
+</style>
 </head>
 <body>
 <header class="top">
@@ -679,7 +690,7 @@ label.optionCard.pvTasteIngredient[data-pv-taste]>input,label.optionCard.pvTaste
 <div class="cartbar" id="cartBar"><button class="btn" data-pedevia-action="show-cart"><span>🛒 Carrinho · <b id="cartCount">0</b></span><b id="cartTotal">R$ 0,00</b></button></div>
 <div class="overlay" id="modal"><div class="sheet" id="sheet"></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/pedevia-inline-02.js?v=13530"></script>
+<script src="assets/pedevia-inline-02.js?v=13533"></script>
 <script src="assets/pedevia-inline-03.js?v=13301stable1"></script>
 <script src="assets/pedevia-inline-04.js?v=13301stable1"></script>
 <style id="v1170Styles">
