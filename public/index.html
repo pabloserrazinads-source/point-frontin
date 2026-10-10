@@ -10,7 +10,7 @@ html.pedeviaTenantBoot::before{
 }
 
 </style>
-<script src="assets/pedevia-version.js?v=13521stable1"></script>
+<script src="assets/pedevia-version.js?v=13522stable1"></script>
 <script src="assets/pedevia-inline-01.js?v=13301stable1"></script>
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
@@ -504,24 +504,42 @@ button:active,.tab:active,.settingCard:active,.moreCard:active,.socialBtn:active
 
 </style>
 <style>
-/* Fundos individuais dos adicionais de sorvete: texto e controles independentes. */
-.optionCard.pvTasteIce[data-pv-taste]{padding:16px;min-height:116px;background-color:#fff8ef;background-image:var(--ice-image);background-size:cover;background-position:center;grid-template-columns:minmax(0,1fr) auto;align-items:center}
-.optionCard.pvTasteIce[data-pv-taste]::before,.optionCard.pvTasteIce[data-pv-taste]::after{display:none}
-.optionCard.pvTasteIce[data-pv-taste]>.pvTasteCopy{max-width:none;min-width:0;padding:5px 7px;background:transparent;border-radius:0}
-.optionCard.pvTasteIce[data-pv-taste]>.pvTasteCopy>b{color:#302632;font-size:17px;line-height:1.25;overflow-wrap:anywhere}
-.optionCard.pvTasteIce[data-pv-taste] .optionPrice{color:#302632;font-size:15px}
-.optionCard.pvTasteIce[data-pv-taste]>.optQty{padding:4px;background:rgba(255,255,255,.92);border-radius:99px;gap:5px;color:#302632}
-.optionCard.pvTasteIce[data-pv-taste]>.optQty button{background:#f2ddfa;color:#7a4caa;width:40px;height:40px}
-@media(max-width:360px){.optionCard.pvTasteIce[data-pv-taste]{padding:10px;gap:5px}.optionCard.pvTasteIce[data-pv-taste]>.pvTasteCopy>b{font-size:15px}.optionCard.pvTasteIce[data-pv-taste]>.optQty button{width:34px;height:34px}}
-.qtyOption[data-pv-taste="icekinder"]{--ice-image:url("assets/pedevia-ice-kinder.webp")}
-.qtyOption[data-pv-taste="icerum"]{--ice-image:url("assets/pedevia-ice-rum.webp")}
-.qtyOption[data-pv-taste="icemaracuja"]{--ice-image:url("assets/pedevia-ice-maracuja.webp")}
-.qtyOption[data-pv-taste="icesensacao"]{--ice-image:url("assets/pedevia-ice-sensacao.webp")}
-.qtyOption[data-pv-taste="icevermelhas"]{--ice-image:url("assets/pedevia-ice-vermelhas.webp")}
-.qtyOption[data-pv-taste="iceblue"]{--ice-image:url("assets/pedevia-ice-blue.webp")}
-.qtyOption[data-pv-taste="icekitkat"]{--ice-image:url("assets/pedevia-ice-kitkat.webp")}
-.qtyOption[data-pv-taste="icegalak"]{--ice-image:url("assets/pedevia-ice-galak.webp")}
-.qtyOption[data-pv-taste="icecreme"]{--ice-image:url("assets/pedevia-ice-creme.webp")}
+/* Sorvetes e açaís: foto à esquerda, texto e seleção em áreas independentes. */
+.optionCard.pvTasteIce[data-pv-taste]{--ice-space:108px;position:relative;isolation:isolate;overflow:hidden;padding:14px 12px 14px var(--ice-space);min-height:104px;background:linear-gradient(90deg,var(--ice-tint,#fff8ef) 0%,var(--ice-tint,#fff8ef) 24%,#fff 80%);grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px}
+.optionCard.pvTasteIce[data-pv-taste]::before{content:'';display:block;position:absolute;top:0;bottom:0;left:0;right:auto;width:calc(var(--ice-space) + 18px);height:100%;z-index:0;background-image:var(--ice-image);background-repeat:no-repeat;background-size:calc(var(--ice-space) * 2.2) 100%;background-position:right center;mask-image:linear-gradient(90deg,#000 0%,#000 58%,rgba(0,0,0,.75) 74%,transparent 100%);filter:none;transform:none;opacity:1;pointer-events:none}
+.optionCard.pvTasteIce[data-pv-taste]::after{display:none}
+.optionCard.pvTasteIce[data-pv-taste]>.pvTasteCopy{position:relative;z-index:2;max-width:none;min-width:0;padding:0;background:transparent;border-radius:0}
+.optionCard.pvTasteIce[data-pv-taste]>.pvTasteCopy>b{color:#302632;font-size:16px;line-height:1.25;white-space:normal;overflow-wrap:anywhere}
+.optionCard.pvTasteIce[data-pv-taste] .optionPrice{color:#635d66;font-size:14px}
+.optionCard.pvTasteIce[data-pv-taste]>.optQty{position:relative;z-index:3;padding:0;background:transparent;border-radius:0;gap:4px;color:#302632}
+.optionCard.pvTasteIce[data-pv-taste]>.optQty button{background:#f2ddfa;color:#7a4caa;width:36px;height:36px}
+label.optionCard.pvTasteIce[data-pv-taste]>input{box-shadow:none}
+@media(max-width:360px){.optionCard.pvTasteIce[data-pv-taste]{--ice-space:86px;gap:5px}.optionCard.pvTasteIce[data-pv-taste]>.pvTasteCopy>b{font-size:14px}.optionCard.pvTasteIce[data-pv-taste]>.optQty button{width:32px;height:32px}}
+.optionCard.pvTasteIce[data-pv-taste="icekinder"]{--ice-tint:#fff2e6}
+.optionCard.pvTasteIce[data-pv-taste="icerum"]{--ice-tint:#fff1d2}
+.optionCard.pvTasteIce[data-pv-taste="icemaracuja"]{--ice-tint:#fff3cb}
+.optionCard.pvTasteIce[data-pv-taste="icesensacao"]{--ice-tint:#ffeef1}
+.optionCard.pvTasteIce[data-pv-taste="icevermelhas"]{--ice-tint:#ffeef5}
+.optionCard.pvTasteIce[data-pv-taste="iceblue"]{--ice-tint:#e8f7ff}
+.optionCard.pvTasteIce[data-pv-taste="icekitkat"]{--ice-tint:#fff3e5}
+.optionCard.pvTasteIce[data-pv-taste="icegalak"]{--ice-tint:#fff9df}
+.optionCard.pvTasteIce[data-pv-taste="icecreme"]{--ice-tint:#fff5d7}
+.optionCard.pvTasteIce[data-pv-taste="icecupuacu"]{--ice-tint:#fff4e3}
+.optionCard.pvTasteIce[data-pv-taste="iceacainutella"]{--ice-tint:#f8eadf}
+.optionCard.pvTasteIce[data-pv-taste="icesonhovalsa"]{--ice-tint:#fff0e8}
+.optionCard.pvTasteIce[data-pv-taste="icepistache"]{--ice-tint:#f0f4df}
+.optionCard.pvTasteIce[data-pv-taste="iceninhotrufado"]{--ice-tint:#fff3e2}
+.optionCard.pvTasteIce[data-pv-taste="iceflocos"]{--ice-tint:#fff7eb}
+.optionCard.pvTasteIce[data-pv-taste="iceferrero"]{--ice-tint:#f9eadb}
+.optionCard[data-pv-taste="icekinder"]{--ice-image:url("assets/pedevia-ice-kinder.webp")}
+.optionCard[data-pv-taste="icerum"]{--ice-image:url("assets/pedevia-ice-rum.webp")}
+.optionCard[data-pv-taste="icemaracuja"]{--ice-image:url("assets/pedevia-ice-maracuja.webp")}
+.optionCard[data-pv-taste="icesensacao"]{--ice-image:url("assets/pedevia-ice-sensacao.webp")}
+.optionCard[data-pv-taste="icevermelhas"]{--ice-image:url("assets/pedevia-ice-vermelhas.webp")}
+.optionCard[data-pv-taste="iceblue"]{--ice-image:url("assets/pedevia-ice-blue.webp")}
+.optionCard[data-pv-taste="icekitkat"]{--ice-image:url("assets/pedevia-ice-kitkat.webp")}
+.optionCard[data-pv-taste="icegalak"]{--ice-image:url("assets/pedevia-ice-galak.webp")}
+.optionCard[data-pv-taste="icecreme"]{--ice-image:url("assets/pedevia-ice-creme.webp")}
 .optionCard[data-pv-taste="icecupuacu"]{--ice-image:url("assets/pedevia-ice-cupuacu.webp?v=13520")}
 </style>
 <style>
