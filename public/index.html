@@ -10,7 +10,7 @@ html.pedeviaTenantBoot::before{
 }
 
 </style>
-<script src="assets/pedevia-version.js?v=13524stable1"></script>
+<script src="assets/pedevia-version.js?v=13526stable1"></script>
 <script src="assets/pedevia-inline-01.js?v=13301stable1"></script>
 <meta charset="utf-8"/>
 <meta content="width=device-width,initial-scale=1,viewport-fit=cover" name="viewport"/>
@@ -504,21 +504,21 @@ button:active,.tab:active,.settingCard:active,.moreCard:active,.socialBtn:active
 
 </style>
 <style>
-/* Foto integrada ao fundo do sabor, sem divisão reta; nomes com espaço próprio. */
-.optionCard.pvTasteIce[data-pv-taste]{--ice-space:104px;position:relative;isolation:isolate;overflow:hidden;padding:12px 12px 12px calc(var(--ice-space) + 12px);min-height:116px;background:var(--ice-tint,#fff8ef);grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:7px}
-.optionCard.pvTasteIce[data-pv-taste]::before{content:'';display:block;position:absolute;inset:0 auto 0 0;width:calc(var(--ice-space) + 24px);height:100%;z-index:0;background-image:var(--ice-image);background-repeat:no-repeat;background-size:calc(var(--ice-space) * 2.1) 100%;background-position:right center;mask-image:linear-gradient(90deg,#000 0%,#000 65%,rgba(0,0,0,.85) 75%,rgba(0,0,0,.4) 88%,transparent 100%);filter:none;transform:none;opacity:1;pointer-events:none}
+/* Fundo original completo espelhado; texto e controles não são invertidos. */
+.optionCard.pvTasteIce[data-pv-taste]{position:relative;isolation:isolate;overflow:hidden;padding:14px 12px 14px 46%;min-height:116px;background:var(--ice-tint,#fff8ef);grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:7px}
+.optionCard.pvTasteIce[data-pv-taste]::before{content:'';display:block;position:absolute;inset:0;width:100%;height:100%;z-index:0;background-image:var(--ice-image);background-repeat:no-repeat;background-size:100% 100%;background-position:center;mask-image:none;filter:none;transform:scaleX(-1);opacity:1;pointer-events:none}
 .optionCard.pvTasteIce[data-pv-taste]::after{display:none}
 .optionCard.pvTasteIce[data-pv-taste]>.pvTasteCopy{display:contents;background:transparent;padding:0}
 .optionCard.pvTasteIce[data-pv-taste]>.pvTasteCopy>b{position:relative;z-index:2;grid-column:1/-1;min-width:0;color:#302632;font-size:16px;line-height:1.25;white-space:normal;overflow-wrap:break-word;word-break:normal}
 .optionCard.pvTasteIce[data-pv-taste] .pvIcePrefix{display:block;margin-bottom:3px;font-size:11px;line-height:1.25;font-weight:500;color:#64545c}
-.optionCard.pvTasteIce[data-pv-taste] .pvIceFlavor{display:block;font-size:16px;font-weight:750;line-height:1.25}
+.optionCard.pvTasteIce[data-pv-taste] .pvIceFlavor{display:block;font-size:16px;font-weight:750;line-height:1.25;text-transform:uppercase}
 .optionCard.pvTasteIce[data-pv-taste] .hint{position:relative;z-index:2;grid-column:1/-1}
 .optionCard.pvTasteIce[data-pv-taste] .optionPrice{position:relative;z-index:2;grid-column:1;color:#302632;font-size:13px;margin:0;white-space:nowrap}
 .optionCard.pvTasteIce[data-pv-taste]>.optQty{position:relative;z-index:3;grid-column:2;padding:3px;background:rgba(255,255,255,.92);border-radius:99px;gap:3px;color:#302632}
 .optionCard.pvTasteIce[data-pv-taste]>.optQty button{background:#f2ddfa;color:#7a4caa;width:30px;height:30px;font-size:21px}
 label.optionCard.pvTasteIce[data-pv-taste]>.pvTasteCopy>b,label.optionCard.pvTasteIce[data-pv-taste] .hint{grid-column:1}
 label.optionCard.pvTasteIce[data-pv-taste]>input{grid-column:2;grid-row:1/span 3;box-shadow:none}
-@media(max-width:360px){.optionCard.pvTasteIce[data-pv-taste]{--ice-space:84px;padding-right:9px;gap:5px}.optionCard.pvTasteIce[data-pv-taste] .pvIceFlavor{font-size:15px}.optionCard.pvTasteIce[data-pv-taste]>.optQty button{width:28px;height:28px}.optionCard.pvTasteIce[data-pv-taste] .optionPrice{font-size:12px}}
+@media(max-width:360px){.optionCard.pvTasteIce[data-pv-taste]{padding-left:44%;padding-right:9px;gap:5px}.optionCard.pvTasteIce[data-pv-taste] .pvIceFlavor{font-size:15px}.optionCard.pvTasteIce[data-pv-taste]>.optQty button{width:28px;height:28px}.optionCard.pvTasteIce[data-pv-taste] .optionPrice{font-size:12px}}
 .optionCard.pvTasteIce[data-pv-taste="icekinder"]{--ice-tint:#fff2e6}
 .optionCard.pvTasteIce[data-pv-taste="icerum"]{--ice-tint:#fff1d2}
 .optionCard.pvTasteIce[data-pv-taste="icemaracuja"]{--ice-tint:#fff3cb}
