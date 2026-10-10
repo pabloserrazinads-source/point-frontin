@@ -618,6 +618,17 @@ label.optionCard.pvTasteIngredient[data-pv-taste]>input,label.optionCard.pvTaste
 .optionCard.pvTasteIce[data-pv-taste]>.pvTasteCopy>b{padding-left:12px;box-sizing:border-box}
 @media(max-width:360px){.optionCard.pvTasteIce[data-pv-taste]>.pvTasteCopy>b{padding-left:10px}}
 </style>
+<style>
+/* O último adicional também conserva a borda de seleção. */
+.optionCard.pvTasteIce[data-pv-taste]{border:1.5px solid #d8d0da}
+.optionCard.pvTasteIce[data-pv-taste].selected{border:1.5px solid #6e428a;box-shadow:0 0 0 1px #6e428a,0 7px 20px #6e428a25}
+.choiceGroup .optionCard[hidden]{display:none!important}
+.pvCompleteCard{position:relative;min-height:116px;padding:16px 40px!important;background:#fff6ed url("assets/pedevia-complementos-completo.webp?v=13529") center/100% 100%;border:1.5px solid #d8d0da!important;border-radius:16px;display:flex;align-items:center;justify-content:center;text-align:center;margin-top:10px}
+.pvCompleteCard>span{background:#fff9;border-radius:12px;padding:7px 14px;color:#352337}
+.pvCompleteCard b{display:block;font-size:23px}.pvCompleteCard small{display:block;font-size:11px}
+.pvCompleteCard>input{position:absolute;right:12px;accent-color:var(--p)}
+.pvCompleteCard.selected{border-color:#6e428a!important;box-shadow:0 0 0 1px #6e428a}
+</style>
 </head>
 <body>
 <header class="top">
@@ -652,7 +663,7 @@ label.optionCard.pvTasteIngredient[data-pv-taste]>input,label.optionCard.pvTaste
 <div class="cartbar" id="cartBar"><button class="btn" data-pedevia-action="show-cart"><span>🛒 Carrinho · <b id="cartCount">0</b></span><b id="cartTotal">R$ 0,00</b></button></div>
 <div class="overlay" id="modal"><div class="sheet" id="sheet"></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/pedevia-inline-02.js?v=13527"></script>
+<script src="assets/pedevia-inline-02.js?v=13529"></script>
 <script src="assets/pedevia-inline-03.js?v=13301stable1"></script>
 <script src="assets/pedevia-inline-04.js?v=13301stable1"></script>
 <style id="v1170Styles">
