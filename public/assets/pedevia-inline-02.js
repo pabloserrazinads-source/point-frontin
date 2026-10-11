@@ -438,7 +438,7 @@ function moveSection(id,dir){let i=cfg.sections.findIndex(s=>s.id===id),j=i+dir;
 function moveProductToSection(pid,sid){let p=cfg.products.find(x=>x.id===pid);if(p){p.category=sid;save();adminMenu();renderShop()}}
 
 function adminMenu(){
- $('#adminContent').innerHTML=`<div class="panel"><div class="menuBuilderHead"><div><h3 style="margin:0">Cardápio</h3><div class="hint">Organize produtos em seções como Açaí, Sorvetes, Biscoitos e outras.</div></div><button class="btn" data-pedevia-event="click" data-pedevia-call="newSection">＋ Adicionar seção</button></div><div class="adminSubnav"><button class="on">Seções e produtos</button><button onclick="adminSubTab='stock';adminStock()">Complementos e estoque</button></div>${cfg.sections.map((s,i)=>`${i===0?'<div class="sectionInsert"><button onclick="newSection(null)">＋ Adicionar seção</button></div>':''}<div class="sectionAdmin"><div class="sectionAdminTop"><div><h3>${esc(s.title)} ${s.active?'':'<span class="badge hidden">Oculta</span>'}</h3><div class="sectionDesc">${esc(s.description||'Sem descrição')} · ${productsForSection(s.id).length} produto(s)</div></div><div class="miniBtns"><button onclick="moveSection('${s.id}',-1)" ${i===0?'disabled':''}>↑</button><button onclick="moveSection('${s.id}',1)" ${i===cfg.sections.length-1?'disabled':''}>↓</button><button onclick="editSection('${s.id}')">✎</button></div></div><div class="sectionAdminProducts">${productsForSection(s.id).map(p=>`<div class="adminProdCard"><b>${esc(p.name)}</b><span class="price">${brl(p.price)}</span><div class="hint">${statusLabel(p.status)} · ${(p.groups||[]).length} grupos</div><button class="ghost full" onclick="editProduct('${p.id}')">Editar produto</button></div>`).join('')||'<div class="emptySection">Nenhum produto nesta seção.</div>'}</div><button class="ghost full" style="margin-top:10px" onclick="newProduct('${s.id}')">＋ Adicionar produto em ${esc(s.title)}</button><button class="dangerBtn" style="margin-top:8px" onclick="deleteSection('${s.id}')">Remover seção</button></div><div class="sectionInsert"><button onclick="newSection('${s.id}')">＋ Adicionar seção</button></div>`).join('')}</div>`;
+ $('#adminContent').innerHTML=`<div class="panel"><div class="menuBuilderHead"><div><h3 style="margin:0">Cardápio</h3><div class="hint">Organize produtos em seções como Açaí, Sorvetes, Biscoitos e outras.</div></div><button class="btn" data-pedevia-event="click" data-pedevia-call="newSection">＋ Adicionar seção</button></div><div class="adminSubnav"><button class="on">Seções e produtos</button><button onclick="adminSubTab='stock';adminStock()">Complementos e estoque</button></div>${cfg.sections.map((s,i)=>`${i===0?'<div class="sectionInsert"><button onclick="newSection(null)">＋ Adicionar seção</button></div>':''}<div class="sectionAdmin"><div class="sectionAdminTop"><div><h3>${esc(s.title)} ${s.active?'':'<span class="badge hidden">Oculta</span>'}</h3><div class="sectionDesc">${esc(s.description||'Sem descrição')} · ${productsForSection(s.id).length} produto(s)</div></div><div class="miniBtns"><button onclick="moveSection('${s.id}',-1)" ${i===0?'disabled':''}>↑</button><button onclick="moveSection('${s.id}',1)" ${i===cfg.sections.length-1?'disabled':''}>↓</button><button onclick="editSection('${s.id}')">✎</button></div></div>${productsForSection(s.id).some(hasVariants)?`<button class="ghost full" style="margin:10px 0" onclick="openSectionSizesV13535('${s.id}')">Gerenciar tamanhos em todos os sabores</button>`:''}<div class="sectionAdminProducts">${productsForSection(s.id).map(p=>`<div class="adminProdCard"><b>${esc(p.name)}</b><span class="price">${brl(p.price)}</span><div class="hint">${statusLabel(p.status)} · ${(p.groups||[]).length} grupos</div><button class="ghost full" onclick="editProduct('${p.id}')">Editar produto</button></div>`).join('')||'<div class="emptySection">Nenhum produto nesta seção.</div>'}</div><button class="ghost full" style="margin-top:10px" onclick="newProduct('${s.id}')">＋ Adicionar produto em ${esc(s.title)}</button><button class="dangerBtn" style="margin-top:8px" onclick="deleteSection('${s.id}')">Remover seção</button></div><div class="sectionInsert"><button onclick="newSection('${s.id}')">＋ Adicionar seção</button></div>`).join('')}</div>`;
 }
 function adminProducts(){adminMenu()}
 
@@ -971,12 +971,12 @@ function variantsEditorHTML(p){
   <div id="variantEditor" class="${on?'':'hide'}">${variantRowsHTML(p)}<button class="ghost full" data-pedevia-event="click" data-pedevia-call="addVariantRow">＋ Adicionar tamanho</button><div class="hint" style="margin-top:8px">Para retirada ou consumo no local, marque apenas o tamanho de 1 Litro. Os demais continuarão disponíveis para delivery.</div></div>`;
 }
 function variantRowsHTML(p){let a=hasVariants(p)?p.variants:defaultSizeVariants(); if(!hasVariants(p))p._draftVariants=a; return a.map(variantRowHTML).join('')}
-function variantRowHTML(v){normalizeVariant(v);return `<div class="variantAdminRow" data-vid="${esc(v.id)}"><div class="two"><div><label>Tamanho</label><input class="field vvName" value="${esc(v.name)}"></div><div><label>Preço (R$)</label><input class="field vvPrice" type="number" step=".01" value="${v.price}"></div></div><div class="variantModeChecks"><label><input class="vvDelivery" type="checkbox" ${v.allowedModes.delivery?'checked':''}> Delivery</label><label><input class="vvPickup" type="checkbox" ${v.allowedModes.pickup?'checked':''}> Retirada</label><label><input class="vvDinein" type="checkbox" ${v.allowedModes.dinein?'checked':''}> Consumo local</label><button class="dangerBtn" type="button" onclick="this.closest('.variantAdminRow').remove()">Remover</button></div></div>`}
+function variantRowHTML(v){normalizeVariant(v);return `<div class="variantAdminRow" data-vid="${esc(v.id)}"><div class="two"><div><label>Tamanho</label><input class="field vvName" value="${esc(v.name)}"></div><div><label>Preço (R$)</label><input class="field vvPrice" type="number" step=".01" value="${v.price}"></div></div><label>Status do tamanho</label><select class="field vvStatus">${['available','unavailable','hidden'].map(status=>`<option value="${status}" ${v.status===status?'selected':''}>${statusLabel(status)}</option>`).join('')}</select><div class="variantModeChecks"><label><input class="vvDelivery" type="checkbox" ${v.allowedModes.delivery?'checked':''}> Delivery</label><label><input class="vvPickup" type="checkbox" ${v.allowedModes.pickup?'checked':''}> Retirada</label><label><input class="vvDinein" type="checkbox" ${v.allowedModes.dinein?'checked':''}> Consumo local</label><button class="dangerBtn" type="button" onclick="this.closest('.variantAdminRow').remove()">Remover</button></div></div>`}
 function toggleVariantsEditor(pid,on){let p=cfg.products.find(x=>x.id===pid),box=$('#variantEditor');if(!box)return;if(on){if(!hasVariants(p)&&!p._draftVariants)p._draftVariants=defaultSizeVariants();box.classList.remove('hide');box.innerHTML=(p._draftVariants||p.variants||defaultSizeVariants()).map(variantRowHTML).join('')+'<button class="ghost full" data-pedevia-event="click" data-pedevia-call="addVariantRow">＋ Adicionar tamanho</button><div class="hint" style="margin-top:8px">Para retirada ou consumo no local, marque apenas o tamanho de 1 Litro. Os demais continuarão disponíveis para delivery.</div>'}else box.classList.add('hide')}
 function addVariantRow(){let box=$('#variantEditor');if(!box)return;let btn=box.querySelector('button.ghost.full');let d=document.createElement('div');d.innerHTML=variantRowHTML({id:'v'+Date.now(),name:'Novo tamanho',price:0,status:'available',allowedModes:{delivery:true,pickup:false,dinein:false}});box.insertBefore(d.firstElementChild,btn)}
 function collectVariantsFromEditor(){
   if(!$('#pvEnabled')?.checked)return [];
-  return $$('.variantAdminRow').map(r=>({id:r.dataset.vid||('v'+Date.now()),name:r.querySelector('.vvName').value.trim()||'Tamanho',price:+r.querySelector('.vvPrice').value||0,status:'available',allowedModes:{delivery:r.querySelector('.vvDelivery').checked,pickup:r.querySelector('.vvPickup').checked,dinein:r.querySelector('.vvDinein').checked}}));
+  return $$('.variantAdminRow').map(r=>({id:r.dataset.vid||('v'+Date.now()),name:r.querySelector('.vvName').value.trim()||'Tamanho',price:+r.querySelector('.vvPrice').value||0,status:r.querySelector('.vvStatus')?.value||'available',allowedModes:{delivery:r.querySelector('.vvDelivery').checked,pickup:r.querySelector('.vvPickup').checked,dinein:r.querySelector('.vvDinein').checked}}));
 }
 
 // Editor de produto com suporte a "sabor principal" + tamanhos internos.
@@ -1017,7 +1017,7 @@ function variantChoiceHTML(v,mode){let ok=v.status==='available'&&variantAllowsM
 function openProduct(id){
   let p=cfg.products.find(x=>x.id===id); if(!p)return; let mode=window.clientServiceMode||'delivery';
   if(!productAllowsMode(p,mode)){return}
-  let vars=hasVariants(p)?p.variants.map(normalizeVariant):[]; window.currentProductVariants=vars;
+  let vars=hasVariants(p)?p.variants.map(normalizeVariant).filter(v=>v.status!=='hidden'):[]; window.currentProductVariants=vars;
   let firstVar=vars.find(v=>v.status==='available'&&variantAllowsMode(v,mode));
   let base=firstVar?+firstVar.price||0:+p.price||0;
   let h=`<div class="row"><div><h2 style="margin:0">${esc(p.name)}</h2>${hasVariants(p)?'<span class="price selectedVariantPrice">Escolha o tamanho</span>':`<span class="price">${brl(p.price)}</span>`}</div><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div><p>${esc(p.desc||'')}</p>${p.detailedDesc?`<p class="hint">${esc(p.detailedDesc)}</p>`:''}`;
@@ -1027,7 +1027,7 @@ function openProduct(id){
   showModal(h);setTimeout(()=>{refreshAllGroupLimits();if(firstVar){let i=document.querySelector(`input[name="productVariant"][value="${CSS.escape(firstVar.id)}"]`);if(i){i.checked=true;handleVariantChange()}}},0);
 }
 function addCart(pid){
-  let p=cfg.products.find(x=>x.id===pid);if(!p)return;let variant=hasVariants(p)?selectedVariant():null;if(hasVariants(p)&&!variant){alert('Escolha o tamanho.');return}
+  let p=cfg.products.find(x=>x.id===pid);if(!p)return;let variant=hasVariants(p)?selectedVariant():null;if(hasVariants(p)&&(!variant||!p.variants.some(v=>v.id===variant.id&&v.status==='available'))){alert('Escolha um tamanho disponível.');return}
   let groups=[],extra=0;for(let box of $$('.choiceGroup')){let g=cfg.groups.find(x=>x.id===box.dataset.gid);if(!g)continue;let mode=box.dataset.mode,min=+box.dataset.min,items=[];if(mode==='quantity'){let total=0;for(let row of $$('.qtyOption',box)){let q=+row.querySelector('.optQtyValue').textContent||0;if(!q)continue;let o=g.options.find(x=>x.id===row.dataset.oid);if(!o)continue;total+=q;extra+=(+o.price||0)*q;items.push({name:o.name,price:+o.price||0,qty:q})}if(total<min){focusRequiredGroupV1162(box,g);return}}else{let sel=$$('input:not([data-pv-complete]):checked',box);if(sel.length<min){focusRequiredGroupV1162(box,g);return}items=sel.map(i=>{let o=g.options.find(x=>x.id===i.value);return o?{name:o.name,price:+o.price||0,qty:1}:null}).filter(Boolean);items.forEach(o=>extra+=o.price)}if(items.length)groups.push({name:g.name,items:completeCartItems(box,items)})}
   let base=variant?+variant.price||0:+p.price||0;cart.push({pid,variantId:variant?.id||null,variantName:variant?.name||'',qty:+$('#qty').textContent,unit:base+extra,groups,obs:$('#itemObs').value});closeModal();updateCart();renderShop();
 }
@@ -1062,6 +1062,7 @@ function removeClientServiceBar(){let b=document.getElementById('clientServiceBa
 
 function variantChoiceHTML(v){
   normalizeVariant(v);
+  if(v.status==='hidden')return '';
   let ok=v.status==='available';
   let labels=[];
   if(v.allowedModes?.delivery)labels.push('Delivery');
@@ -1088,7 +1089,7 @@ function renderShop(){
 
 function openProduct(id){
   let p=cfg.products.find(x=>x.id===id);if(!p||p.status!=='available')return;
-  let vars=hasVariants(p)?p.variants.map(normalizeVariant):[];window.currentProductVariants=vars;
+  let vars=hasVariants(p)?p.variants.map(normalizeVariant).filter(v=>v.status!=='hidden'):[];window.currentProductVariants=vars;
   let firstVar=vars.find(v=>v.status==='available');
   let base=firstVar?+firstVar.price||0:+p.price||0;
   let h=`<div class="row"><div><h2 style="margin:0">${esc(p.name)}</h2>${hasVariants(p)?'<span class="price selectedVariantPrice">Escolha o tamanho</span>':`<span class="price">${brl(p.price)}</span>`}</div><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div><p>${esc(p.desc||'')}</p>${p.detailedDesc?`<p class="hint">${esc(p.detailedDesc)}</p>`:''}`;
@@ -3455,3 +3456,47 @@ document.addEventListener("click",function(e){
   const pid=el.getAttribute("data-pedevia-open-product");
   if(pid && typeof openProduct==="function") openProduct(pid);
 });
+
+
+// Disponibilidade conjunta dos tamanhos de uma seção, preservando preços e sabores.
+function sizeKeyV13535(name){
+ const text=String(name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/,/g,'.').trim();
+ const ml=text.match(/(\d+(?:\.\d+)?)\s*ml\b/);
+ if(ml)return 'ml:'+Number(ml[1]);
+ const litre=text.match(/(\d+(?:\.\d+)?)\s*(?:litros?|l)\b/);
+ if(litre)return 'ml:'+(Number(litre[1])*1000);
+ return 'name:'+text.replace(/\s+/g,' ');
+}
+function sectionSizesV13535(sectionId){
+ const sizes=new Map();
+ (cfg.products||[]).filter(p=>p.category===sectionId&&hasVariants(p)).forEach(p=>p.variants.forEach(v=>{
+  const key=sizeKeyV13535(v.name);
+  if(!sizes.has(key))sizes.set(key,{key,name:v.name,variants:[],products:new Set()});
+  const size=sizes.get(key);size.variants.push(v);size.products.add(p.id);
+ }));
+ return [...sizes.values()];
+}
+function openSectionSizesV13535(sectionId){
+ const section=cfg.sections.find(s=>s.id===sectionId);if(!section)return;
+ const sizes=sectionSizesV13535(sectionId);window.sectionSizesEditorV13535={sectionId,keys:sizes.map(s=>s.key)};
+ showModal(`<div class="row"><h2>Tamanhos · ${esc(section.title)}</h2><button class="ghost" onclick="closeModal()">✕</button></div><p class="hint">Altere um tamanho em todos os sabores desta seção. Indisponível aparece bloqueado; oculto não aparece para o cliente.</p>${sizes.map((size,i)=>{
+ const statuses=new Set(size.variants.map(v=>v.status||'available')),current=statuses.size===1?[...statuses][0]:'mixed';
+ return `<div class="variantAdminRow"><b>${esc(size.name)}</b><div class="hint">${size.products.size} ${size.products.size===1?'sabor':'sabores'}</div><select class="field" id="sectionSizeStatus_${i}"><option value="keep">Manter ${current==='mixed'?'status individuais':statusLabel(current).toLowerCase()}</option>${['available','unavailable','hidden'].map(status=>`<option value="${status}">${statusLabel(status)} em todos os sabores</option>`).join('')}</select></div>`;
+ }).join('')}<div class="stickySave"><button class="ghost" onclick="closeModal()">Cancelar</button><button class="btn" id="saveSectionSizes" onclick="saveSectionSizesV13535()">Salvar tamanhos</button></div>`);
+}
+async function saveSectionSizesV13535(){
+ const editor=window.sectionSizesEditorV13535;if(!editor)return;
+ const btn=document.getElementById('saveSectionSizes');if(btn?.disabled)return;
+ const changes=new Map(editor.keys.map((key,i)=>[key,document.getElementById('sectionSizeStatus_'+i)?.value]).filter(([,status])=>['available','unavailable','hidden'].includes(status)));
+ if(!changes.size){closeModal();return;}
+ const affected=(cfg.products||[]).filter(p=>p.category===editor.sectionId&&hasVariants(p));
+ const previous=affected.flatMap(p=>p.variants.filter(v=>changes.has(sizeKeyV13535(v.name))).map(v=>({v,status:v.status})));
+ if(btn){btn.disabled=true;btn.textContent='Salvando...';}
+ try{
+  previous.forEach(({v})=>v.status=changes.get(sizeKeyV13535(v.name)));
+  const ok=await persistAdminStateV15({products:true,notify:true,message:'Tamanhos atualizados em todos os sabores desta seção.'});
+  if(!ok){previous.forEach(({v,status})=>v.status=status);save();return;}
+  save();closeModal();renderAdmin();renderShop();
+ }catch(e){previous.forEach(({v,status})=>v.status=status);save();alert('Não foi possível salvar os tamanhos. Tente novamente.');console.error(e);}
+ finally{if(btn){btn.disabled=false;btn.textContent='Salvar tamanhos';}}
+}
