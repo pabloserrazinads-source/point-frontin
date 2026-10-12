@@ -1196,12 +1196,23 @@ async function fetchAllStoreOrdersV126(){
   return all;
 }
 
+const deletingOrdersV13536=new Set();
 async function deleteOrderV126(id){
+  const key=currentStoreKeyV125(),lock=key+':'+String(id);
+  if(deletingOrdersV13536.has(lock))return;
   const o=(window.pedeviaOrdersV125||[]).find(x=>String(x.id)===String(id));
-  if(!confirm(`Excluir definitivamente o pedido ${o?orderNumberV125(o):''}?\n\nEssa ação não pode ser desfeita e o pedido deixará de aparecer no histórico e nas estatísticas.`))return;
-  const {error}=await supabaseClient.from('pedevia_orders').delete().eq('id',id).eq('store_key',currentStoreKeyV125());
-  if(error){alert('Não foi possível excluir o pedido: '+error.message);return}
-  closeModal();await loadOrdersPanelV126();
+  if(!confirm(`Excluir definitivamente o pedido ${o?orderNumberV125(o):''}?\n\nEle será removido do histórico e das estatísticas. Se este pedido creditou fidelidade, sua contagem também será retirada. Essa ação não pode ser desfeita.`))return;
+  deletingOrdersV13536.add(lock);
+  try{
+    const {error}=await supabaseClient.rpc('delete_pedevia_order_with_loyalty_v13536',{p_store_key:key,p_order_id:String(id)});
+    if(error){
+      const missing=error.code==='PGRST202'||error.code==='42883';
+      alert(missing?'A atualização da exclusão ainda precisa ser instalada no banco. Execute o SQL da versão 1.35.36 antes de excluir pedidos. Nenhum pedido foi excluído.':'Não foi possível excluir o pedido e ajustar a fidelidade: '+error.message);
+      return;
+    }
+    closeModal();await loadOrdersPanelV126();
+  }catch(e){console.error('Falha na exclusão com fidelidade:',e);alert('Não foi possível confirmar a exclusão. Atualize o histórico antes de tentar novamente.');}
+  finally{deletingOrdersV13536.delete(lock);}
 }
 
 async function finishTodayOrdersV126(){
