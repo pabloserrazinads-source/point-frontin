@@ -94,7 +94,7 @@
       <input id="gLegal" class="field" placeholder="Razão social" value="${esc(s.legalName||'')}">
       <input id="gCnpj" class="field" placeholder="CNPJ" value="${esc(s.cnpj||'')}">
 
-      <button id="brandSaveBtnV13118" class="btn full" data-pedevia-event="click" data-pedevia-call="saveGeneralBrand">
+      <button id="brandSaveBtnV13118" data-no-auto-busy="1" class="btn full" data-pedevia-event="click" data-pedevia-call="saveGeneralBrand">
         Salvar
       </button>
     `);
@@ -198,6 +198,7 @@
       if(b){
         b.disabled=false;
         b.textContent='Salvar';
+        b.classList.remove('v132Busy');b.removeAttribute('aria-busy');delete b.dataset.pedeviaBusy;delete b.dataset.pedeviaOriginalText;
       }
     }
   };

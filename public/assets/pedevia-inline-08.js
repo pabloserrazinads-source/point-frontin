@@ -1719,14 +1719,21 @@ setTimeout(()=>{PedeviaV130.init();document.querySelectorAll('.adminHead .hint')
 
 // ===== v1.30.1 extras: Storage de imagens + UX de checkout =====
 Object.assign(PedeviaV130,{
-  async dataUrlToBlob(data){const r=await fetch(data);return await r.blob()},
+  async dataUrlToBlob(data){
+    if(data instanceof Blob)return data;
+    const match=String(data||'').match(/^data:(image\/(?:png|jpeg|webp));base64,([A-Za-z0-9+/=\s]+)$/i);
+    if(!match)throw new Error('Imagem inválida. Escolha um arquivo PNG, JPEG ou WebP.');
+    const decoded=atob(match[2].replace(/\s/g,'')),bytes=new Uint8Array(decoded.length);
+    for(let i=0;i<decoded.length;i++)bytes[i]=decoded.charCodeAt(i);
+    return new Blob([bytes],{type:match[1].toLowerCase()});
+  },
   async uploadMedia(dataUrl,path){
     const blob=await this.dataUrlToBlob(dataUrl),bucket=supabaseClient.storage.from('pedevia-media');
     const {error}=await bucket.upload(path,blob,{upsert:true,contentType:blob.type||'image/jpeg',cacheControl:'31536000'});if(error)throw error;
     const {data}=bucket.getPublicUrl(path);if(!data?.publicUrl)throw new Error('Não foi possível obter a URL pública da imagem.');return data.publicUrl
   },
   async uploadProductImage(id,data){const key=currentStoreKeyV127(),path=`${key}/products/${String(id).replace(/[^a-zA-Z0-9_-]/g,'_')}-${Date.now()}.jpg`;return await this.uploadMedia(data,path)},
-  async uploadBrandImage(data){const key=currentStoreKeyV127(),path=`${key}/brand/logo-${Date.now()}.jpg`;return await this.uploadMedia(data,path)},
+  async uploadBrandImage(data){const key=currentStoreKeyV127(),mime=String(data||'').match(/^data:image\/(png|webp|jpeg);/i)?.[1]?.toLowerCase()||'jpeg',ext=mime==='jpeg'?'jpg':mime,path=`${key}/brand/logo-${Date.now()}.${ext}`;return await this.uploadMedia(data,path)},
   normalizePixText(v,max){return String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Za-z0-9 .\-]/g,'').toUpperCase().trim().slice(0,max)},
   emv(id,value){value=String(value);return id+String(value.length).padStart(2,'0')+value},
   crc16(payload){let crc=0xFFFF;for(let i=0;i<payload.length;i++){crc^=payload.charCodeAt(i)<<8;for(let j=0;j<8;j++)crc=(crc&0x8000)?((crc<<1)^0x1021):(crc<<1),crc&=0xFFFF}return crc.toString(16).toUpperCase().padStart(4,'0')},
