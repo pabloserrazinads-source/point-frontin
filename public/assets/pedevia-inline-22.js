@@ -255,7 +255,8 @@
     themeBaseV13540();const d=cfg.store.design||{},root=document.documentElement,url=safeVisualUrlV13540(d.bannerImage),overlay=Math.max(.3,Math.min(.85,Number(d.bannerOverlay)||.55));
     root.dataset.pvPresetStyle=['editorial','ribbon','bold','minimal'].includes(d.presetStyle)?d.presetStyle:'rounded';
     root.dataset.pvLayout=['grid','three','list'].includes(d.catalogLayout)?d.catalogLayout:'grid';root.dataset.pvTexture=['dots','linen'].includes(d.surfaceTexture)?d.surfaceTexture:'none';root.dataset.pvPhoto=['square','wide'].includes(d.productPhoto)?d.productPhoto:'default';root.dataset.pvBanner=url?'photo':'none';
-    root.style.setProperty('--pv-banner',url?`linear-gradient(90deg,rgba(12,4,20,${overlay}),rgba(12,4,20,${overlay*.6})),url(${JSON.stringify(url)})`:'none');root.style.setProperty('--pv-banner-position',['left','right'].includes(d.bannerPosition)?d.bannerPosition:'center');root.style.setProperty('--pv-banner-height',Math.max(160,Math.min(420,Number(d.bannerHeight)||240))+'px');
+    const resolved=url?new URL(url,document.baseURI).href:'';
+    root.style.setProperty('--pv-banner',resolved?`linear-gradient(90deg,rgba(12,4,20,${overlay}),rgba(12,4,20,${overlay*.6})),url(${JSON.stringify(resolved)})`:'none');root.style.setProperty('--pv-banner-position',['left','right'].includes(d.bannerPosition)?d.bannerPosition:'center');root.style.setProperty('--pv-banner-height',Math.max(160,Math.min(420,Number(d.bannerHeight)||240))+'px');
   };
   function allTemplatesV132(){
     const out={};
