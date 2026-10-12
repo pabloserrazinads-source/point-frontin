@@ -372,18 +372,3 @@
   };
   try{window.PEDEVIA_VERSION=VERSION;applyPedeviaVersion?.()}catch(e){}
 })();
-
-
-// Resumo administrativo e auditoria de catálogo, sem alterar textos do cliente.
-(function(){
- const homeBase=adminHome;
- adminHome=function(){
-  homeBase();const host=document.getElementById('adminContent');
-  const box=document.createElement('div');box.className='panel';box.id='dailySummaryV13537';box.innerHTML='<h3>Resumo de hoje</h3><p class="hint">Carregando...</p>';host.prepend(box);
-  fetchAllStoreOrdersV126().then(rows=>{
-   if(!box.isConnected)return;
-   const today=orderBusinessDayV13517(new Date().toISOString()),day=rows.filter(o=>orderBusinessDayV13517(o.created_at)===today),done=day.filter(o=>o.status==='completed'),active=rows.filter(o=>!['completed','cancelled'].includes(o.status)),revenue=done.reduce((n,o)=>n+Number(o.total||0),0);
-   box.innerHTML=`<h3>Resumo de hoje</h3><div class="two"><div class="summary"><b>${brl(revenue)}</b><small>Faturamento concluído</small></div><div class="summary"><b>${done.length}</b><small>Pedidos concluídos</small></div><div class="summary"><b>${active.length}</b><small>Pedidos em andamento</small></div><div class="summary"><b>${brl(done.length?revenue/done.length:0)}</b><small>Ticket médio</small></div></div>`;
-  }).catch(()=>{if(box.isConnected)box.innerHTML='<h3>Resumo de hoje</h3><p class="hint">Não foi possível carregar. Abra esta tela novamente para tentar.</p>'});
- };
-})();
