@@ -23,7 +23,15 @@
 @media(max-width:380px){:root[data-pv-layout="list"] #productGrid .card{grid-template-columns:minmax(0,34%) minmax(0,1fr)!important}:root[data-pv-layout="list"] #productGrid .card>.cardbody{padding:12px!important}:root[data-pv-layout="list"] #productGrid .card>.photo{min-height:140px}}
 
 /* Títulos editoriais e banners fotográficos sem decoração sobreposta. */
-#shopView #productGrid .clientSectionHead h2{font-family:var(--pv-section-font,Georgia),serif!important;font-size:clamp(28px,5vw,36px)!important;font-weight:600!important;font-style:normal!important;text-transform:none!important;letter-spacing:-.015em!important;line-height:1.2!important;color:var(--p)!important;text-wrap:balance;margin:0!important}
+#shopView #productGrid .clientSectionHead h2{font-family:var(--pv-section-font,Georgia),serif!important;font-size:clamp(28px,5vw,36px)!important;font-weight:600!important;font-style:normal!important;text-transform:none!important;letter-spacing:-.015em!important;line-height:1.2!important;color:var(--pv-section-color,var(--p))!important;text-wrap:balance;margin:0!important}
 :root[data-pv-preset-style="ribbon"] #shopView #productGrid .clientSectionHead{background:var(--p)!important}
-:root[data-pv-preset-style="ribbon"] #shopView #productGrid .clientSectionHead h2{color:var(--pv-section-heading,#fff)!important}
+:root[data-pv-preset-style="ribbon"] #shopView #productGrid .clientSectionHead h2{color:var(--pv-section-color,var(--pv-section-heading,#fff))!important}
 :root[data-pv-banner="photo"] #shopView .hero::before,:root[data-pv-banner="photo"] #shopView .hero::after{content:none!important;display:none!important;background:none!important}
+
+/* Fontes locais: mesma aparência no celular e no computador. */
+@font-face{font-family:PVTitleElegant;src:url("pedevia-font-elegant.woff") format("woff");font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:PVTitleClassic;src:url("pedevia-font-classic.woff") format("woff");font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:PVTitleModern;src:url("pedevia-font-modern.woff") format("woff");font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:PVTitleRounded;src:url("pedevia-font-rounded.woff") format("woff");font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:PVTitleEditorial;src:url("pedevia-font-editorial.woff") format("woff");font-weight:600;font-style:normal;font-display:swap}
+@font-face{font-family:PVTitleScript;src:url("pedevia-font-script.woff") format("woff");font-weight:600;font-style:normal;font-display:swap}
