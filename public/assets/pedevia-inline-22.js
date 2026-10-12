@@ -253,6 +253,7 @@
   const themeBaseV13540=applyThemeV116;
   applyThemeV116=function(){
     themeBaseV13540();const d=cfg.store.design||{},root=document.documentElement,url=safeVisualUrlV13540(d.bannerImage),overlay=Math.max(.3,Math.min(.85,Number(d.bannerOverlay)||.55));
+    root.style.setProperty('--pv-section-heading',contrastTextV132(cfg.store.theme.primary));
     root.dataset.pvPresetStyle=['editorial','ribbon','bold','minimal'].includes(d.presetStyle)?d.presetStyle:'rounded';
     root.dataset.pvLayout=['grid','three','list'].includes(d.catalogLayout)?d.catalogLayout:'grid';root.dataset.pvTexture=['dots','linen'].includes(d.surfaceTexture)?d.surfaceTexture:'none';root.dataset.pvPhoto=['square','wide'].includes(d.productPhoto)?d.productPhoto:'default';root.dataset.pvBanner=url?'photo':'none';
     const resolved=url?new URL(url,document.baseURI).href:'';
