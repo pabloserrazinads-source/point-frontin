@@ -199,6 +199,34 @@
     };
   }
 
+  function acaiCompositionV13540(palette,mood){
+    const photos=['assets/pedevia-theme-acai.webp','assets/pedevia-ice-cupuacu.webp','assets/pedevia-comp-granola.webp','assets/pedevia-ice-sensacao.webp','assets/pedevia-complementos-completo.webp'];
+    return {bannerImage:photos[palette],bannerOverlay:[.55,.45,.65,.72][mood],bannerPosition:'center',bannerHeight:[210,260,230,280][mood],catalogLayout:['grid','grid','list','grid'][mood],surfaceTexture:['none','none','linen','dots'][mood],productPhoto:['wide','square','wide','square'][mood]};
+  }
+  function safeVisualUrlV13540(value){
+    const text=String(value||'').trim();
+    if(/^assets\/[a-zA-Z0-9_.-]+\.(?:webp|png|jpe?g)$/.test(text))return text;
+    try{const u=new URL(text);return u.protocol==='https:'?u.href:''}catch(e){return '';}
+  }
+  window.safeVisualUrlV13540=safeVisualUrlV13540;
+  function visualOptionsV13540(values,current){return values.map(([value,label])=>`<option value="${value}" ${String(current)===String(value)?'selected':''}>${label}</option>`).join('')}
+  function visualControlsV13540(d){
+    return `<div class="v140Advanced"><h3>Composição visual</h3><div class="v140Controls"><label>Imagem do banner<select class="field" id="v140PhotoPreset" onchange="chooseBannerImageV13540(this.value)">${visualOptionsV13540([['','Sem imagem'],['assets/pedevia-theme-acai.webp','Açaí artesanal'],['assets/pedevia-ice-cupuacu.webp','Açaí e cupuaçu'],['assets/pedevia-comp-granola.webp','Granola'],['assets/pedevia-ice-sensacao.webp','Sorvete e frutas'],['assets/pedevia-complementos-completo.webp','Complementos'],['custom','Minha imagem']],d.bannerImage&& !String(d.bannerImage).startsWith('assets/')?'custom':d.bannerImage||'')}</select></label><label>Disposição dos produtos<select class="field" id="v140Layout" onchange="previewCompositionV13540()">${visualOptionsV13540([['grid','Dois por linha'],['three','Três por linha no computador'],['list','Lista com foto ao lado']],d.catalogLayout||'grid')}</select></label></div><label>Link da sua imagem (HTTPS)</label><input id="v140BannerUrl" class="field" value="${esc(d.bannerImage||'')}" placeholder="https://..." onchange="previewCompositionV13540()"><div id="v140ImagePreview" class="v140ImagePreview" aria-label="Prévia da imagem do banner"></div><details><summary>Ajustes avançados</summary><div class="v140Controls" style="margin-top:14px"><label>Escurecimento da foto<input id="v140Overlay" type="range" min="0.3" max="0.85" step="0.05" value="${Math.max(.3,Math.min(.85,Number(d.bannerOverlay)||.55))}" oninput="previewCompositionV13540()"></label><label>Altura mínima do banner<input id="v140Height" class="field" type="number" min="160" max="420" value="${Number(d.bannerHeight)||240}" onchange="previewCompositionV13540()"></label><label>Posição da imagem<select id="v140Position" class="field" onchange="previewCompositionV13540()">${visualOptionsV13540([['left','Esquerda'],['center','Centro'],['right','Direita']],d.bannerPosition||'center')}</select></label><label>Textura do fundo<select id="v140Texture" class="field" onchange="previewCompositionV13540()">${visualOptionsV13540([['none','Lisa'],['dots','Pontos discretos'],['linen','Trama suave']],d.surfaceTexture||'none')}</select></label><label>Formato das fotos<select id="v140ProductPhoto" class="field" onchange="previewCompositionV13540()">${visualOptionsV13540([['default','Original'],['square','Quadrado'],['wide','Horizontal']],d.productPhoto||'default')}</select></label><label>Acabamento dos cartões<select id="v140CardStyle" class="field" onchange="previewCompositionV13540()">${visualOptionsV13540([['elevated','Elevado'],['outline','Contorno'],['glass','Vidro']],d.cardStyle||'elevated')}</select></label><label>Cantos dos cartões<input id="v140Radius" class="field" type="number" min="10" max="32" value="${Number(d.radius)||20}" onchange="previewCompositionV13540()"></label><label>Sombra<select id="v140Shadow" class="field" onchange="previewCompositionV13540()">${visualOptionsV13540([['none','Sem sombra'],['soft','Suave'],['deep','Marcante']],d.shadow||'soft')}</select></label></div></details></div>`;
+  }
+  window.chooseBannerImageV13540=function(value){if(value==='custom'){document.getElementById('v140BannerUrl')?.focus();return;}document.getElementById('v140BannerUrl').value=value;previewCompositionV13540();};
+  window.captureCompositionV13540=function(){
+    if(!document.getElementById('v140BannerUrl'))return;
+    const d=cfg.store.design,read=id=>document.getElementById(id)?.value;
+    const raw=read('v140BannerUrl'),url=safeVisualUrlV13540(raw);if(raw&&!url)throw new Error('Use um link HTTPS válido para a imagem.');
+    Object.assign(d,{bannerImage:url,bannerOverlay:Math.max(.3,Math.min(.85,Number(read('v140Overlay'))||.55)),bannerHeight:Math.max(160,Math.min(420,Number(read('v140Height'))||240)),bannerPosition:read('v140Position'),catalogLayout:read('v140Layout'),surfaceTexture:read('v140Texture'),productPhoto:read('v140ProductPhoto'),cardStyle:read('v140CardStyle'),radius:Math.max(10,Math.min(32,Number(read('v140Radius'))||20)),shadow:read('v140Shadow')});
+  };
+  window.previewCompositionV13540=function(){try{captureCompositionV13540();cfg.store.design.template='custom';applyThemeV116();const preview=document.getElementById('v140ImagePreview');if(preview)preview.style.backgroundImage=cfg.store.design.bannerImage?'url('+JSON.stringify(cfg.store.design.bannerImage)+')':'none';}catch(e){if(typeof pedeviaToastV1315==='function')pedeviaToastV1315(e.message,'error')}};
+  const themeBaseV13540=applyThemeV116;
+  applyThemeV116=function(){
+    themeBaseV13540();const d=cfg.store.design||{},root=document.documentElement,url=safeVisualUrlV13540(d.bannerImage),overlay=Math.max(.3,Math.min(.85,Number(d.bannerOverlay)||.55));
+    root.dataset.pvLayout=['grid','three','list'].includes(d.catalogLayout)?d.catalogLayout:'grid';root.dataset.pvTexture=['dots','linen'].includes(d.surfaceTexture)?d.surfaceTexture:'none';root.dataset.pvPhoto=['square','wide'].includes(d.productPhoto)?d.productPhoto:'default';root.dataset.pvBanner=url?'photo':'none';
+    root.style.setProperty('--pv-banner',url?`linear-gradient(90deg,rgba(12,4,20,${overlay}),rgba(12,4,20,${overlay*.6})),url(${JSON.stringify(url)})`:'none');root.style.setProperty('--pv-banner-position',['left','right'].includes(d.bannerPosition)?d.bannerPosition:'center');root.style.setProperty('--pv-banner-height',Math.max(160,Math.min(420,Number(d.bannerHeight)||240))+'px');
+  };
   function allTemplatesV132(){
     const out={};
     Object.entries(TEMPLATE_GROUPS_V132).forEach(([groupId,g])=>{
@@ -210,7 +238,7 @@
             name:`${p[0]} · ${m.name}`,
             desc:`${g.label} — ${m.name.toLowerCase()}`,
             theme:templateThemeV132(p[1],p[2],m),
-            design:templateDesignV132(p[1],p[2],m,id)
+            design:Object.assign(templateDesignV132(p[1],p[2],m,id),groupId==='acai'?acaiCompositionV13540(pi,mi):{})
           };
         });
       });
@@ -229,7 +257,7 @@
     return `<button type="button" class="v132TemplateCard ${active?'on':''}" onclick="applyTemplateV132('${t.id}')">
       <div class="v132Mini" style="background:${bg}">
         <div class="v132MiniHead" style="background:${head};color:${th.headerText}">SUA MARCA</div>
-        <div class="v132MiniHero" style="background:linear-gradient(135deg,${th.heroStart},${th.heroEnd})">Cardápio online</div>
+        <div class="v132MiniHero" style="color:#fff;background:${d.bannerImage?`linear-gradient(90deg,#190620aa,#19062044),url('${esc(d.bannerImage)}')`:`linear-gradient(135deg,${th.heroStart},${th.heroEnd})`}">Cardápio online</div>
         <div class="v132MiniCards"><i style="background:${th.productBg}"></i><i style="background:${th.productBg}"></i><i style="background:${th.productBg}"></i></div>
       </div>
       <b>${esc(t.name)}</b><small>${active?'✓ ATIVO':esc(t.desc)}</small>
@@ -265,6 +293,7 @@
       <h3 style="margin:16px 0 6px">Templates por tipo de estabelecimento</h3>
       ${templateGroupsHtmlV132()}
 
+      ${visualControlsV13540(d)}
       <div class="v117Section">
         <h3>💬 Banner principal</h3>
         <label>Título do banner</label><input id="v116HeroTitle" class="field" value="${esc(s.heroTitle||'')}" placeholder="Seu pedido, do seu jeito">
@@ -331,7 +360,8 @@
         <button class="btn" id="saveAppearanceV132" data-pedevia-event="click" data-pedevia-call="saveAppearanceV132">Salvar aparência</button>
       </div>
     `);
-    previewAppearanceV116();
+    const chosen=d.template;previewAppearanceV116();cfg.store.design.template=chosen;
+    const preview=document.getElementById('v140ImagePreview');if(preview&&safeVisualUrlV13540(d.bannerImage))preview.style.backgroundImage='url('+JSON.stringify(d.bannerImage)+')';
   };
 
   document.addEventListener('input',ev=>{
@@ -345,7 +375,7 @@
     const old=btn?.textContent||'Salvar aparência';
     try{
       if(btn){btn.disabled=true;btn.textContent='Salvando...'}
-      previewAppearanceV116();
+      const chosen=cfg.store.design.template;captureCompositionV13540();previewAppearanceV116();cfg.store.design.template=chosen;
       const ok=await persistAdminStateV15({products:false,notify:false});
       if(!ok)throw new Error('O servidor não confirmou o salvamento.');
       renderShop();

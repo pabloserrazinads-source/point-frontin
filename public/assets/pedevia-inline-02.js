@@ -1,3 +1,5 @@
+function pedeviaIconV13540(name){return `<svg class="pvIcon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><use href="assets/pedevia-icons.svg?v=13540#${name}"></use></svg>`}
+function pedeviaActionIconV13540(action){const a=String(action||'').toLowerCase();return pedeviaIconV13540(/appearance|brand/.test(a)?'palette':/social/.test(a)?'instagram':/whatsapp|contact/.test(a)?'phone':/hour/.test(a)?'clock':/address|delivery/.test(a)?'pin':/loyal/.test(a)?'star':/stat|report/.test(a)?'chart':/print/.test(a)?'print':/collab|customer/.test(a)?'users':'settings')}
 
 const SUPABASE_URL="https://zquuspetinvqstxstaau.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY="sb_publishable_VYD88-Zom6oDpADmQ_Cw9g_y2HoKy2H";
@@ -72,7 +74,7 @@ function renderClientStoreInfo(){let s=cfg.store,st=openState(),logo=s.brandImag
  $('#clientBrand').innerHTML=`<div class="clientBrand"><div class="clientBrandLogo">${logo}</div><h1>${esc(s.name)}</h1><div class="sub">Engenheiro Paulo de Frontin · RJ</div></div>`;
  let wa=formatWa(s.whatsapp),waUrl='https://wa.me/'+String(s.whatsapp||'').replace(/\D/g,''),insta=s.socialUrl||('https://instagram.com/'+cleanInstagramHandle());
  $('#clientInfoTop').innerHTML=`<div class="clientInfoGrid"><div class="clientInfoCard"><div class="ci">◷</div><div><b class="${st.open?'clientStatusOpen':'clientStatusClosed'}">${esc(st.text)}</b><small>${esc(nextCloseText())}${s.modes.pickup&&s.orderConfig?.pickupTime?' · Retirada: '+esc(s.orderConfig.pickupTime)+' min':''}</small></div><span></span></div><div class="clientInfoCard"><div class="ci">☏</div><div><b>${esc(wa)}</b><small>WhatsApp</small></div><a href="${waUrl}" target="_blank">CONTATO</a></div>${s.showAddressOnMenu!==false?`<div class="clientInfoCard"><div class="ci">⌖</div><div><b>${esc(clientAddressShort()||'Endereço não informado')}</b><small>${esc(s.address||'')}</small></div><a href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.address||'')}" target="_blank">DIREÇÕES</a></div>`:''}</div>`;
- $('#clientInfoBottom').innerHTML=`<div class="clientDetails"><h3>Informações da loja</h3><div class="detailRow"><div class="di">◷</div><div><b>${st.open?'Aberto agora':'Horário de atendimento'}</b><small>${esc(todayScheduleText())}</small></div></div>${s.showAddressOnMenu!==false?`<div class="detailRow"><div class="di">⌖</div><div><b>Endereço</b><small>${esc(s.address||'Não informado')}</small></div></div>`:''}<div class="detailRow"><div class="di">☏</div><div><b>Contato</b><small>${esc(wa)}${s.email?' · '+esc(s.email):''}</small></div></div>${(s.instagram||s.socialUrl)?`<div class="detailRow"><div class="di">◎</div><div><b>Redes sociais</b><small>${esc(s.instagram||cleanInstagramHandle())}</small><a class="socialBtn" href="${esc(insta)}" target="_blank">◎ Instagram</a></div></div>`:''}</div>`;
+ $('#clientInfoBottom').innerHTML=`<div class="clientDetails"><h3>Informações da loja</h3><div class="detailRow"><div class="di">${pedeviaIconV13540('clock')}</div><div><b>${st.open?'Aberto agora':'Horário de atendimento'}</b><small>${esc(todayScheduleText())}</small></div></div>${s.showAddressOnMenu!==false?`<div class="detailRow"><div class="di">${pedeviaIconV13540('pin')}</div><div><b>Endereço</b><small>${esc(s.address||'Não informado')}</small></div></div>`:''}<div class="detailRow"><div class="di">${pedeviaIconV13540('phone')}</div><div><b>Contato</b><small>${esc(wa)}${s.email?' · '+esc(s.email):''}</small></div></div>${(s.instagram||s.socialUrl)?`<div class="detailRow"><div class="di">${pedeviaIconV13540('instagram')}</div><div><b>Redes sociais</b><small>${esc(s.instagram||cleanInstagramHandle())}</small><a class="socialBtn" href="${esc(insta)}" target="_blank">${pedeviaIconV13540('instagram')} Instagram</a></div></div>`:''}</div>`;
  $('#clientFooter').innerHTML=`<div class="clientFooter"><b>${esc(s.name)}</b><br>Cardápio e pedidos online</div>`;
 }
 function renderShop(){let st=openState();renderClientStoreInfo();$("#storeStatus").textContent="● "+st.text;$("#closedNotice").innerHTML=st.open?"":'<div class="notice bad">A loja está fechada no momento. Você pode montar o pedido e consultar o cardápio.</div>';
@@ -148,7 +150,7 @@ supabaseClient.auth.onAuthStateChange((_event,session)=>{
 });
 const adminTabs=[["home","⌂","Início"],["menu","▣","Cardápio"],["orders","🧺","Pedidos"],["offers","%","Ofertas"],["more","•••","Mais"]];
 function renderAdmin(){
- $("#adminBottomNav").innerHTML=adminTabs.map(([id,ic,n])=>`<button class="${adminTab===id?"on":""}" onclick="adminTab='${id}';renderAdmin()"><span class="navIcon">${ic}</span><span>${n}</span></button>`).join("");
+ $("#adminBottomNav").innerHTML=adminTabs.map(([id,ic,n])=>`<button class="${adminTab===id?"on":""}" onclick="adminTab='${id}';renderAdmin()"><span class="navIcon">${pedeviaIconV13540(({home:'home',menu:'menu',orders:'orders',offers:'offers',more:'more'})[id]||'more')}</span><span>${n}</span></button>`).join("");
  // v1.32.30: não apaga a tela com placeholder entre abas síncronas; evita flash visual.
  try{
   if(adminTab==="home")adminHome();
@@ -191,7 +193,7 @@ function adminOrderSettings(){let s=cfg.store,o=s.orderConfig;
  ${settingCard('•••','Outras configurações',`Prefixo ${esc(o.orderPrefix)} · próximo pedido #${o.nextOrder}`,'editOtherOrderSettings()')}
  </div></div>`;
 }
-function settingCard(icon,title,sub,action){return `<button class="settingCard" onclick="${action}"><span class="si">${icon}</span><span><b>${title}</b><small>${sub}</small></span><span class="chev">›</span></button>`}
+function settingCard(icon,title,sub,action){return `<button class="settingCard" onclick="${action}"><span class="si">${pedeviaActionIconV13540(action)}</span><span><b>${title}</b><small>${sub}</small></span><span class="chev">›</span></button>`}
 function paymentSummary(){let a=[];if(cfg.store.payments.pix)a.push('Pix');if(cfg.store.payments.cash)a.push('Dinheiro');if(cfg.store.payments.debit)a.push('Débito');if(cfg.store.payments.credit)a.push('Crédito');return a.length?a.join(', '):'Nenhuma forma habilitada'}
 function editOrderWhatsapp(){showModal(`<div class="row"><h2>WhatsApp dos pedidos</h2><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div><label>Número com DDD</label><input id="ocWa" class="field" value="${esc(cfg.store.whatsapp)}" placeholder="5524999999999"><button class="btn full" data-pedevia-event="click" data-pedevia-call="saveOrderWhatsapp">Salvar</button>`)}
 function saveOrderWhatsapp(){cfg.store.whatsapp=$("#ocWa").value.replace(/\D/g,'');save();closeModal();adminOrderSettings()}
@@ -276,7 +278,7 @@ function adminOrderSettings(){let s=cfg.store,o=s.orderConfig;let fees=o.neighbo
  const d={brandImage:'',legalName:'',cnpj:'',email:'',socialUrl:'https://www.instagram.com/point_frontin/',shareTitle:'Point do Açaí Frontin',shareDescription:'Conheça nosso cardápio 😊💜',hubSlug:'point-do-acai-frontin',customDomain:'',holidayMode:'normal',scheduleMode:'fixed',collaborators:[{name:'Giovana Wolf Serrazina dos Santos',role:'Administrador'}],analyticsId:'',googleAdsId:'',metaPixelId:''};
  Object.keys(d).forEach(k=>{if(s[k]===undefined)s[k]=d[k]}); save();
 })();
-function moreCard(ic,title,sub,fn){return `<button class="moreCard" onclick="${fn}"><span class="moreIc">${ic}</span><span><b>${title}</b>${sub?`<small>${sub}</small>`:''}</span><span class="chev">›</span></button>`}
+function moreCard(ic,title,sub,fn){return `<button class="moreCard" onclick="${fn}"><span class="moreIc">${pedeviaActionIconV13540(fn)}</span><span><b>${title}</b>${sub?`<small>${sub}</small>`:''}</span><span class="chev">›</span></button>`}
 function adminMore(){let s=cfg.store;$('#adminContent').innerHTML=`<div class="panel"><div class="settingsTitle">Mais</div><div class="generalHead">⚙️ Configurações gerais</div><div class="moreList">
 ${moreCard('▣','Nome e marca',s.name,'generalBrand()')}
 ${moreCard('◷','Horário de Atendimento','Dias, horários e feriados','generalHours()')}

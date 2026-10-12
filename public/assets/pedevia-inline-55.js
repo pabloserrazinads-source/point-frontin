@@ -49,6 +49,9 @@
           {label:'Pedidos aceitos',emoji:'✓',list:active}
         ];
         const cols=groups.map(g=>`<section class="v130OrderCol"><header><span>${g.emoji} ${g.label}</span><b>${g.list.length}</b></header><div>${g.list.length?g.list.map(o=>this.orderCard(o)).join(''):'<div class="v130Empty">Nenhum pedido</div>'}</div></section>`).join('');
+        const fingerprint=orderBusinessDayV13517(new Date().toISOString())+JSON.stringify(rows);
+        if(host.dataset.ordersFingerprintV13537===fingerprint)return;
+        host.dataset.ordersFingerprintV13537=fingerprint;
         host.innerHTML=`<div class="v130Today"><div><b>${completedToday.length}</b><span>concluídos hoje</span></div><div><b>${brl(revenue)}</b><span>faturamento hoje</span></div><div><b>${active.length}</b><span>em andamento</span></div></div><div class="v130Board v13258SimpleBoard">${cols}</div>`;
         this.refreshOrderBadge(rows.filter(o=>o.status==='new').length);
       }catch(e){host.innerHTML=`<div class="notice bad">Não foi possível carregar os pedidos: ${esc(e.message||e)}</div>`}
