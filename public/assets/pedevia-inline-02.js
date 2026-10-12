@@ -1664,7 +1664,7 @@ async function persistAdminStateV15({products=true,notify=false,message='Altera�
   try{
     // Serializa os salvamentos para evitar que uma alteração antiga
     // termine depois de uma nova e sobrescreva o estado mais recente.
-    v15SyncPromise=v15SyncPromise.then(async()=>{
+    v15SyncPromise=v15SyncPromise.catch(()=>{}).then(async()=>{
       await saveSiteConfigOnline();
       if(products) await syncAllProductsOnline();
     });
@@ -3499,4 +3499,45 @@ async function saveSectionSizesV13535(){
   save();closeModal();renderAdmin();renderShop();
  }catch(e){previous.forEach(({v,status})=>v.status=status);save();alert('Não foi possível salvar os tamanhos. Tente novamente.');console.error(e);}
  finally{if(btn){btn.disabled=false;btn.textContent='Salvar tamanhos';}}
+}
+
+
+// Validação compartilhada de carrinhos recuperados e pedidos repetidos.
+function revalidateCartV13537(items){
+ const valid=[],changes=[];
+ for(const item of items||[]){
+  const p=cfg.products.find(p=>String(p.id)===String(item.pid));
+  const reject=()=>changes.push(p?.name||'Produto indisponível');
+  if(!p||p.status!=='available'){reject();continue;}
+  const v=hasVariants(p)?p.variants.find(v=>String(v.id)===String(item.variantId)):null;
+  if(hasVariants(p)&&(!v||v.status!=='available')){reject();continue;}
+  const groups=[],attached=(p.groups||[]).map(id=>cfg.groups.find(g=>String(g.id)===String(typeof id==='object'?id.id:id))).filter(Boolean);
+  let extra=0,bad=false;
+  for(const old of item.groups||[]){
+   const g=attached.find(g=>g.name===old.name);if(!g){bad=true;break;}
+   const rules=effectiveGroupRules(g);let selected=[],seen=new Set();
+   for(const entry of old.items||[]){
+    if(/^Completo \(/.test(entry.name||'')&&isMainComplements(g)){
+     const all=(g.options||[]).filter(o=>o.status==='available');
+     if(!all.length){bad=true;break;}
+     selected.push({name:'Completo ('+all.map(o=>o.name).join(', ')+')',price:all.reduce((n,o)=>n+(Number(o.price)||0),0),qty:1});continue;
+    }
+    const o=(g.options||[]).find(o=>o.name===entry.name&&o.status==='available');
+    const qty=Number(entry.qty||1);if(!o||seen.has(o.id)||!Number.isInteger(qty)||qty<1){bad=true;break;}
+    seen.add(o.id);selected.push({name:o.name,price:Number(o.price)||0,qty:rules.mode==='quantity'?qty:1});
+   }
+   const total=selected.reduce((n,x)=>n+(rules.mode==='quantity'?x.qty:1),0);
+   if(bad||total<rules.min||total>rules.max){bad=true;break;}
+   extra+=selected.reduce((n,x)=>n+x.price*x.qty,0);groups.push({name:g.name,items:selected});
+  }
+  if(attached.some(g=>effectiveGroupRules(g).required&&!groups.some(x=>x.name===g.name)))bad=true;
+  if(bad||!Number.isInteger(Number(item.qty))||Number(item.qty)<1){reject();continue;}
+  const fresh={...item,groups,unit:(Number(v?v.price:p.price)||0)+extra,variantName:v?.name||'',variantId:v?.id||null};
+  if(JSON.stringify(fresh)!==JSON.stringify(item))changes.push(p.name);
+  valid.push(fresh);
+ }
+ return {items:valid,changes:[...new Set(changes)]};
+}
+function notifyCartChangesV13537(result){
+ if(result.changes.length)alert('Seu pedido foi atualizado conforme o cardápio atual. Confira os preços e as opções antes de finalizar.\n'+result.changes.join(', '));
 }
