@@ -6,13 +6,18 @@
   const modeLabelV1334=mode=>mode==='delivery'?'Entrega':mode==='pickup'?'Retirada':'Consumo no local';
   const cleanV1334=v=>String(v??'').trim();
 
+  function orderOptionNameV13548(group,name){
+    const label=cleanV1334(name),groupName=cleanV1334(group?.name).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+    return groupName==='complementos'&&/^completo\s*\(/i.test(label)?'Completo':label;
+  }
+
   function optionLinesV1334(groups){
     const lines=[];
     (groups||[]).forEach(g=>(g.items||[]).forEach(x=>{
       const item=typeof x==='string'?{name:x}:x||{};
       const qty=Math.max(1,Number(item.qty||1));
       const price=Math.max(0,Number(item.price||0));
-      lines.push(`   ↳ ${qty}x ${cleanV1334(item.name)||'Complemento'}${price?` (+${brl(price*qty)})`:''}`);
+      lines.push(`   ↳ ${qty}x ${orderOptionNameV13548(g,item.name)||'Complemento'}${price?` (+${brl(price*qty)})`:''}`);
     }));
     return lines;
   }

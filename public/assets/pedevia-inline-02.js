@@ -491,11 +491,11 @@ function effectiveGroupRules(g){
 }
 function clientRuleText(g){
  const r=effectiveGroupRules(g),unit=r.mode==='quantity'?'unidade':'opção',plural=r.mode==='quantity'?'unidades':'opções';
- if(r.mode==='single')return r.required?'Selecione 1 opção.':'Selecione até 1 opção, opcional.';
- if(r.unlimited)return r.required?'Selecione uma ou mais '+plural+'.':'Selecione quantas '+plural+' quiser, opcional.';
+ if(r.mode==='single')return r.required?'Selecione 1 opção.':'Selecione até 1 opção.';
+ if(r.unlimited)return r.required?'Selecione uma ou mais '+plural+'.':'Selecione quantas '+plural+' quiser.';
  const noun=Number(r.max)===1?unit:plural;
  if(r.required&&Number(r.max)===1)return 'Selecione 1 '+unit+'.';
- return r.required?`Selecione de ${r.min||1} até ${r.max} ${noun}.`:`Selecione até ${r.max} ${noun}, opcional.`;
+ return r.required?`Selecione de ${r.min||1} até ${r.max} ${noun}.`:`Selecione até ${r.max} ${noun}.`;
 }
 function optionVisualTheme(name,selected){
   let normalized=String(name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
