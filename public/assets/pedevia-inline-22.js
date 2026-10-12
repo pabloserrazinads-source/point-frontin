@@ -199,9 +199,38 @@
     };
   }
 
+  const ACAI_PRESETS_V13541=[
+   ['Roxo artesanal','#64207d','#b13bb5','#eadcf5','#ffffff','acai','grid','soft','none','rounded'],
+   ['Frutas vermelhas','#9b164f','#ec5b96','#ffd6e8','#fff7fb','berry','grid','deep','dots','ribbon'],
+   ['Tropical solar','#6b2d84','#c66b0d','#ffebaf','#fffdf4','tropical','grid','soft','none','bold'],
+   ['Noite premium','#b68ce0','#eea2d1','#170c22','#2b173b','acai','grid','deep','none','editorial'],
+   ['Jardim amazônico','#216545','#79308d','#d5ecd9','#f8fff7','tropical','list','soft','linen','editorial'],
+   ['Cupuaçu cremoso','#623a26','#b56e36','#f1dfc6','#fffaf0','cupuacu','grid','none','linen','minimal'],
+   ['Berry pink','#a5175e','#5e3293','#f8c0df','#fff5fb','berry','grid','deep','dots','bold'],
+   ['Lagoa turquesa','#17666d','#674084','#c9efef','#f5ffff','tropical','grid','soft','none','ribbon'],
+   ['Lavanda editorial','#594382','#a7679e','#e1d4f0','#fdfaff','acai','list','none','none','editorial'],
+   ['Manga e maracujá','#803a11','#7b2d8b','#ffe0a6','#fffbf1','tropical','grid','soft','linen','ribbon'],
+   ['Framboesa intensa','#951641','#513085','#f8cfdb','#fff5f7','berry','grid','deep','none','bold'],
+   ['Pistache natural','#455f29','#724784','#dce9bf','#fffff4','tropical','list','soft','linen','minimal'],
+   ['Cacau e granola','#6c3c28','#8e3065','#e9d2bf','#fff9f3','granola','grid','none','linen','editorial'],
+   ['Uva elétrica','#6830ae','#a92070','#e8d0ff','#fff9ff','acai','grid','deep','dots','bold'],
+   ['Pêssego suave','#92334b','#8b5519','#ffddcf','#fff8f3','berry','grid','soft','none','minimal'],
+   ['Grafite sofisticado','#d2a8ee','#ffc991','#171c23','#252d38','acai','list','deep','none','editorial'],
+   ['Rosa e chocolate','#952557','#744428','#f4d6e2','#fff9fc','berry','grid','soft','linen','ribbon'],
+   ['Areia dourada','#72511c','#764180','#eee1be','#fffff4','cupuacu','list','none','linen','minimal'],
+   ['Verde e violeta','#286b4e','#743490','#bfe6d5','#f1fff9','tropical','grid','soft','dots','bold'],
+   ['Açaí festa','#79248f','#bb3a60','#f6d1ef','#fff7ff','completo','grid','deep','dots','ribbon']
+  ];
   function acaiCompositionV13540(palette,mood){
-    const photos=['assets/pedevia-theme-acai.webp','assets/pedevia-ice-cupuacu.webp','assets/pedevia-comp-granola.webp','assets/pedevia-ice-sensacao.webp','assets/pedevia-complementos-completo.webp'];
-    return {bannerImage:photos[palette],bannerOverlay:[.55,.45,.65,.72][mood],bannerPosition:'center',bannerHeight:[210,260,230,280][mood],catalogLayout:['grid','grid','list','grid'][mood],surfaceTexture:['none','none','linen','dots'][mood],productPhoto:['wide','square','wide','square'][mood]};
+    const p=ACAI_PRESETS_V13541[palette*4+mood],photos={acai:'assets/pedevia-theme-acai.webp',tropical:'assets/pedevia-theme-tropical.webp',berry:'assets/pedevia-theme-berry.webp',cupuacu:'assets/pedevia-ice-cupuacu.webp',granola:'assets/pedevia-comp-granola.webp',completo:'assets/pedevia-complementos-completo.webp'};
+    return {bannerImage:photos[p[5]],bannerOverlay:.6,bannerPosition:'center',bannerHeight:220+(mood*20),catalogLayout:p[6],surfaceTexture:p[8],productPhoto:'wide',presetStyle:p[9],shadow:p[7],radius:[16,24,20,28][mood],photoShape:'default',cardStyle:'elevated'};
+  }
+  function applyAcaiPaletteV13541(template,index){
+    const p=ACAI_PRESETS_V13541[index],th=template.theme,d=template.design,dark=p[3]==='#170c22'||p[3]==='#171c23';
+    template.name=p[0];template.desc='Açaí · '+({editorial:'Editorial',ribbon:'Faixas de cor',bold:'Marcante',minimal:'Essencial',rounded:'Artesanal'}[p[9]]);
+    const ink=dark?'#fff5ff':'#29212b',muted=dark?'#d0bddb':'#675d69',line=dark?'#584064':mixV132(p[1],'#ffffff',.72);
+    Object.assign(th,{primary:p[1],secondary:p[2],background:p[3],card:p[4],text:ink,muted,line,headerBg:p[4],headerText:ink,topCardBg:p[4],infoText:ink,infoDetailText:muted,loyaltyBg:p[4],loyaltyText:ink,categoryBg:p[4],categoryText:ink,categoryActiveBg:p[1],categoryActiveText:contrastTextV132(p[1]),sectionBg:p[3],sectionTitle:ink,productBg:p[4],productText:ink,productPrice:dark?p[2]:p[1],cartBg:p[1],cartText:contrastTextV132(p[1]),modalBg:p[4],modalText:ink,buttonBg:p[1],buttonText:contrastTextV132(p[1]),secondaryButtonBg:dark?'#493451':mixV132(p[1],'#ffffff',.88),secondaryButtonText:dark?'#fff5ff':p[1]});
+    Object.assign(d,{siteGradient:index%3===0,siteBg1:p[3],siteBg2:dark?'#26102d':mixV132(p[2],'#ffffff',.8),headerGradient:false,headerBg1:p[4],headerBg2:p[4],buttonGradient:index%2===1,buttonBg1:p[1],buttonBg2:p[2]});
   }
   function safeVisualUrlV13540(value){
     const text=String(value||'').trim();
@@ -211,7 +240,7 @@
   window.safeVisualUrlV13540=safeVisualUrlV13540;
   function visualOptionsV13540(values,current){return values.map(([value,label])=>`<option value="${value}" ${String(current)===String(value)?'selected':''}>${label}</option>`).join('')}
   function visualControlsV13540(d){
-    return `<div class="v140Advanced"><h3>Composição visual</h3><div class="v140Controls"><label>Imagem do banner<select class="field" id="v140PhotoPreset" onchange="chooseBannerImageV13540(this.value)">${visualOptionsV13540([['','Sem imagem'],['assets/pedevia-theme-acai.webp','Açaí artesanal'],['assets/pedevia-ice-cupuacu.webp','Açaí e cupuaçu'],['assets/pedevia-comp-granola.webp','Granola'],['assets/pedevia-ice-sensacao.webp','Sorvete e frutas'],['assets/pedevia-complementos-completo.webp','Complementos'],['custom','Minha imagem']],d.bannerImage&& !String(d.bannerImage).startsWith('assets/')?'custom':d.bannerImage||'')}</select></label><label>Disposição dos produtos<select class="field" id="v140Layout" onchange="previewCompositionV13540()">${visualOptionsV13540([['grid','Dois por linha'],['three','Três por linha no computador'],['list','Lista com foto ao lado']],d.catalogLayout||'grid')}</select></label></div><label>Link da sua imagem (HTTPS)</label><input id="v140BannerUrl" class="field" value="${esc(d.bannerImage||'')}" placeholder="https://..." onchange="previewCompositionV13540()"><div id="v140ImagePreview" class="v140ImagePreview" aria-label="Prévia da imagem do banner"></div><details><summary>Ajustes avançados</summary><div class="v140Controls" style="margin-top:14px"><label>Escurecimento da foto<input id="v140Overlay" type="range" min="0.3" max="0.85" step="0.05" value="${Math.max(.3,Math.min(.85,Number(d.bannerOverlay)||.55))}" oninput="previewCompositionV13540()"></label><label>Altura mínima do banner<input id="v140Height" class="field" type="number" min="160" max="420" value="${Number(d.bannerHeight)||240}" onchange="previewCompositionV13540()"></label><label>Posição da imagem<select id="v140Position" class="field" onchange="previewCompositionV13540()">${visualOptionsV13540([['left','Esquerda'],['center','Centro'],['right','Direita']],d.bannerPosition||'center')}</select></label><label>Textura do fundo<select id="v140Texture" class="field" onchange="previewCompositionV13540()">${visualOptionsV13540([['none','Lisa'],['dots','Pontos discretos'],['linen','Trama suave']],d.surfaceTexture||'none')}</select></label><label>Formato das fotos<select id="v140ProductPhoto" class="field" onchange="previewCompositionV13540()">${visualOptionsV13540([['default','Original'],['square','Quadrado'],['wide','Horizontal']],d.productPhoto||'default')}</select></label><label>Acabamento dos cartões<select id="v140CardStyle" class="field" onchange="previewCompositionV13540()">${visualOptionsV13540([['elevated','Elevado'],['outline','Contorno'],['glass','Vidro']],d.cardStyle||'elevated')}</select></label><label>Cantos dos cartões<input id="v140Radius" class="field" type="number" min="10" max="32" value="${Number(d.radius)||20}" onchange="previewCompositionV13540()"></label><label>Sombra<select id="v140Shadow" class="field" onchange="previewCompositionV13540()">${visualOptionsV13540([['none','Sem sombra'],['soft','Suave'],['deep','Marcante']],d.shadow||'soft')}</select></label></div></details></div>`;
+    return `<div class="v140Advanced"><h3>Composição visual</h3><div class="v140Controls"><label>Imagem do banner<select class="field" id="v140PhotoPreset" onchange="chooseBannerImageV13540(this.value)">${visualOptionsV13540([['','Sem imagem'],['assets/pedevia-theme-acai.webp','Açaí artesanal'],['assets/pedevia-theme-tropical.webp','Tropical com manga'],['assets/pedevia-theme-berry.webp','Açaí com frutas vermelhas'],['assets/pedevia-ice-cupuacu.webp','Açaí e cupuaçu'],['assets/pedevia-comp-granola.webp','Granola'],['assets/pedevia-ice-sensacao.webp','Sorvete e frutas'],['assets/pedevia-complementos-completo.webp','Complementos'],['custom','Minha imagem']],d.bannerImage&& !String(d.bannerImage).startsWith('assets/')?'custom':d.bannerImage||'')}</select></label><label>Disposição dos produtos<select class="field" id="v140Layout" onchange="previewCompositionV13540()">${visualOptionsV13540([['grid','Dois por linha'],['three','Três por linha no computador'],['list','Lista com foto ao lado']],d.catalogLayout||'grid')}</select></label></div><label>Link da sua imagem (HTTPS)</label><input id="v140BannerUrl" class="field" value="${esc(d.bannerImage||'')}" placeholder="https://..." onchange="previewCompositionV13540()"><div id="v140ImagePreview" class="v140ImagePreview" aria-label="Prévia da imagem do banner"></div><details><summary>Ajustes avançados</summary><div class="v140Controls" style="margin-top:14px"><label>Escurecimento da foto<input id="v140Overlay" type="range" min="0.3" max="0.85" step="0.05" value="${Math.max(.3,Math.min(.85,Number(d.bannerOverlay)||.55))}" oninput="previewCompositionV13540()"></label><label>Altura mínima do banner<input id="v140Height" class="field" type="number" min="160" max="420" value="${Number(d.bannerHeight)||240}" onchange="previewCompositionV13540()"></label><label>Posição da imagem<select id="v140Position" class="field" onchange="previewCompositionV13540()">${visualOptionsV13540([['left','Esquerda'],['center','Centro'],['right','Direita']],d.bannerPosition||'center')}</select></label><label>Textura do fundo<select id="v140Texture" class="field" onchange="previewCompositionV13540()">${visualOptionsV13540([['none','Lisa'],['dots','Pontos discretos'],['linen','Trama suave']],d.surfaceTexture||'none')}</select></label><label>Formato das fotos<select id="v140ProductPhoto" class="field" onchange="previewCompositionV13540()">${visualOptionsV13540([['default','Original'],['square','Quadrado'],['wide','Horizontal']],d.productPhoto||'default')}</select></label><label>Acabamento dos cartões<select id="v140CardStyle" class="field" onchange="previewCompositionV13540()">${visualOptionsV13540([['elevated','Elevado'],['outline','Contorno'],['glass','Vidro']],d.cardStyle||'elevated')}</select></label><label>Cantos dos cartões<input id="v140Radius" class="field" type="number" min="10" max="32" value="${Number(d.radius)||20}" onchange="previewCompositionV13540()"></label><label>Sombra<select id="v140Shadow" class="field" onchange="previewCompositionV13540()">${visualOptionsV13540([['none','Sem sombra'],['soft','Suave'],['deep','Marcante']],d.shadow||'soft')}</select></label></div></details></div>`;
   }
   window.chooseBannerImageV13540=function(value){if(value==='custom'){document.getElementById('v140BannerUrl')?.focus();return;}document.getElementById('v140BannerUrl').value=value;previewCompositionV13540();};
   window.captureCompositionV13540=function(){
@@ -224,6 +253,7 @@
   const themeBaseV13540=applyThemeV116;
   applyThemeV116=function(){
     themeBaseV13540();const d=cfg.store.design||{},root=document.documentElement,url=safeVisualUrlV13540(d.bannerImage),overlay=Math.max(.3,Math.min(.85,Number(d.bannerOverlay)||.55));
+    root.dataset.pvPresetStyle=['editorial','ribbon','bold','minimal'].includes(d.presetStyle)?d.presetStyle:'rounded';
     root.dataset.pvLayout=['grid','three','list'].includes(d.catalogLayout)?d.catalogLayout:'grid';root.dataset.pvTexture=['dots','linen'].includes(d.surfaceTexture)?d.surfaceTexture:'none';root.dataset.pvPhoto=['square','wide'].includes(d.productPhoto)?d.productPhoto:'default';root.dataset.pvBanner=url?'photo':'none';
     root.style.setProperty('--pv-banner',url?`linear-gradient(90deg,rgba(12,4,20,${overlay}),rgba(12,4,20,${overlay*.6})),url(${JSON.stringify(url)})`:'none');root.style.setProperty('--pv-banner-position',['left','right'].includes(d.bannerPosition)?d.bannerPosition:'center');root.style.setProperty('--pv-banner-height',Math.max(160,Math.min(420,Number(d.bannerHeight)||240))+'px');
   };
@@ -243,6 +273,7 @@
         });
       });
     });
+    Object.values(out).filter(t=>t.groupId==='acai').forEach(applyAcaiPaletteV13541);
     return out;
   }
 
@@ -255,10 +286,10 @@
     const head=d.headerGradient?`linear-gradient(${d.headerAngle}deg,${d.headerBg1},${d.headerBg2})`:th.headerBg;
     const active=cfg.store.design?.template===t.id;
     return `<button type="button" class="v132TemplateCard ${active?'on':''}" onclick="applyTemplateV132('${t.id}')">
-      <div class="v132Mini" style="background:${bg}">
+      <div class="v132Mini ${d.catalogLayout==='list'?'v141List':''}" style="background:${bg};border-radius:${d.radius||20}px">
         <div class="v132MiniHead" style="background:${head};color:${th.headerText}">SUA MARCA</div>
         <div class="v132MiniHero" style="color:#fff;background:${d.bannerImage?`linear-gradient(90deg,#190620aa,#19062044),url('${esc(d.bannerImage)}')`:`linear-gradient(135deg,${th.heroStart},${th.heroEnd})`}">Cardápio online</div>
-        <div class="v132MiniCards"><i style="background:${th.productBg}"></i><i style="background:${th.productBg}"></i><i style="background:${th.productBg}"></i></div>
+        <div class="v132MiniCats"><i style="background:${th.primary}"></i><i style="background:${th.secondary}"></i></div><div class="v132MiniCards"><i style="background:${th.productBg};color:${th.productPrice}">300 ml</i><i style="background:${th.productBg};color:${th.productPrice}">400 ml</i><i style="background:${th.productBg};color:${th.productPrice}">500 ml</i></div><div class="v132MiniFooter" style="background:${th.primary}"></div>
       </div>
       <b>${esc(t.name)}</b><small>${active?'✓ ATIVO':esc(t.desc)}</small>
     </button>`;
