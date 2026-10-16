@@ -6,16 +6,18 @@
   // O nome do adicional ganha duas linhas e toda a largura do cartão.
   // O valor passa para uma linha própria, abaixo do nome.
   window.groupOptionEditors=function(g){
-    return (g.options||[]).map((o,i,a)=>`<div class="optionEdit" data-option-id="${esc(o.id||'')}">
+    const list=[...(g.options||[])];
+    if(isMainComplements(g)){const meta=g.completeOption||{},raw=Number(meta.position),position=Number.isInteger(raw)?Math.max(0,Math.min(list.length,raw)):list.length;list.splice(position,0,{id:'__pv_complete__',name:meta.name||'Completo',desc:meta.desc||'',price:0,status:meta.status||'available',_complete:true});}
+    return list.map((o,i,a)=>`<div class="optionEdit" data-option-id="${o._complete?'':esc(o.id||'')}" ${o._complete?'data-pv-complete-editor="1"':''}>
       <div class="pvOptionOrder"><button type="button" class="pvMoveOptionUp" onclick="moveGroupOptionEditor(this,-1)" ${i===0?'disabled':''}>↑ Subir</button><button type="button" class="pvMoveOptionDown" onclick="moveGroupOptionEditor(this,1)" ${i===a.length-1?'disabled':''}>↓ Descer</button></div>
       <label class="v1331OptionLabel">Nome do adicional</label>
       <textarea class="field goName v1331OptionName" rows="1" placeholder="Nome do adicional">${esc(o.name)}</textarea>
       <div class="v1331OptionPriceLine">
-        <label><span>Valor adicional</span><input class="field goPrice" type="number" step=".01" value="${o.price||0}" placeholder="R$ 0,00"></label>
+        <label><span>${o._complete?'Preço calculado pelos complementos':'Valor adicional'}</span><input ${o._complete?'disabled':''} class="field goPrice" type="number" step=".01" value="${o.price||0}" placeholder="R$ 0,00"></label>
         <button class="ghost v1331RemoveOption" type="button" onclick="this.closest('.optionEdit').remove()" aria-label="Remover adicional">×</button>
       </div>
       <input class="field goDesc" value="${esc(o.desc||'')}" placeholder="Descrição (opcional)">
-      <label class="pvVisualStyleLabel">Estilo visual<select class="field goVisualStyle">${visualStyleOptions(o.visualStyle||'auto')}</select></label>
+      <label class="pvVisualStyleLabel">Estilo visual<select class="field goVisualStyle" ${o._complete?'disabled':''}>${o._complete?'<option value="auto">Imagem do Completo</option>':visualStyleOptions(o.visualStyle||'auto')}</select></label>
       <select class="field goStatus"><option value="available" ${o.status==='available'?'selected':''}>Disponível</option><option value="unavailable" ${o.status==='unavailable'?'selected':''}>Indisponível</option><option value="hidden" ${o.status==='hidden'?'selected':''}>Oculto</option></select>
     </div>`).join('');
   };

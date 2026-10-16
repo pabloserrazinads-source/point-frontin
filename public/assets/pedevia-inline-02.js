@@ -555,9 +555,19 @@ function choiceOptionRow(g,o,type){
 }
 function isMainComplements(g){return String(g?.name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase()==='complementos'}
 function completeComplementCard(g){
- if(!isMainComplements(g))return '';
- return `<label class="option optionCard pvCompleteCard"><span><b>Completo</b></span><input type="checkbox" data-pv-complete="1" aria-label="Completo: todos os complementos" onchange="toggleCompleteComplements(this)"></label>`;
+ if(!isMainComplements(g)||g.completeOption?.status==='hidden')return '';
+ const meta=g.completeOption||{},disabled=meta.status==='unavailable';
+ return `<label class="option optionCard pvCompleteCard" ${disabled?'style="opacity:.35"':''}><span><b>${esc(meta.name||'Completo')}</b>${meta.desc?`<small>${esc(meta.desc)}</small>`:''}</span><input type="checkbox" data-pv-complete="1" aria-label="${esc(meta.name||'Completo')}" ${disabled?'disabled':''} onchange="toggleCompleteComplements(this)"></label>`;
 }
+function orderedGroupOptionsV13549(g,r){
+ const options=g.options||[],rows=options.map(o=>o.status==='available'?(r.mode==='quantity'?quantityOptionRow(g,o):choiceOptionRow(g,o,r.mode==='single'?'radio':'checkbox')):'');
+ if(isMainComplements(g)){
+  const raw=Number(g.completeOption?.position),position=Number.isInteger(raw)?Math.max(0,Math.min(options.length,raw)):options.length;
+  rows.splice(position,0,completeComplementCard(g));
+ }
+ return rows.join('');
+}
+
 function toggleCompleteComplements(input){
  const group=input.closest('.choiceGroup'),active=input.checked;
  input.closest('.pvCompleteCard').classList.toggle('selected',active);
@@ -685,8 +695,10 @@ function collectGroupForm(base){
   let unlimited=$('input[name="ggLim"]:checked')?.value==='unlimited';
   let mode=$('#ggMode').value;
   let max=mode==='single'?1:(unlimited?999:Math.max(1,+$('#ggMax').value||1));
-  let cards=$$('.optionEdit');
-  return {...base,name:$('#ggName').value.trim()||'Grupo',selectionMode:mode,required,min:required?1:0,unlimited:mode==='single'?false:unlimited,max,
+  const allCards=$$('.optionEdit'),completeCard=allCards.find(c=>c.dataset.pvCompleteEditor==='1');
+  let cards=allCards.filter(c=>c.dataset.pvCompleteEditor!=='1');
+  const completeOption=isMainComplements(base)?(completeCard?{name:completeCard.querySelector('.goName').value.trim()||'Completo',desc:completeCard.querySelector('.goDesc').value,status:completeCard.querySelector('.goStatus').value,position:allCards.slice(0,allCards.indexOf(completeCard)).filter(c=>c.dataset.pvCompleteEditor!=='1').length}:{...(base.completeOption||{}),status:'hidden'}):base.completeOption;
+  return {...base,completeOption,name:$('#ggName').value.trim()||'Grupo',selectionMode:mode,required,min:required?1:0,unlimited:mode==='single'?false:unlimited,max,
     options:cards.map((c,i)=>({id:c.dataset.optionId||(base.options&&base.options[i]?.id)||('o'+Date.now()+i),name:c.querySelector('.goName').value.trim()||'Complemento',desc:c.querySelector('.goDesc').value,price:+c.querySelector('.goPrice').value||0,status:c.querySelector('.goStatus').value,visualStyle:c.querySelector('.goVisualStyle')?.value||'auto'}))};
 }
 function saveAdvancedGroup(pid,gid){
@@ -1028,7 +1040,7 @@ function openProduct(id){
   let base=firstVar?+firstVar.price||0:+p.price||0;
   let h=`<div class="row"><div><h2 style="margin:0">${esc(p.name)}</h2>${hasVariants(p)?'<span class="price selectedVariantPrice">Escolha o tamanho</span>':`<span class="price">${brl(p.price)}</span>`}</div><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div><p>${esc(p.desc||'')}</p>${p.detailedDesc?`<p class="hint">${esc(p.detailedDesc)}</p>`:''}`;
   if(hasVariants(p)) h+=`<div class="group variantGroup"><div class="groupTitle">Escolha o tamanho</div><div class="hint">${(mode==='pickup'||mode==='dinein')?'Para esta modalidade, aceitamos somente pote de 1 litro.':'Escolha o tamanho desejado.'}</div>${vars.map(v=>variantChoiceHTML(v,mode)).join('')}</div>`;
-  (p.groups||[]).forEach(gid=>{let g=cfg.groups.find(x=>x.id===gid);if(!g)return;let os=(g.options||[]).filter(o=>o.status==='available');if(!os.length)return;let r=effectiveGroupRules(g),maxAttr=Number.isFinite(r.max)?r.max:'inf';h+=`<div class="group choiceGroup" data-gid="${g.id}" data-mode="${r.mode}" data-min="${r.min}" data-max="${maxAttr}"><div class="groupTitle">${esc(g.name)} ${r.required?'<span class="tinyTag">Obrigatório</span>':'<span class="tinyTag">Opcional</span>'}</div><div class="hint">${clientRuleText(g)}</div>`;if(r.mode==='quantity')h+=os.map(o=>quantityOptionRow(g,o)).join('');else{let type=r.mode==='single'?'radio':'checkbox';h+=os.map(o=>choiceOptionRow(g,o,type)).join('')}h+=completeComplementCard(g);h+='</div>'});
+  (p.groups||[]).forEach(gid=>{let g=cfg.groups.find(x=>x.id===gid);if(!g)return;let os=(g.options||[]).filter(o=>o.status==='available');if(!os.length)return;let r=effectiveGroupRules(g),maxAttr=Number.isFinite(r.max)?r.max:'inf';h+=`<div class="group choiceGroup" data-gid="${g.id}" data-mode="${r.mode}" data-min="${r.min}" data-max="${maxAttr}"><div class="groupTitle">${esc(g.name)} ${r.required?'<span class="tinyTag">Obrigatório</span>':'<span class="tinyTag">Opcional</span>'}</div><div class="hint">${clientRuleText(g)}</div>`;h+=orderedGroupOptionsV13549(g,r);h+='</div>'});
   h+=`<label>Observação</label><textarea id="itemObs" class="field" placeholder="Ex.: sem granola"></textarea><div class="productFooter"><div class="productQty"><button onclick="qty(-1)">−</button><b id="qty">1</b><button onclick="qty(1)">+</button></div><button class="btn addPriceBtn" data-base="${base}" onclick="addCart('${p.id}')">Adicionar • <span class="liveTotal">${brl(base)}</span></button></div>`;
   showModal(h);setTimeout(()=>{refreshAllGroupLimits();if(firstVar){let i=document.querySelector(`input[name="productVariant"][value="${CSS.escape(firstVar.id)}"]`);if(i){i.checked=true;handleVariantChange()}}},0);
 }
@@ -1100,7 +1112,7 @@ function openProduct(id){
   let base=firstVar?+firstVar.price||0:+p.price||0;
   let h=`<div class="row"><div><h2 style="margin:0">${esc(p.name)}</h2>${hasVariants(p)?'<span class="price selectedVariantPrice">Escolha o tamanho</span>':`<span class="price">${brl(p.price)}</span>`}</div><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div><p>${esc(p.desc||'')}</p>${p.detailedDesc?`<p class="hint">${esc(p.detailedDesc)}</p>`:''}`;
   if(hasVariants(p))h+=`<div class="group variantGroup"><div class="groupTitle">Escolha o tamanho</div>${vars.map(v=>variantChoiceHTML(v)).join('')}</div>`;
-  (p.groups||[]).forEach(gid=>{let g=cfg.groups.find(x=>x.id===gid);if(!g)return;let os=(g.options||[]).filter(o=>o.status==='available');if(!os.length)return;let r=effectiveGroupRules(g),maxAttr=Number.isFinite(r.max)?r.max:'inf';h+=`<div class="group choiceGroup" data-gid="${g.id}" data-mode="${r.mode}" data-min="${r.min}" data-max="${maxAttr}"><div class="groupTitle">${esc(g.name)} ${r.required?'<span class="tinyTag">Obrigatório</span>':'<span class="tinyTag">Opcional</span>'}</div><div class="hint">${clientRuleText(g)}</div>`;if(r.mode==='quantity')h+=os.map(o=>quantityOptionRow(g,o)).join('');else{let type=r.mode==='single'?'radio':'checkbox';h+=os.map(o=>choiceOptionRow(g,o,type)).join('')}h+=completeComplementCard(g);h+='</div>'});
+  (p.groups||[]).forEach(gid=>{let g=cfg.groups.find(x=>x.id===gid);if(!g)return;let os=(g.options||[]).filter(o=>o.status==='available');if(!os.length)return;let r=effectiveGroupRules(g),maxAttr=Number.isFinite(r.max)?r.max:'inf';h+=`<div class="group choiceGroup" data-gid="${g.id}" data-mode="${r.mode}" data-min="${r.min}" data-max="${maxAttr}"><div class="groupTitle">${esc(g.name)} ${r.required?'<span class="tinyTag">Obrigatório</span>':'<span class="tinyTag">Opcional</span>'}</div><div class="hint">${clientRuleText(g)}</div>`;h+=orderedGroupOptionsV13549(g,r);h+='</div>'});
   h+=`<label>Observação</label><textarea id="itemObs" class="field" placeholder="Ex.: sem granola"></textarea><div class="productFooter"><div class="productQty"><button onclick="qty(-1)">−</button><b id="qty">1</b><button onclick="qty(1)">+</button></div><button class="btn addPriceBtn" data-base="${base}" onclick="addCart('${p.id}')">Adicionar • <span class="liveTotal">${brl(base)}</span></button></div>`;
   showModal(h);setTimeout(()=>{refreshAllGroupLimits();if(firstVar){let i=document.querySelector(`input[name="productVariant"][value="${CSS.escape(firstVar.id)}"]`);if(i){i.checked=true;handleVariantChange()}}},0);
 }
