@@ -220,7 +220,22 @@ function adminProducts(){$("#adminContent").innerHTML=`<div class="panel"><div c
 function editProduct(id){let p=cfg.products.find(x=>x.id===id);showModal(`<div class="row"><h2>Editar produto</h2><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div><label>Nome</label><input id="epn" class="field" value="${esc(p.name)}"><label>Descrição</label><textarea id="epd" class="field">${esc(p.desc)}</textarea><label>Preço</label><input id="epp" type="number" step=".01" class="field" value="${p.price}"><label>Categoria</label><select id="epc" class="field">${cfg.categories.map(c=>`<option value="${c.id}" ${c.id===p.category?"selected":""}>${c.name}</option>`).join("")}</select><label>URL da imagem</label><input id="epi" class="field" value="${esc(p.image)}"><label>Status</label><select id="eps" class="field"><option value="available">Disponível</option><option value="unavailable">Indisponível</option><option value="hidden">Oculto</option></select><div class="group"><div class="groupTitle">Opções deste produto</div>${cfg.groups.map(g=>`<label class="option"><span>${g.name}</span><input class="pg" type="checkbox" value="${g.id}" ${p.groups.includes(g.id)?"checked":""}></label>`).join("")}</div><button class="btn full" onclick="saveProduct('${p.id}')">Salvar</button>`);$("#eps").value=p.status}
 function saveProduct(id){let p=cfg.products.find(x=>x.id===id);p.name=$("#epn").value;p.desc=$("#epd").value;p.price=+$("#epp").value;p.category=$("#epc").value;p.image=$("#epi").value;p.status=$("#eps").value;p.groups=$$(".pg:checked").map(x=>x.value);save();closeModal();renderAdmin();renderShop()}
 function newProduct(){let p={id:"p"+Date.now(),category:"acai",name:"Novo produto",desc:"",price:0,status:"hidden",image:"",groups:[]};cfg.products.push(p);save();editProduct(p.id)}
-function adminStock(){$("#adminContent").innerHTML=cfg.groups.map(g=>`<div class="panel"><div class="row"><div><h3>${g.name}</h3><span class="hint">mín. ${g.min} · máx. ${g.max}</span></div><button class="ghost" onclick="editRules('${g.id}')">Regras</button></div>${g.options.map(o=>`<div class="adminItem"><div><b>${esc(o.name)}</b>${o.price?" · "+brl(o.price):""}<br><span class="badge ${o.status}">${statusLabel(o.status)}</span></div><div class="miniBtns"><button onclick="setOpt('${g.id}','${o.id}','available')">✓</button><button onclick="setOpt('${g.id}','${o.id}','unavailable')">×</button><button onclick="setOpt('${g.id}','${o.id}','hidden')">👁</button></div></div>`).join("")}<button class="ghost" onclick="newOption('${g.id}')">+ Adicionar item</button></div>`).join("")}
+function adminStock(){$("#adminContent").innerHTML=cfg.groups.map((g,gi)=>`<div class="panel"><div class="row"><div><h3>${g.name}</h3><span class="hint">mín. ${g.min} · máx. ${g.max}</span></div><button class="ghost" onclick="editRules('${g.id}')">Regras</button></div>${g.options.map((o,oi)=>`<div class="adminItem"><div><b>${esc(o.name)}</b>${o.price?" · "+brl(o.price):""}<br><span class="badge ${o.status}">${statusLabel(o.status)}</span></div><div class="miniBtns"><button onclick="setOptAtV13550(${gi},${oi},'available')">✓</button><button onclick="setOptAtV13550(${gi},${oi},'unavailable')">×</button><button onclick="setOptAtV13550(${gi},${oi},'hidden')">👁</button></div></div>`).join("")}<button class="ghost" onclick="newOption('${g.id}')">+ Adicionar item</button></div>`).join("")}
+// Mantém identificadores válidos e únicos sem renomear os que já são únicos.
+function uniqueOptionIdsV13550(options){
+  const reserved=new Set(options.map(o=>String(o.id||'')).filter(Boolean)),seen=new Set();
+  let serial=0;
+  options.forEach(o=>{let id=String(o.id||'');if(!id||seen.has(id)){do{id='o13550_'+Date.now()+'_'+serial++}while(reserved.has(id));o.id=id;reserved.add(id)}seen.add(id)});
+  return options;
+}
+function setOptAtV13550(groupIndex,optionIndex,status){
+  if(!['available','unavailable','hidden'].includes(status)||!Number.isInteger(groupIndex)||!Number.isInteger(optionIndex))return;
+  const group=cfg.groups[groupIndex],option=group?.options?.[optionIndex];
+  if(!option)return;
+  uniqueOptionIdsV13550(group.options);
+  option.status=status;save();adminStock();renderShop();
+}
+
 function setOpt(gid,oid,s){cfg.groups.find(g=>g.id===gid).options.find(o=>o.id===oid).status=s;save();adminStock();renderShop()}
 function editRules(id){let g=cfg.groups.find(x=>x.id===id);showModal(`<div class="row"><h2>${g.name}</h2><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div><label>Nome</label><input id="rname" class="field" value="${esc(g.name)}"><div class="two"><div><label>Mínimo</label><input id="rmin" type="number" class="field" value="${g.min}"></div><div><label>Máximo</label><input id="rmax" type="number" class="field" value="${g.max}"></div></div><button class="btn full" onclick="saveRules('${id}')">Salvar</button>`)}
 function saveRules(id){let g=cfg.groups.find(x=>x.id===id);g.name=$("#rname").value;g.min=+$("#rmin").value;g.max=+$("#rmax").value;save();closeModal();renderAdmin()}
@@ -699,7 +714,7 @@ function collectGroupForm(base){
   let cards=allCards.filter(c=>c.dataset.pvCompleteEditor!=='1');
   const completeOption=isMainComplements(base)?(completeCard?{name:completeCard.querySelector('.goName').value.trim()||'Completo',desc:completeCard.querySelector('.goDesc').value,status:completeCard.querySelector('.goStatus').value,position:allCards.slice(0,allCards.indexOf(completeCard)).filter(c=>c.dataset.pvCompleteEditor!=='1').length}:{...(base.completeOption||{}),status:'hidden'}):base.completeOption;
   return {...base,completeOption,name:$('#ggName').value.trim()||'Grupo',selectionMode:mode,required,min:required?1:0,unlimited:mode==='single'?false:unlimited,max,
-    options:cards.map((c,i)=>({id:c.dataset.optionId||(base.options&&base.options[i]?.id)||('o'+Date.now()+i),name:c.querySelector('.goName').value.trim()||'Complemento',desc:c.querySelector('.goDesc').value,price:+c.querySelector('.goPrice').value||0,status:c.querySelector('.goStatus').value,visualStyle:c.querySelector('.goVisualStyle')?.value||'auto'}))};
+    options:uniqueOptionIdsV13550(cards.map((c,i)=>({id:c.dataset.optionId||'',name:c.querySelector('.goName').value.trim()||'Complemento',desc:c.querySelector('.goDesc').value,price:+c.querySelector('.goPrice').value||0,status:c.querySelector('.goStatus').value,visualStyle:c.querySelector('.goVisualStyle')?.value||'auto'})))};
 }
 function saveAdvancedGroup(pid,gid){
   let old=cfg.groups.find(x=>x.id===gid); if(!old)return;
