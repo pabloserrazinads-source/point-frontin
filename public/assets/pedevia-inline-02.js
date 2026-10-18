@@ -233,15 +233,36 @@ function uniqueOptionIdsV13550(options){
 function normalizeCatalogOptionsV13551(){
   (cfg.groups||[]).forEach(g=>uniqueOptionIdsV13550(g.options||[]));
 }
-function setOptAtV13550(groupIndex,optionIndex,status){
-  if(!['available','unavailable','hidden'].includes(status)||!Number.isInteger(groupIndex)||!Number.isInteger(optionIndex))return;
+let stockSavePendingV13552=false;
+async function setOptAtV13550(groupIndex,optionIndex,status){
+  if(stockSavePendingV13552||!['available','unavailable','hidden'].includes(status)||!Number.isInteger(groupIndex)||!Number.isInteger(optionIndex))return false;
   const group=cfg.groups[groupIndex],option=group?.options?.[optionIndex];
-  if(!option)return;
-  uniqueOptionIdsV13550(group.options);
-  option.status=status;save();adminStock();renderShop();
+  if(!option)return false;
+  const before=JSON.parse(JSON.stringify(group.options));
+  stockSavePendingV13552=true;
+  const buttons=Array.from(document.querySelectorAll('#adminContent .miniBtns button'));
+  buttons.forEach(b=>b.disabled=true);
+  try{
+    normalizeCatalogOptionsV13551();
+    option.status=status;
+    const ok=await persistAdminStateV15({products:false,notify:false});
+    if(ok!==true)throw new Error('O servidor não confirmou o salvamento. Verifique sua conexão e sessão.');
+    adminStock();renderShop();return true;
+  }catch(e){
+    group.options=before;
+    try{localStorage.setItem(KEY,JSON.stringify(cfg))}catch(_){}
+    setSyncStatusV15('error',e.message);
+    adminStock();renderShop();alert('Não foi possível salvar a disponibilidade: '+e.message);return false;
+  }finally{stockSavePendingV13552=false;buttons.forEach(b=>b.disabled=false);}
+}
+// Compatibilidade: nunca escolhe arbitrariamente a primeira ocorrência de um ID repetido.
+function setOpt(gid,oid,status){
+  const gi=cfg.groups.findIndex(g=>g.id===gid),group=cfg.groups[gi];
+  const matches=(group?.options||[]).map((o,i)=>o.id===oid?i:-1).filter(i=>i>=0);
+  if(matches.length!==1){alert('Reabra Complementos e estoque para atualizar os controles.');return false;}
+  return setOptAtV13550(gi,matches[0],status);
 }
 
-function setOpt(gid,oid,s){cfg.groups.find(g=>g.id===gid).options.find(o=>o.id===oid).status=s;save();adminStock();renderShop()}
 function editRules(id){let g=cfg.groups.find(x=>x.id===id);showModal(`<div class="row"><h2>${g.name}</h2><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div><label>Nome</label><input id="rname" class="field" value="${esc(g.name)}"><div class="two"><div><label>Mínimo</label><input id="rmin" type="number" class="field" value="${g.min}"></div><div><label>Máximo</label><input id="rmax" type="number" class="field" value="${g.max}"></div></div><button class="btn full" onclick="saveRules('${id}')">Salvar</button>`)}
 function saveRules(id){let g=cfg.groups.find(x=>x.id===id);g.name=$("#rname").value;g.min=+$("#rmin").value;g.max=+$("#rmax").value;save();closeModal();renderAdmin()}
 function newOption(gid){let n=prompt("Nome do item:");if(!n)return;let p=Number(prompt("Preço adicional (0 se grátis):","0")||0);cfg.groups.find(g=>g.id===gid).options.push({id:"o"+Date.now(),name:n,price:p,status:"available"});save();adminStock()}
@@ -1506,6 +1527,7 @@ async function loadSiteConfigFromSupabase(){
 
     if(data?.data){
       applySiteConfigPayload(data.data);
+      cloudHydratedV111=true;
       console.info('Configuração geral carregada do Supabase.');
       return true;
     }
@@ -1522,6 +1544,7 @@ async function saveSiteConfigOnline(){
   const {data:sessionData}=await supabaseClient.auth.getSession();
   if(!sessionData?.session) return false;
 
+  normalizeCatalogOptionsV13551();
   const payload=siteConfigPayload();
   const {error}=await supabaseClient
     .from('site_config')
@@ -1529,7 +1552,7 @@ async function saveSiteConfigOnline(){
       id:'main',
       data:payload,
       updated_at:new Date().toISOString()
-    },{onConflict:'id'});
+    },{onConflict:'id'}).select('id').single();
 
   if(error) throw error;
   return true;
@@ -1706,8 +1729,9 @@ async function persistAdminStateV15({products=true,notify=false,message='Altera�
     // Serializa os salvamentos para evitar que uma alteração antiga
     // termine depois de uma nova e sobrescreva o estado mais recente.
     v15SyncPromise=v15SyncPromise.catch(()=>{}).then(async()=>{
-      await saveSiteConfigOnline();
-      if(products) await syncAllProductsOnline();
+      const saved=await saveSiteConfigOnline();
+      if(saved!==true)throw new Error('Configuração não confirmada pelo servidor.');
+      if(products){const synced=await syncAllProductsOnline();if(synced===false)throw new Error('Produtos não confirmados pelo servidor.');}
     });
     await v15SyncPromise;
     setSyncStatusV15('ok');

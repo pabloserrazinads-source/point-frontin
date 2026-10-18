@@ -48,7 +48,10 @@
     const slug=tenantSlugV13233();
     if(!slug){
       window.pedeviaPublicUnavailableV13233=false;
-      try{if(typeof loadOnline==='function')await loadOnline()}catch(_e){}
+      try{
+        const loaded=await loadSiteConfigFromSupabase();
+        if(loaded)await loadProductsFromSupabase();
+      }catch(e){console.warn('Falha na leitura inicial da loja',e)}
       try{renderShop();updateCart()}catch(_e){}
       try{applyBrandHeaderV116()}catch(_e){}
       if(typeof releaseTenantBootV1317==='function')releaseTenantBootV1317();
@@ -63,6 +66,7 @@
       if(fresh){
         window.pedeviaPublicUnavailableV13233=false;
         applyTenantConfigV121(fresh);
+        cloudHydratedV111=true;
         renderShop();updateCart();
         applyBrandHeaderV116();
         if(typeof releaseTenantBootV1317==='function')releaseTenantBootV1317();

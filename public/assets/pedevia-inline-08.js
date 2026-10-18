@@ -401,13 +401,14 @@ async function loadTenantAdminRowV122(slug){
 async function saveTenantConfigV122(){
   const row=window.pedeviaTenantV121;
   if(!row?.id)return false;
+  normalizeCatalogOptionsV13551();
   const payload=JSON.parse(JSON.stringify(cfg));
   const {error}=await supabaseClient.from('client_sites').update({
     name:cfg.store?.name||row.name,
     whatsapp:String(cfg.store?.whatsapp||row.whatsapp||'').replace(/\D/g,''),
     config:payload,
     updated_at:new Date().toISOString()
-  }).eq('id',row.id);
+  }).eq('id',row.id).select('id').single();
   if(error)throw error;
   row.name=cfg.store?.name||row.name;
   row.whatsapp=cfg.store?.whatsapp||row.whatsapp;
@@ -438,6 +439,7 @@ async function enterTenantAdminV122(){
   const row=await loadTenantAdminRowV122(slug);
   if(!row)throw new Error('Este usuário não possui acesso administrativo a esta loja.');
   applyTenantConfigV121(row);
+  cloudHydratedV111=true;
   logged=true;
   $('#loginBox')?.classList.add('hide');
   $('#adminPanel')?.classList.remove('hide');
