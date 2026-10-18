@@ -84,11 +84,12 @@ function renderClientStoreInfo(){let s=cfg.store,st=openState(),logo=s.brandImag
 function renderShop(){let st=openState();renderClientStoreInfo();$("#storeStatus").textContent="● "+st.text;$("#closedNotice").innerHTML=st.open?"":'<div class="notice bad">A loja está fechada no momento. Você pode montar o pedido e consultar o cardápio.</div>';
  $("#categoryTabs").innerHTML=cfg.categories.filter(c=>c.active).map(c=>`<button class="tab ${activeCat===c.id?"on":""}" data-pedevia-category="${esc(c.id)}">${c.name}</button>`).join("");
  let ps=cfg.products.filter(p=>p.category===activeCat&&p.status!=="hidden");$("#productGrid").innerHTML=ps.map(p=>`<article class="card" ${p.status==="available"?`data-pedevia-open-product="${p.id}"`:""}><div class="photo" ${p.image?`style="background-image:url('${esc(p.image)}')"`:""}>${p.image?"":"🍧"}</div><div class="cardbody"><h3>${esc(p.name)}</h3><p class="desc">${esc(p.desc)}</p><div class="row"><span class="price">${brl(p.price)}</span>${p.status==="unavailable"?'<span class="badge unavailable">Indisponível</span>':""}</div></div></article>`).join("")||'<p class="hint">Nenhum produto nesta categoria.</p>';updateCart()}
-function openProduct(id){let p=cfg.products.find(x=>x.id===id),h=`<div class="row"><div><h2 style="margin:0">${esc(p.name)}</h2><span class="price">${brl(p.price)}</span></div><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div><p>${esc(p.desc)}</p>`;
+function openProduct(id){
+  normalizeCatalogOptionsV13551();let p=cfg.products.find(x=>x.id===id),h=`<div class="row"><div><h2 style="margin:0">${esc(p.name)}</h2><span class="price">${brl(p.price)}</span></div><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div><p>${esc(p.desc)}</p>`;
  p.groups.forEach(gid=>{let g=cfg.groups.find(x=>x.id===gid);if(!g)return;let os=g.options.filter(o=>o.status==="available");if(!os.length)return;h+=`<div class="group choiceGroup" data-gid="${g.id}" data-min="${g.min}" data-max="${g.max}"><div class="groupTitle">${g.name}</div><div class="hint">${g.min?`Escolha no mínimo ${g.min}. `:""}Máximo ${g.max}.</div>${os.map(o=>`<label class="option"><span>${esc(o.name)} ${o.price?`<small>+ ${brl(o.price)}</small>`:""}</span><input type="${g.max===1?"radio":"checkbox"}" name="g_${g.id}" value="${o.id}"></label>`).join("")}</div>`});
  h+=`<label>Observação</label><textarea id="itemObs" class="field" placeholder="Ex.: sem granola"></textarea><div class="row"><div class="qty"><button onclick="qty(-1)">−</button><b id="qty">1</b><button onclick="qty(1)">+</button></div><button class="btn" onclick="addCart('${p.id}')">Adicionar</button></div>`;showModal(h)}
 function qty(n){$("#qty").textContent=Math.max(1,+$("#qty").textContent+n)}
-function addCart(pid){let p=cfg.products.find(x=>x.id===pid),groups=[],extra=0;for(let box of $$(".choiceGroup")){let g=cfg.groups.find(x=>x.id===box.dataset.gid),sel=$$("input:not([data-pv-complete]):checked",box),min=+box.dataset.min,max=+box.dataset.max;if(sel.length<min||sel.length>max){alert(`Em "${g.name}", escolha entre ${min} e ${max}.`);return}let items=sel.map(i=>g.options.find(o=>o.id===i.value));items.forEach(o=>extra+=+o.price);if(items.length)groups.push({name:g.name,items:items.map(o=>({name:o.name,price:o.price}))})}cart.push({pid,qty:+$("#qty").textContent,unit:p.price+extra,groups,obs:$("#itemObs").value});closeModal();updateCart()}
+function addCart(pid){let p=cfg.products.find(x=>x.id===pid),groups=[],extra=0;for(let box of $$(".choiceGroup")){let g=cfg.groups.find(x=>x.id===box.dataset.gid),sel=$$("input:not([data-pv-complete]):checked",box),min=+box.dataset.min,max=+box.dataset.max;if(sel.length<min||sel.length>max){alert(`Em "${g.name}", escolha entre ${min} e ${max}.`);return}let items=sel.map(i=>uniqueOptionIdsV13550(g.options).find(o=>o.id===i.value));items.forEach(o=>extra+=+o.price);if(items.length)groups.push({name:g.name,items:items.map(o=>({name:o.name,price:o.price}))})}cart.push({pid,qty:+$("#qty").textContent,unit:p.price+extra,groups,obs:$("#itemObs").value});closeModal();updateCart()}
 function sum(){return cart.reduce((s,i)=>s+i.unit*i.qty,0)}function updateCart(){$("#cartCount").textContent=cart.reduce((s,i)=>s+i.qty,0);$("#cartTotal").textContent=brl(sum())}
 function showCart(){let sub=sum(),fee=+cfg.store.deliveryFee;let h=`<div class="row"><h2>Carrinho</h2><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div>`;if(!cart.length){showModal(h+"<p>Seu carrinho está vazio.</p>");return}
  h+=cart.map((i,n)=>{let p=cfg.products.find(x=>x.id===i.pid);return`<div class="summary"><div class="row"><b>${i.qty}x ${esc(p.name)}</b><b>${brl(i.unit*i.qty)}</b></div>${i.groups.map(g=>`<small><b>${g.name}:</b> ${g.items.map(x=>esc(x.name)).join(", ")}</small>`).join("")}${i.obs?`<small>Obs.: ${esc(i.obs)}</small>`:""}<button class="ghost" style="margin-top:8px" onclick="cart.splice(${n},1);updateCart();showCart()">Remover</button></div>`}).join("");
@@ -225,8 +226,12 @@ function adminStock(){$("#adminContent").innerHTML=cfg.groups.map((g,gi)=>`<div 
 function uniqueOptionIdsV13550(options){
   const reserved=new Set(options.map(o=>String(o.id||'')).filter(Boolean)),seen=new Set();
   let serial=0;
-  options.forEach(o=>{let id=String(o.id||'');if(!id||seen.has(id)){do{id='o13550_'+Date.now()+'_'+serial++}while(reserved.has(id));o.id=id;reserved.add(id)}seen.add(id)});
+  options.forEach(o=>{let id=String(o.id||'');if(!id||seen.has(id)){do{id='o13551_'+serial++}while(reserved.has(id));o.id=id;reserved.add(id)}seen.add(id)});
   return options;
+}
+// Executa também no cardápio: dados antigos podem chegar do cache ou servidor.
+function normalizeCatalogOptionsV13551(){
+  (cfg.groups||[]).forEach(g=>uniqueOptionIdsV13550(g.options||[]));
 }
 function setOptAtV13550(groupIndex,optionIndex,status){
   if(!['available','unavailable','hidden'].includes(status)||!Number.isInteger(groupIndex)||!Number.isInteger(optionIndex))return;
@@ -645,8 +650,8 @@ function currentProductExtra(){
   document.querySelectorAll('.choiceGroup').forEach(box=>{
     let g=cfg.groups.find(x=>x.id===box.dataset.gid); if(!g)return;
     if(box.dataset.mode==='quantity'){
-      box.querySelectorAll('.qtyOption').forEach(row=>{let q=+row.querySelector('.optQtyValue').textContent||0,o=g.options.find(x=>x.id===row.dataset.oid);if(o)extra+=(+o.price||0)*q});
-    }else box.querySelectorAll('input:not([data-pv-complete]):checked').forEach(i=>{let o=g.options.find(x=>x.id===i.value);if(o)extra+=+o.price||0});
+      box.querySelectorAll('.qtyOption').forEach(row=>{let q=+row.querySelector('.optQtyValue').textContent||0,o=uniqueOptionIdsV13550(g.options).find(x=>x.id===row.dataset.oid);if(o)extra+=(+o.price||0)*q});
+    }else box.querySelectorAll('input:not([data-pv-complete]):checked').forEach(i=>{let o=uniqueOptionIdsV13550(g.options).find(x=>x.id===i.value);if(o)extra+=+o.price||0});
   });
   return extra;
 }
@@ -659,6 +664,7 @@ function qty(n){let el=$('#qty');el.textContent=Math.max(1,+el.textContent+n);up
 
 // Cliente: usa exatamente as regras configuradas no Admin e bloqueia visualmente ao atingir o máximo.
 function openProduct(id){
+  normalizeCatalogOptionsV13551();
   let p=cfg.products.find(x=>x.id===id); if(!p)return;
   let h=`<div class="row"><div><h2 style="margin:0">${esc(p.name)}</h2><span class="price">${brl(p.price)}</span></div><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div><p>${esc(p.desc||'')}</p>${p.detailedDesc?`<p class="hint">${esc(p.detailedDesc)}</p>`:''}`;
   (p.groups||[]).forEach(gid=>{
@@ -684,12 +690,12 @@ function addCart(pid){
     let mode=box.dataset.mode, min=+box.dataset.min, max=box.dataset.max==='inf'?Infinity:+box.dataset.max, items=[];
     if(mode==='quantity'){
       let total=0;
-      for(let row of $$('.qtyOption',box)){let q=+row.querySelector('.optQtyValue').textContent||0;if(!q)continue;let o=g.options.find(x=>x.id===row.dataset.oid);if(!o)continue;total+=q;extra+=(+o.price||0)*q;items.push({name:o.name,price:+o.price||0,qty:q})}
+      for(let row of $$('.qtyOption',box)){let q=+row.querySelector('.optQtyValue').textContent||0;if(!q)continue;let o=uniqueOptionIdsV13550(g.options).find(x=>x.id===row.dataset.oid);if(!o)continue;total+=q;extra+=(+o.price||0)*q;items.push({name:o.name,price:+o.price||0,qty:q})}
       if(total<min){focusRequiredGroupV1162(box,g);return}
     }else{
       let sel=$$('input:not([data-pv-complete]):checked',box);
       if(sel.length<min){focusRequiredGroupV1162(box,g);return}
-      items=sel.map(i=>{let o=g.options.find(x=>x.id===i.value);return o?{name:o.name,price:+o.price||0,qty:1}:null}).filter(Boolean);items.forEach(o=>extra+=o.price);
+      items=sel.map(i=>{let o=uniqueOptionIdsV13550(g.options).find(x=>x.id===i.value);return o?{name:o.name,price:+o.price||0,qty:1}:null}).filter(Boolean);items.forEach(o=>extra+=o.price);
     }
     if(items.length)groups.push({name:g.name,items:completeCartItems(box,items)});
   }
@@ -1048,6 +1054,7 @@ function handleVariantChange(){let v=selectedVariant();let btn=document.querySel
 function variantChoiceHTML(v,mode){let ok=v.status==='available'&&variantAllowsMode(v,mode);return `<label class="variantChoice ${ok?'':'variantDisabled'}"><span><b>${esc(v.name)}</b><small>${ok?brl(v.price):(mode==='delivery'?'Indisponível':'Somente delivery')}</small></span><input type="radio" name="productVariant" value="${esc(v.id)}" ${ok?'':'disabled'} data-pedevia-event="change" data-pedevia-call="handleVariantChange"></label>`}
 
 function openProduct(id){
+  normalizeCatalogOptionsV13551();
   let p=cfg.products.find(x=>x.id===id); if(!p)return; let mode=window.clientServiceMode||'delivery';
   if(!productAllowsMode(p,mode)){return}
   let vars=hasVariants(p)?p.variants.map(normalizeVariant).filter(v=>v.status!=='hidden'):[]; window.currentProductVariants=vars;
@@ -1061,7 +1068,7 @@ function openProduct(id){
 }
 function addCart(pid){
   let p=cfg.products.find(x=>x.id===pid);if(!p)return;let variant=hasVariants(p)?selectedVariant():null;if(hasVariants(p)&&(!variant||!p.variants.some(v=>v.id===variant.id&&v.status==='available'))){alert('Escolha um tamanho disponível.');return}
-  let groups=[],extra=0;for(let box of $$('.choiceGroup')){let g=cfg.groups.find(x=>x.id===box.dataset.gid);if(!g)continue;let mode=box.dataset.mode,min=+box.dataset.min,items=[];if(mode==='quantity'){let total=0;for(let row of $$('.qtyOption',box)){let q=+row.querySelector('.optQtyValue').textContent||0;if(!q)continue;let o=g.options.find(x=>x.id===row.dataset.oid);if(!o)continue;total+=q;extra+=(+o.price||0)*q;items.push({name:o.name,price:+o.price||0,qty:q})}if(total<min){focusRequiredGroupV1162(box,g);return}}else{let sel=$$('input:not([data-pv-complete]):checked',box);if(sel.length<min){focusRequiredGroupV1162(box,g);return}items=sel.map(i=>{let o=g.options.find(x=>x.id===i.value);return o?{name:o.name,price:+o.price||0,qty:1}:null}).filter(Boolean);items.forEach(o=>extra+=o.price)}if(items.length)groups.push({name:g.name,items:completeCartItems(box,items)})}
+  let groups=[],extra=0;for(let box of $$('.choiceGroup')){let g=cfg.groups.find(x=>x.id===box.dataset.gid);if(!g)continue;let mode=box.dataset.mode,min=+box.dataset.min,items=[];if(mode==='quantity'){let total=0;for(let row of $$('.qtyOption',box)){let q=+row.querySelector('.optQtyValue').textContent||0;if(!q)continue;let o=uniqueOptionIdsV13550(g.options).find(x=>x.id===row.dataset.oid);if(!o)continue;total+=q;extra+=(+o.price||0)*q;items.push({name:o.name,price:+o.price||0,qty:q})}if(total<min){focusRequiredGroupV1162(box,g);return}}else{let sel=$$('input:not([data-pv-complete]):checked',box);if(sel.length<min){focusRequiredGroupV1162(box,g);return}items=sel.map(i=>{let o=uniqueOptionIdsV13550(g.options).find(x=>x.id===i.value);return o?{name:o.name,price:+o.price||0,qty:1}:null}).filter(Boolean);items.forEach(o=>extra+=o.price)}if(items.length)groups.push({name:g.name,items:completeCartItems(box,items)})}
   let base=variant?+variant.price||0:+p.price||0;cart.push({pid,variantId:variant?.id||null,variantName:variant?.name||'',qty:+$('#qty').textContent,unit:base+extra,groups,obs:$('#itemObs').value});closeModal();updateCart();renderShop();
 }
 
@@ -1121,6 +1128,7 @@ function renderShop(){
 }
 
 function openProduct(id){
+  normalizeCatalogOptionsV13551();
   let p=cfg.products.find(x=>x.id===id);if(!p||p.status!=='available')return;
   let vars=hasVariants(p)?p.variants.map(normalizeVariant).filter(v=>v.status!=='hidden'):[];window.currentProductVariants=vars;
   let firstVar=vars.find(v=>v.status==='available');
@@ -3537,6 +3545,7 @@ async function saveSectionSizesV13535(){
 
 // Validação compartilhada de carrinhos recuperados e pedidos repetidos.
 function revalidateCartV13537(items){
+ normalizeCatalogOptionsV13551();
  const valid=[],changes=[];
  for(const item of items||[]){
   const p=cfg.products.find(p=>String(p.id)===String(item.pid));
