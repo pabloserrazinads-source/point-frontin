@@ -372,3 +372,107 @@
   };
   try{window.PEDEVIA_VERSION=VERSION;applyPedeviaVersion?.()}catch(e){}
 })();
+
+// Insights: identificadores aleatórios, sem nome, telefone, endereço ou conteúdo do pedido.
+(function(){
+ 'use strict';
+ const labels=['','Cardápio','Produto aberto','Carrinho','Finalização iniciada','Entrega ou consumo local','Pagamento','Dados finais','Pedido registrado'];
+ const mem={},pending=new Map();let sending=false,lastActivity=Date.now(),lastPulse=0,initial=false;
+ const today=()=>new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+ const read=(k,fallback)=>{try{return JSON.parse(localStorage.getItem(k))??fallback}catch(_){return mem[k]??fallback}};
+ const write=(k,v)=>{mem[k]=v;try{localStorage.setItem(k,JSON.stringify(v))}catch(_){}};
+ const uuid=()=>crypto.randomUUID();
+ const store=()=>String(currentStoreKeyV127()||'point-frontin');
+ const enabled=()=>!logged&&mode!=='admin'&&document.visibilityState==='visible'&&!window.pedeviaPublicUnavailableV13233;
+ function session(key){
+  const now=Date.now(),k='pvInsightsSession:'+key;let state=read(k,null);
+  if(!state||state.day!==today()||now-state.at>1800000){state={id:uuid(),visitor:read('pvInsightsVisitor',null)||uuid(),day:today(),at:now,step:1,order:null};write('pvInsightsVisitor',state.visitor)}
+  state.at=now;write(k,state);return state;
+ }
+ function enqueue(step,order){
+  if(!enabled())return;
+  try{
+   const key=store(),state=session(key);state.step=Math.max(state.step,step);if(order)state.order=String(order);
+   write('pvInsightsSession:'+key,state);
+   const event={p_store:key,p_session:state.id,p_visitor:state.visitor,p_step:state.step,p_order:state.order};
+   pending.set(state.id,event);saveQueue();void flush();
+  }catch(e){console.warn('Insights: registro temporariamente indisponível',e)}
+ }
+ function saveQueue(){write('pvInsightsQueue',Array.from(pending.values()).slice(-30))}
+ async function flush(){
+  if(sending||!enabled()||!pending.size)return;sending=true;
+  try{for(const [id,event] of pending){
+   const {data,error}=await supabaseClient.rpc('track_pedevia_insight_v13554',event);
+   if(error||data!==true)break;
+   if(pending.get(id)===event)pending.delete(id);saveQueue();
+  }}catch(_e){}finally{sending=false}
+ }
+ function wrap(name,step,check){
+  const base=window[name];if(typeof base!=='function')return;
+  window[name]=function(){const before=cart.length,result=base.apply(this,arguments);if(!check||check(before))enqueue(step);return result};
+ }
+ wrap('openProduct',2,()=>!!document.querySelector('#modal.show .addPriceBtn'));
+ wrap('addCart',3,before=>cart.length>before);
+ wrap('showCart',3,()=>cart.length>0&&!!document.querySelector('#modal.show .checkoutTitle'));
+ wrap('showReceiveChoices',4,()=>!!document.querySelector('#modal.show .checkoutTitle'));
+ wrap('showDeliveryForm',5,()=>!!document.querySelector('#modal.show #coAddr'));
+ wrap('showDineinForm',5,()=>!!document.querySelector('#modal.show #coTable'));
+ wrap('showPaymentChoices',6,()=>!!document.querySelector('#modal.show .checkoutTitle'));
+ wrap('showCustomerForm',7,()=>!!document.querySelector('#modal.show #coPhone'));
+ const createBase=window.createOnlineOrderV125;
+ if(typeof createBase==='function')window.createOnlineOrderV125=async function(){
+  const row=await createBase.apply(this,arguments);if(row?.id)enqueue(8,row.id);return row;
+ };
+ ['pointerdown','keydown'].forEach(type=>document.addEventListener(type,()=>{lastActivity=Date.now()}, {passive:true}));
+ setTimeout(()=>{
+  try{(read('pvInsightsQueue',[])||[]).filter(e=>e.p_store===store()).forEach(e=>pending.set(e.p_session,e))}catch(_){}
+  if(enabled()){enqueue(1);initial=true}
+ },5000);
+ setInterval(()=>{
+  if(!enabled())return;
+  if(!initial){enqueue(1);initial=true}
+  else if(Date.now()-lastActivity<65000&&Date.now()-lastPulse>55000){lastPulse=Date.now();enqueue(1)}
+  else void flush();
+ },15000);
+ window.addEventListener('online',()=>void flush());
+ document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){lastActivity=Date.now();enqueue(1)}});
+ const statsBase=window.adminStatisticsV126;
+ window.adminStatisticsV126=function(){
+  const result=statsBase.apply(this,arguments),host=document.getElementById('adminContent');
+  if(host&&!document.getElementById('pvInsightsLink')){
+   const button=document.createElement('button');button.id='pvInsightsLink';button.type='button';button.className='ghost full';button.style.marginBottom='16px';button.textContent='Insights · Visitas e etapas do pedido';button.addEventListener('click',()=>window.openInsightsV13554());host.prepend(button);
+  }return result;
+ };
+ const dayBack=n=>{const d=new Date(today()+'T12:00:00Z');d.setUTCDate(d.getUTCDate()-n);return d.toISOString().slice(0,10)};
+ window.openInsightsV13554=function(){
+  const host=document.getElementById('adminContent');if(!host)return;
+  host.innerHTML=`<button class="backBtn" id="pvInsightsBack">‹ Voltar às estatísticas</button><div class="panel"><h2>Insights</h2><p class="hint">Visitas e caminho até o pedido, por dia no horário de Brasília.</p><div class="v126Filters"><button data-irange="0">Hoje</button><button data-irange="6">7 dias</button><button data-irange="29">30 dias</button><button data-irange="all">Desde o início</button></div><div class="two"><label>De<input id="pvInsightsFrom" type="date" class="field" value="${dayBack(29)}"></label><label>Até<input id="pvInsightsTo" type="date" class="field" value="${today()}"></label></div><button id="pvInsightsApply" class="btn full">Consultar</button></div><div id="pvInsightsResult" aria-live="polite"></div>`;
+  document.getElementById('pvInsightsBack').onclick=()=>adminStatisticsV126();
+  document.getElementById('pvInsightsApply').onclick=()=>window.loadInsightsV13554();
+  host.querySelectorAll('[data-irange]').forEach(b=>b.onclick=()=>{document.getElementById('pvInsightsFrom').value=b.dataset.irange==='all'?'':dayBack(Number(b.dataset.irange));document.getElementById('pvInsightsTo').value=today();window.loadInsightsV13554()});
+  window.loadInsightsV13554();
+ };
+ let loadToken=0;
+ window.loadInsightsV13554=async function(){
+  const host=document.getElementById('pvInsightsResult');if(!host)return;
+  const token=++loadToken,from=document.getElementById('pvInsightsFrom').value||null,to=document.getElementById('pvInsightsTo').value||null;
+  if(from&&to&&from>to){host.innerHTML='<div class="notice bad">A data inicial deve ser anterior à final.</div>';return}
+  host.innerHTML='<div class="panel">Carregando Insights...</div>';
+  try{
+   const {data,error}=await supabaseClient.rpc('get_pedevia_insights_v13554',{p_store:store(),p_from:from,p_to:to});
+   if(error)throw error;if(token!==loadToken||!host.isConnected)return;
+   host.innerHTML=renderInsights(data||{});
+  }catch(e){if(token===loadToken&&host.isConnected)host.innerHTML='<div class="notice bad"><b>Não foi possível carregar os Insights.</b><p>Execute o SQL da versão 1.35.54 no Supabase e verifique sua sessão e conexão.</p><small>'+esc(e.message||'Erro de conexão')+'</small></div>'}
+ };
+ function renderInsights(data){
+  const days=data.days||[],funnel=data.funnel||[],since=data.tracking_since?new Intl.DateTimeFormat('pt-BR',{timeZone:'America/Sao_Paulo',dateStyle:'short',timeStyle:'short'}).format(new Date(data.tracking_since)):null;
+  const sum=k=>days.reduce((n,d)=>n+Number(d[k]||0),0),visits=sum('sessions'),converted=sum('converted'),rate=visits?(100*converted/visits).toLocaleString('pt-BR',{maximumFractionDigits:1})+'%':'—';
+  const first=data.tracking_since?new Intl.DateTimeFormat('en-CA',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date(data.tracking_since)):null;
+  const num=(d,k)=>!first||d.day<first?'—':Number(d[k]||0);
+  const measured=!!first&&days.some(d=>d.day>=first);
+  const cards=[['Visitas (sessões)',measured?visits:'—'],['Sessões com pedido',measured?converted:'—'],['Conversão observada',measured?rate:'—'],['Pedidos registrados',sum('registered')],['Pedidos concluídos',sum('completed')],['Sessões sem atividade há 30 min',measured?sum('abandoned'):'—']];
+  return `<div class="notice">${since?'Medição de visitas iniciada em '+esc(since)+'.':'Aguardando a primeira visita medida após a instalação.'} Pedidos anteriores foram consultados no histórico existente. Visitas e etapas anteriores à medição não estão disponíveis.</div><div class="v126StatsGrid">${cards.map(([label,value])=>`<div class="v126Stat"><b>${value}</b><small>${label}</small></div>`).join('')}</div><div class="panel"><h3>Até onde as pessoas chegaram</h3><p class="hint">Cada sessão aparece na etapa mais avançada que alcançou e nas anteriores. Algumas etapas podem ser puladas, como endereço na retirada.</p>${funnel.map(f=>`<div class="adminItem"><div><b>${esc(labels[Number(f.step)]||'Etapa')}</b><small style="display:block">${Number(f.reached)} sessões chegaram aqui ou avançaram</small></div><span>${Number(f.step)===8?'Finalizaram':Number(f.stopped)+' pararam aqui'}</span></div>`).join('')}<p class="hint">“Pararam” significa sem pedido registrado e sem atividade há pelo menos 30 minutos. Não é uma confirmação de desistência. ${sum('ongoing')} sessões ainda recentes no período.</p></div><div class="panel"><h3>Histórico diário</h3><div style="overflow-x:auto"><table class="pvInsightsTable"><thead><tr><th>Dia</th><th>Visitas</th><th>Navegadores</th><th>Sessões com pedido</th><th>Pedidos registrados</th><th>Concluídos</th><th>Pararam</th></tr></thead><tbody>${days.map(d=>`<tr><td>${esc(d.day.split('-').reverse().join('/'))}</td><td>${num(d,'sessions')}</td><td>${num(d,'visitors')}</td><td>${num(d,'converted')}</td><td>${Number(d.registered||0)}</td><td>${Number(d.completed||0)}</td><td>${num(d,'abandoned')}</td></tr>`).join('')||'<tr><td colspan="7">Sem registros neste período.</td></tr>'}</tbody></table></div><p class="hint">Um navegador pode fazer várias visitas. Uma nova visita começa após 30 minutos sem atividade ou na mudança do dia. Aparelhos diferentes ou dados de navegação apagados contam separadamente. O primeiro dia pode ter medição parcial. “Pedido registrado” confirma a gravação no sistema, não o envio ou a leitura no WhatsApp. Pedidos excluídos não podem ser recuperados aqui.</p><p class="hint">Identificadores aleatórios; não armazenamos nome, telefone, endereço ou conteúdo do pedido nos Insights. Falhas de rede e bloqueadores podem reduzir a contagem. Uso com o administrador conectado é excluído.</p></div>`;
+ }
+ window.PedeviaInsightsV13554={render:renderInsights,labels};
+ const style=document.createElement('style');style.textContent='.pvInsightsTable{width:100%;border-collapse:collapse;font-size:14px}.pvInsightsTable th,.pvInsightsTable td{padding:12px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}#pvInsightsResult .notice{margin-bottom:16px}';document.head.appendChild(style);
+})();
