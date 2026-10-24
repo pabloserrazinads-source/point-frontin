@@ -77,8 +77,6 @@
     });
   }
   [0,700,1600,3200,5500].forEach(ms=>setTimeout(enforceVersionV1331,ms));
-  // Algumas camadas históricas atualizam a tela depois de 5 segundos.
-  // Este controlador final impede que elas restaurem uma versão antiga.
-  setInterval(enforceVersionV1331,2000);
-  new MutationObserver(enforceVersionV1331).observe(document.body,{childList:true,subtree:true,characterData:true});
+  // v1.35.55: o controle contínuo da versão (observer) fica somente em pedevia-version.js.
+  // Aqui restam apenas as correções pontuais acima, sem intervalo e sem observer duplicado.
 })();

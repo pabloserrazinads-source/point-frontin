@@ -1,7 +1,7 @@
 // Fonte única de versão do Pedevia. Este arquivo deve ser carregado antes dos módulos.
 (function(){
   'use strict';
-  const CURRENT='1.35.54';
+  const CURRENT='1.35.55';
   const parts=v=>String(v||'0').split('.').map(n=>Number(n)||0);
   const compare=(a,b)=>{const x=parts(a),y=parts(b);for(let i=0;i<Math.max(x.length,y.length);i++){if((x[i]||0)!==(y[i]||0))return(x[i]||0)-(y[i]||0)}return 0};
   let active=CURRENT;
@@ -23,9 +23,17 @@
       if(after!==before)el.textContent=after;
     });
   }
+  // Agrupa várias mudanças seguidas na tela em uma única verificação por quadro.
+  let queued=false;
+  function scheduleEnforce(){
+    if(queued)return;
+    queued=true;
+    const run=()=>{queued=false;enforceVersion()};
+    if(window.requestAnimationFrame)window.requestAnimationFrame(run);else setTimeout(run,16);
+  }
   function startGuard(){
     enforceVersion();
-    new MutationObserver(enforceVersion).observe(document.body,{childList:true,subtree:true,characterData:true});
+    new MutationObserver(scheduleEnforce).observe(document.body,{childList:true,subtree:true,characterData:true});
   }
   document.body?startGuard():document.addEventListener('DOMContentLoaded',startGuard,{once:true});
 })();
