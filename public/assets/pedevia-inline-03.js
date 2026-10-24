@@ -44,9 +44,9 @@ handleChoiceChange=function(inp){
   return _handleChoiceChangeV1162(inp);
 };
 
-const _changeOptQtyV1162=changeOptQty;
-changeOptQty=function(btn,delta){
+const _changeOptionQtyV1162=changeOptionQty;
+changeOptionQty=function(btn,delta){
   const box=btn?.closest?.('.choiceGroup');
   if(box) clearRequiredFocusV1162(box);
-  return _changeOptQtyV1162(btn,delta);
+  return _changeOptionQtyV1162(btn,delta);
 };
