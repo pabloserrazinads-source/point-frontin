@@ -60,48 +60,30 @@
     if(!host)return;
 
     const offer=loyaltyOfferAdminV1314();
+    host.innerHTML='<div class="panel"><p class="hint">Carregando clientes do clube...</p></div>';
+
     try{
-      // Usa os pedidos já isolados por estabelecimento apenas para descobrir
-      // nome/celular dos clientes. O número oficial da fidelidade vem da RPC
-      // get_pedevia_loyalty_status_v127, que é a mesma usada pelo cliente.
-      const rows=await fetchAllStoreOrdersV126();
-      const map=new Map();
+      // Busca somente os perfis resumidos da loja. Não baixa pedidos nem faz
+      // uma chamada RPC individual para cada cliente.
+      const {data,error}=await supabaseClient.rpc(
+        'list_pedevia_loyalty_customers_v13561',
+        {p_store_key:currentStoreKeyV127()}
+      );
+      if(error)throw error;
 
-      rows.forEach(o=>{
-        const phone=normalizePhoneV127(o.customer_phone||'');
-        if(phone.length<10)return;
-        const current=map.get(phone);
-        const created=safeDateV126(o.created_at);
-        if(!current || (created && (!current.lastDate || created>current.lastDate))){
-          map.set(phone,{
-            phone,
-            name:String(o.customer_name||'Cliente').trim()||'Cliente',
-            last:o.created_at||'',
-            lastDate:created
-          });
-        }
-      });
-
-      const customers=[...map.values()];
-      const enriched=[];
-
-      // Lotes pequenos para não disparar muitas consultas simultâneas.
-      for(let i=0;i<customers.length;i+=10){
-        const batch=customers.slice(i,i+10);
-        const results=await Promise.all(batch.map(async c=>{
-          let status=null;
-          try{status=await getLoyaltyStatusV113(c.phone)}catch(e){}
-          const count=Number(status?.order_count||0);
-          return {
-            ...c,
-            // A RPC pode devolver o telefone exatamente como ele está salvo
-            // (por exemplo, com o 55). Usamos essa chave ao editar.
-            loyaltyPhone:normalizePhoneV127(status?.phone||c.phone),
-            status:loyaltyStatusTextAdminV1314(count,offer)
-          };
-        }));
-        enriched.push(...results);
-      }
+      const source=Array.isArray(data)?data:[];
+      const enriched=source.map(row=>{
+        const phone=normalizePhoneV127(row.phone||'');
+        const count=Math.max(0,Number(row.order_count||0));
+        return {
+          phone,
+          loyaltyPhone:phone,
+          name:String(row.name||'Cliente').trim()||'Cliente',
+          last:row.last_order_at||'',
+          first:row.first_order_at||'',
+          status:loyaltyStatusTextAdminV1314(count,offer)
+        };
+      }).filter(c=>c.phone.length>=10 && c.status.count>0);
 
       enriched.sort((a,b)=>{
         if(a.status.eligible!==b.status.eligible)return a.status.eligible?-1:1;
@@ -110,23 +92,18 @@
       });
 
       window.loyaltyCustomersAdminV1314=enriched;
-
-      const withOrders=enriched.filter(c=>c.status.count>0);
       const rewards=enriched.filter(c=>c.status.eligible);
-
       if(summary){
         summary.innerHTML=`
-          <div class="v126Stat"><b>${withOrders.length}</b><small>Clientes no clube</small></div>
-          <div class="v126Stat"><b>${withOrders.reduce((s,c)=>s+c.status.count,0)}</b><small>Pedidos contabilizados</small></div>
+          <div class="v126Stat"><b>${enriched.length}</b><small>Clientes no clube</small></div>
+          <div class="v126Stat"><b>${enriched.reduce((s,c)=>s+c.status.count,0)}</b><small>Pedidos contabilizados</small></div>
           <div class="v126Stat"><b>${rewards.length}</b><small>Recompensas disponíveis</small></div>
         `;
       }
-
       renderLoyaltyCustomersAdminV1314(enriched);
-
     }catch(e){
       console.error('Falha ao carregar clientes da fidelidade:',e);
-      host.innerHTML=`<div class="notice bad">Não foi possível carregar os clientes do Clube de Fidelidade.<br><small>${esc(e.message||e)}</small></div>`;
+      host.innerHTML=`<div class="notice bad">Não foi possível carregar os clientes do Clube de Fidelidade.<br><small>${esc(e.message||e)}</small><br><small>Confira se a atualização SQL de desempenho da fidelidade foi instalada no Supabase.</small></div>`;
     }
   };
 

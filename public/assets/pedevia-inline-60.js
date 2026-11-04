@@ -1,7 +1,7 @@
-/* Pedevia v1.34.4 — ciclos e histórico auditável da fidelidade. */
+/* Pedevia v1.35.61 — consultas leves e histórico paginado da fidelidade. */
 (function(){
   'use strict';
-  const VERSION='1.34.4';
+  const VERSION='1.35.61';
   const digits=v=>String(v||'').replace(/\D/g,'');
   const samePhone=(a,b)=>{const x=digits(a),y=digits(b);return x.length>=10&&y.length>=10&&x.slice(-10)===y.slice(-10)};
   const offerNow=()=>{try{return activeLoyaltyOfferV113()}catch(_e){return null}};
@@ -44,22 +44,102 @@
     window.loyaltyModalContentV115=loyaltyModalContentV115;
   }
 
-  window.openLoyaltyOrdersV1344=async function(phone,name){
-    const clean=digits(phone),offer=offerNow();
+  window.openLoyaltyOrdersV1344=async function(phone,name,officialCount){
+    const clean=digits(phone),offer=offerNow(),pageSize=30;
     showModal(`<div class="row"><div><h2 style="margin:0">Pedidos da fidelidade</h2><div class="hint">${esc(name||'Cliente')} · ${esc(clean)}</div></div><button class="ghost" data-pedevia-event="click" data-pedevia-call="openLoyaltyCustomersAdminV1314">‹</button></div><div id="v1344LoyaltyOrders"><div class="panel">Carregando pedidos contabilizados...</div></div>`);
     const host=document.getElementById('v1344LoyaltyOrders');
     try{
-      const all=await fetchAllStoreOrdersV126();
-      const rows=all.filter(o=>o.status==='completed'&&samePhone(o.customer_phone,clean)).sort((a,b)=>new Date(b.completed_at||b.updated_at||b.created_at)-new Date(a.completed_at||a.updated_at||a.created_at));
-      let official=rows.length;
-      try{const p=await getLoyaltyStatusV113(clean);if(p?.order_count!==undefined)official=Math.max(0,Number(p.order_count||0))}catch(_e){}
-      const s=cycleState(official,offer),activeCount=s.progress;
-      host.innerHTML=`<div class="v1344CycleSummary"><div><b>${s.progress}/${s.required}</b><span>ciclo atual</span></div><div><b>${s.cycles}</b><span>cartelas concluídas</span></div><div><b>${rows.length}</b><span>pedidos encontrados</span></div></div>${official!==rows.length?`<div class="notice">A quantidade oficial é ${official}, mas foram encontrados ${rows.length} pedidos concluídos no histórico. Isso pode ocorrer por ajustes manuais ou registros antigos.</div>`:''}<h3>Ciclo atual</h3>${renderOrders(rows.slice(0,activeCount),true)}${rows.length>activeCount?`<details class="v1344Past"><summary>Ver pedidos de ciclos anteriores (${rows.length-activeCount})</summary>${renderOrders(rows.slice(activeCount),false)}</details>`:''}`;
-    }catch(e){host.innerHTML=`<div class="notice bad">Não foi possível carregar os pedidos: ${esc(e?.message||e)}</div>`}
+      // Consulta somente pedidos concluídos deste cliente, preservando o histórico
+      // legado. O banco devolve 30 por vez; não baixa pedidos de outros clientes.
+      const statusPromise=officialCount!==undefined
+        ? Promise.resolve({order_count:officialCount})
+        : getLoyaltyStatusV113(clean);
+      const [statusResult,pageResult]=await Promise.all([
+        statusPromise,
+        supabaseClient.rpc('list_pedevia_loyalty_orders_v13561',{
+          p_store_key:currentStoreKeyV127(),
+          p_phone:clean,
+          p_limit:pageSize,
+          p_offset:0
+        })
+      ]);
+      if(pageResult.error)throw pageResult.error;
+
+      const official=Math.max(0,Number(statusResult?.order_count||0));
+      const rows=Array.isArray(pageResult.data?.rows)?pageResult.data.rows:[];
+      const total=Math.max(0,Number(pageResult.data?.total||0));
+      const s=cycleState(official,offer);
+      const activeCount=Math.min(s.progress,rows.length);
+      const currentRows=rows.slice(0,activeCount);
+      const pastRows=rows.slice(activeCount);
+      let offset=rows.length;
+
+      host.innerHTML=`
+        <div class="v1344CycleSummary">
+          <div><b>${s.progress}/${s.required}</b><span>ciclo atual</span></div>
+          <div><b>${s.cycles}</b><span>cartelas concluídas</span></div>
+          <div><b>${total}</b><span>pedidos encontrados</span></div>
+        </div>
+        ${official!==total?`<div class="notice">A quantidade oficial é ${official}, mas foram localizados ${total} pedidos concluídos no histórico. Essa diferença pode ocorrer por ajustes manuais ou registros antigos.</div>`:''}
+        <h3>Ciclo atual</h3>
+        <div id="v13560CurrentOrders">${renderOrders(currentRows,true)}</div>
+        ${total>activeCount?`
+          <details class="v1344Past" open>
+            <summary>Pedidos de ciclos anteriores (${Math.max(0,total-activeCount)})</summary>
+            <div id="v13560PastOrders">${renderOrders(pastRows,false)}</div>
+            <div id="v13560MoreArea"></div>
+          </details>`:''}
+      `;
+
+      const moreArea=document.getElementById('v13560MoreArea');
+      const loadMore=async()=>{
+        const button=document.getElementById('v13560LoadMore');
+        if(!button || button.disabled)return;
+        button.disabled=true;button.textContent='Carregando...';
+        try{
+          const {data,error}=await supabaseClient.rpc('list_pedevia_loyalty_orders_v13561',{
+            p_store_key:currentStoreKeyV127(),
+            p_phone:clean,
+            p_limit:pageSize,
+            p_offset:offset
+          });
+          if(error)throw error;
+          const next=Array.isArray(data?.rows)?data.rows:[];
+          const past=document.getElementById('v13560PastOrders');
+          if(past && next.length)past.insertAdjacentHTML('beforeend',renderOrders(next,false));
+          offset+=next.length;
+          if(offset>=total || next.length===0){
+            moreArea.innerHTML='<small class="hint">Todos os pedidos do histórico foram carregados.</small>';
+          }else{
+            button.disabled=false;
+            button.textContent='Carregar mais 30 pedidos';
+          }
+        }catch(e){
+          console.error('Falha ao carregar próxima página da fidelidade:',e);
+          button.disabled=false;
+          button.textContent='Tentar carregar novamente';
+          alert('Não foi possível carregar os próximos pedidos: '+(e?.message||e));
+        }
+      };
+      if(moreArea && offset<total){
+        moreArea.innerHTML='<button type="button" class="ghost full" id="v13560LoadMore">Carregar mais 30 pedidos</button>';
+        document.getElementById('v13560LoadMore')?.addEventListener('click',loadMore);
+      }
+    }catch(e){
+      console.error('Falha ao carregar histórico da fidelidade:',e);
+      host.innerHTML=`<div class="notice bad">Não foi possível carregar os pedidos: ${esc(e?.message||e)}<br><small>Confira se a atualização SQL de desempenho da fidelidade foi instalada no Supabase.</small></div>`;
+    }
   };
+
   function renderOrders(rows,active){
-    if(!rows.length)return `<div class="notice">${active?'O ciclo atual ainda não possui pedidos.':'Nenhum pedido anterior encontrado.'}</div>`;
-    return `<div class="v1344OrderList">${rows.map(o=>{const date=new Date(o.completed_at||o.updated_at||o.created_at),number=typeof orderNumberV125==='function'?orderNumberV125(o):String(o.store_order_number||o.order_number||'Pedido');return `<div class="v1344Order"><div><b>${esc(number)}</b><small>${Number.isFinite(date.getTime())?date.toLocaleString('pt-BR'):'Data não informada'}</small></div><strong>${brl(Number(o.total||0))}</strong></div>`}).join('')}</div>`;
+    if(!rows.length)return `<div class="notice">${active?'O ciclo atual ainda não possui pedidos registrados.':'Nenhum pedido anterior encontrado.'}</div>`;
+    return `<div class="v1344OrderList">${rows.map(o=>{
+      const date=new Date(o.completed_at||o.updated_at||o.created_at);
+      const rawNumber=o.store_order_number||o.order_number||'';
+      const number=rawNumber?`Pedido #${rawNumber}`:`Pedido ${String(o.id||'').slice(0,8)}`;
+      const detail=o.whatsapp_text?`<details class="v13560OrderDetail"><summary>Ver detalhes do pedido</summary><pre>${esc(o.whatsapp_text)}</pre></details>`:'';
+      return `<div class="v1344Order"><div class="v13560OrderMain"><b>${esc(number)}</b><small>${Number.isFinite(date.getTime())?date.toLocaleString('pt-BR'):'Data não informada'}</small>${detail}</div><strong>${brl(Number(o.total||0))}</strong></div>`;
+    }).join('')}</div>`;
   }
 
   // Corrige o painel privado: progresso do ciclo, histórico e identidade pelo celular.
@@ -81,7 +161,7 @@
         if(hint){const s=cycleState(c.status.count,offer);hint.textContent=s.eligible?`O próximo pedido completa a cartela e ganha ${s.reward}% OFF`:s.progress===0?'Novo ciclo iniciado':`Faltam ${s.remaining} pedido(s) para ${s.reward}% OFF`}
         const editor=panel.lastElementChild,input=editor?.querySelector('input'),label=editor?.querySelector('label'),cycle=cycleState(c.status.count,offer);
         if(input)input.value=String(cycle.progress);if(label)label.textContent='Pedidos no ciclo atual';
-        const button=document.createElement('button');button.type='button';button.className='ghost v1344HistoryBtn';button.textContent='Ver pedidos que valeram';button.onclick=()=>openLoyaltyOrdersV1344(c.phone,c.name);editor?.after(button);
+        const button=document.createElement('button');button.type='button';button.className='ghost v1344HistoryBtn';button.textContent='Ver pedidos que valeram';button.onclick=()=>openLoyaltyOrdersV1344(c.phone,c.name,c.status.count);editor?.after(button);
       });
     };
   }
@@ -114,6 +194,6 @@
     };
   }
 
-  const css=document.createElement('style');css.textContent=`.v1344HistoryBtn{width:100%;margin-top:9px}.v1344CycleSummary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}.v1344CycleSummary>div{background:#f5edf8;border-radius:15px;padding:12px;text-align:center}.v1344CycleSummary b,.v1344CycleSummary span{display:block}.v1344CycleSummary b{font-size:21px;color:var(--p)}.v1344CycleSummary span{font-size:11px;color:var(--muted);margin-top:3px}.v1344Order{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 2px;border-bottom:1px solid var(--line)}.v1344Order small{display:block;color:var(--muted);margin-top:3px}.v1344Past{margin-top:15px}.v1344Past summary{cursor:pointer;color:var(--p);font-weight:800;padding:12px;background:#f5edf8;border-radius:14px}`;document.head.appendChild(css);
+  const css=document.createElement('style');css.textContent=`.v1344HistoryBtn{width:100%;margin-top:9px}.v1344CycleSummary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}.v1344CycleSummary>div{background:#f5edf8;border-radius:15px;padding:12px;text-align:center}.v1344CycleSummary b,.v1344CycleSummary span{display:block}.v1344CycleSummary b{font-size:21px;color:var(--p)}.v1344CycleSummary span{font-size:11px;color:var(--muted);margin-top:3px}.v1344Order{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:12px 2px;border-bottom:1px solid var(--line)}.v1344Order small{display:block;color:var(--muted);margin-top:3px}.v1344Past{margin-top:15px}.v1344Past summary{cursor:pointer;color:var(--p);font-weight:800;padding:12px;background:#f5edf8;border-radius:14px}.v13560OrderMain{min-width:0;flex:1}.v13560OrderDetail{margin-top:6px}.v13560OrderDetail summary{font-size:12px;color:var(--p);cursor:pointer}.v13560OrderDetail pre{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-size:12px;background:#faf8fb;border-radius:8px;padding:8px;margin:6px 0}`;document.head.appendChild(css);
   window.PEDEVIA_VERSION=VERSION;
 })();
