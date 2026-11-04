@@ -2985,6 +2985,9 @@ function saveCustomerProfileV114(extra={}){
     neighborhood:String(st.neighborhood||extra.neighborhood||current.neighborhood||''),
     address:String(st.address||extra.address||current.address||''),
     reference:String(st.reference||extra.reference||current.reference||''),
+    street:String(st.street||extra.street||current.street||''),
+    number:String(st.number||extra.number||current.number||''),
+    complement:String(st.complement||extra.complement||current.complement||''),
     updatedAt:Date.now()
   };
   try{localStorage.setItem(CUSTOMER_PROFILE_KEY_V114,JSON.stringify(data))}catch(e){}
