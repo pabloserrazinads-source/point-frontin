@@ -3317,27 +3317,101 @@ async function loadKnownCustomerV115(){
   return profile;
 }
 
-// Endereço agora também busca perfil online.
+// Endereço de clientes recorrentes: reutilização somente por escolha explícita.
 showDeliveryForm=function(){
   const cachedPhone=getCachedCustomerPhoneV115();
+  const localProfile=loadCustomerProfileV114();
+  const localPhone=normalizeCustomerPhoneV113(localProfile.phone||'');
+  const knownPhone=normalizeCustomerPhoneV113(cachedPhone||localPhone||'');
+
   _showDeliveryFormV114Base();
 
-  if(cachedPhone){
-    getCustomerProfileV115(cachedPhone).then(profile=>{
-      if(!profile)return;
-      const neigh=cfg.store.orderConfig?.deliveryCalc==='neighborhood'?document.getElementById('coNeigh'):null;
-      const addr=document.getElementById('coAddr');
-      const ref=document.getElementById('coRef');
+  const neighborhoodMode=cfg.store.orderConfig?.deliveryCalc==='neighborhood';
+  const neigh=neighborhoodMode?document.getElementById('coNeigh'):null;
+  const addr=document.getElementById('coAddr');
+  const ref=document.getElementById('coRef');
 
-      if(neigh&&profile.neighborhood){
-        const exists=[...neigh.options].some(o=>o.value===profile.neighborhood);
-        if(exists){
-          neigh.value=profile.neighborhood;
-          window.checkoutState.neighborhood=profile.neighborhood;
+  // Todo pedido começa sem bairro/endereço selecionado automaticamente.
+  if(neigh){
+    neigh.required=true;
+    if(![...neigh.options].some(option=>option.value==='')){
+      const placeholder=document.createElement('option');
+      placeholder.value='';
+      placeholder.disabled=true;
+      placeholder.textContent='Selecione seu bairro';
+      neigh.insertBefore(placeholder,neigh.firstChild);
+    }
+    neigh.value='';
+  }
+  if(addr)addr.value='';
+  if(ref)ref.value='';
+  window.checkoutState.neighborhood='';
+  window.checkoutState.address='';
+  window.checkoutState.reference='';
+
+  let savedProfile=null;
+  let reuseWrap=null;
+  let reuseCheckbox=null;
+
+  const applySavedAddress=()=>{
+    if(!savedProfile)return;
+    if(addr)addr.value=String(savedProfile.address||'');
+    if(ref)ref.value=String(savedProfile.reference||'');
+    if(neigh){
+      const savedNeighborhood=String(savedProfile.neighborhood||'');
+      const exists=[...neigh.options].some(option=>option.value===savedNeighborhood);
+      neigh.value=exists?savedNeighborhood:'';
+      window.checkoutState.neighborhood=neigh.value;
+    }
+    window.checkoutState.address=String(savedProfile.address||'');
+    window.checkoutState.reference=String(savedProfile.reference||'');
+  };
+
+  const installReuseOption=(profile)=>{
+    if(!profile||!String(profile.address||'').trim())return;
+    savedProfile=profile;
+
+    if(!reuseWrap){
+      reuseWrap=document.createElement('div');
+      reuseWrap.id='coReuseLastAddress';
+      reuseWrap.style.cssText='margin:12px 0;padding:12px;border:1px solid var(--line,#ddd);border-radius:12px;background:var(--soft,#f8f8f8)';
+      reuseWrap.innerHTML=`
+        <label style="display:flex;align-items:center;gap:10px;margin:0;cursor:pointer;font-weight:700">
+          <input id="coReuseLastAddressCheck" type="checkbox" style="width:18px;height:18px;flex:0 0 auto">
+          <span>Mesmo endereço do último pedido?</span>
+        </label>
+        <small style="display:block;margin:6px 0 0 28px;color:var(--muted,#666)">Marque para reutilizar o endereço, bairro e referência salvos.</small>
+      `;
+      const addressLabel=addr?.previousElementSibling;
+      if(addressLabel)addressLabel.insertAdjacentElement('beforebegin',reuseWrap);
+      else if(addr)addr.insertAdjacentElement('beforebegin',reuseWrap);
+      reuseCheckbox=reuseWrap.querySelector('#coReuseLastAddressCheck');
+      reuseCheckbox.addEventListener('change',()=>{
+        if(reuseCheckbox.checked){
+          applySavedAddress();
+        }else{
+          if(addr)addr.value='';
+          if(ref)ref.value='';
+          if(neigh)neigh.value='';
+          window.checkoutState.address='';
+          window.checkoutState.reference='';
+          window.checkoutState.neighborhood='';
         }
-      }
-      if(addr&&profile.address)addr.value=profile.address;
-      if(ref&&profile.reference)ref.value=profile.reference;
+      });
+    }else if(reuseCheckbox?.checked){
+      // Atualiza o perfil remoto somente se o cliente já escolheu reutilizá-lo.
+      applySavedAddress();
+    }
+  };
+
+  if(localPhone===knownPhone && localProfile.address){
+    installReuseOption(localProfile);
+  }
+
+  if(knownPhone.length>=10){
+    getCustomerProfileV115(knownPhone).then(profile=>{
+      if(!profile||!document.getElementById('coAddr'))return;
+      if(profile.address)installReuseOption(profile);
     });
   }
 };
@@ -3345,8 +3419,15 @@ showDeliveryForm=function(){
 saveDeliveryAndPay=function(){
   const addr=document.getElementById('coAddr')?.value.trim()||'';
   const ref=document.getElementById('coRef')?.value.trim()||'';
-  const neigh=cfg.store.orderConfig?.deliveryCalc==='neighborhood'?(document.getElementById('coNeigh')?.value||''):'';
+  const neighborhoodMode=cfg.store.orderConfig?.deliveryCalc==='neighborhood';
+  const neigh=neighborhoodMode?(document.getElementById('coNeigh')?.value||''):'';
+
   if(!addr){alert('Informe o endereço de entrega.');return}
+  if(neighborhoodMode&&!neigh){
+    alert('Selecione seu bairro para continuar.');
+    document.getElementById('coNeigh')?.focus();
+    return;
+  }
 
   window.checkoutState.address=addr;
   window.checkoutState.reference=ref;
