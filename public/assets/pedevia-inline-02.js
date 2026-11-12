@@ -1072,7 +1072,7 @@ function saveProduct(id){let p=cfg.products.find(x=>x.id===id);if(!p)return;
 }
 
 function selectedVariant(){let id=document.querySelector('input[name="productVariant"]:checked')?.value;return window.currentProductVariants?.find(v=>v.id===id)||null}
-function handleVariantChange(){let v=selectedVariant();let btn=document.querySelector('.addPriceBtn');if(btn&&v){btn.dataset.base=+v.price||0;let lab=document.querySelector('.selectedVariantPrice');if(lab)lab.textContent=brl(v.price);updateProductLiveTotal()}}
+function handleVariantChange(){let v=selectedVariant();let btn=document.querySelector('.addPriceBtn');if(btn&&v){btn.dataset.base=+v.price||0;let lab=document.querySelector('.selectedVariantPrice');if(lab)lab.innerHTML=productPromoPriceMarkupV13566(window.currentProductOfferProductV13566,+v.price||0);updateProductLiveTotal()}}
 function variantChoiceHTML(v,mode){let ok=v.status==='available'&&variantAllowsMode(v,mode);return `<label class="variantChoice ${ok?'':'variantDisabled'}"><span><b>${esc(v.name)}</b><small>${ok?brl(v.price):(mode==='delivery'?'Indisponível':'Somente delivery')}</small></span><input type="radio" name="productVariant" value="${esc(v.id)}" ${ok?'':'disabled'} data-pedevia-event="change" data-pedevia-call="handleVariantChange"></label>`}
 
 function openProduct(id){
@@ -1130,7 +1130,8 @@ function variantChoiceHTML(v){
   if(v.allowedModes?.delivery)labels.push('Delivery');
   if(v.allowedModes?.pickup)labels.push('Retirada');
   if(v.allowedModes?.dinein)labels.push('Consumo local');
-  return `<label class="variantChoice ${ok?'':'variantDisabled'}"><span><b>${esc(v.name)}</b><small>${brl(v.price)}</small></span><input type="radio" name="productVariant" value="${esc(v.id)}" ${ok?'':'disabled'} data-pedevia-event="change" data-pedevia-call="handleVariantChange"></label>`;
+  let priceMarkup=window.currentProductOfferProductV13566?productPromoPriceMarkupV13566(window.currentProductOfferProductV13566,+v.price||0):brl(v.price);
+  return `<label class="variantChoice ${ok?'':'variantDisabled'}"><span><b>${esc(v.name)}</b><small>${priceMarkup}</small></span><input type="radio" name="productVariant" value="${esc(v.id)}" ${ok?'':'disabled'} data-pedevia-event="change" data-pedevia-call="handleVariantChange"></label>`;
 }
 
 function renderShop(){
@@ -1144,7 +1145,7 @@ function renderShop(){
   $('#productGrid').className='';
   $('#productGrid').innerHTML=secs.map(s=>{
     let ps=cfg.products.filter(p=>p.category===s.id&&p.status!=='hidden'),compact=s.display.startsWith('compact'),noimg=s.display.endsWith('no-images');
-    return `<section class="clientSection ${compact?'sectionCompact':''} ${noimg?'sectionNoImages':''}" id="clientSec_${s.id}"><div class="clientSectionHead" style="border-top:5px solid ${esc(s.accent||'#712489')}"><h2 style="--pv-section-font:${sectionFontV13544(s)};--pv-section-color:${sectionTitleColorV13545(s)}">${esc(s.title)}</h2>${s.description?`<p>${esc(s.description)}</p>`:''}</div><div class="grid">${ps.map(p=>{let available=p.status==='available',variantParent=hasVariants(p);return `<article class="card" ${available?`data-pedevia-open-product="${p.id}"`:''}>${noimg?'':`<div class="photo" ${p.image?`style="background-image:url('${esc(p.image)}')"`:''}>${p.image?'':'🍧'}</div>`}<div class="cardbody"><h3>${esc(p.name)}</h3><p class="desc">${esc(p.desc)}</p>${variantParent?`${p.status==='unavailable'?'<div class="row"><span class="badge unavailable">Indisponível</span></div>':''}`:`<div class="row"><span class="price">${brl(p.price)}</span>${p.status==='unavailable'?'<span class="badge unavailable">Indisponível</span>':''}</div>`}</div></article>`}).join('')||'<div class="emptySection">Nenhum produto disponível nesta seção.</div>'}</div></section>`;
+    return `<section class="clientSection ${compact?'sectionCompact':''} ${noimg?'sectionNoImages':''}" id="clientSec_${s.id}"><div class="clientSectionHead" style="border-top:5px solid ${esc(s.accent||'#712489')}"><h2 style="--pv-section-font:${sectionFontV13544(s)};--pv-section-color:${sectionTitleColorV13545(s)}">${esc(s.title)}</h2>${s.description?`<p>${esc(s.description)}</p>`:''}</div><div class="grid">${ps.map(p=>{let available=p.status==='available',variantParent=hasVariants(p);return `<article class="card" ${available?`data-pedevia-open-product="${p.id}"`:''}>${noimg?'':`<div class="photo" ${p.image?`style="background-image:url('${esc(p.image)}')"`:''}>${p.image?'':'🍧'}</div>`}<div class="cardbody"><h3>${esc(p.name)}</h3><p class="desc">${esc(p.desc)}</p>${variantParent?`${p.status==='unavailable'?'<div class="row"><span class="badge unavailable">Indisponível</span></div>':''}${productPromoBadgeMarkupV13566(p)}`:`<div class="row"><span class="productPriceArea">${productPromoPriceMarkupV13566(p,+p.price||0)}</span>${p.status==='unavailable'?'<span class="badge unavailable">Indisponível</span>':''}</div>`}</div></article>`}).join('')||'<div class="emptySection">Nenhum produto disponível nesta seção.</div>'}</div></section>`;
   }).join('');
   updateCart();
 }
@@ -1155,7 +1156,8 @@ function openProduct(id){
   let vars=hasVariants(p)?p.variants.map(normalizeVariant).filter(v=>v.status!=='hidden'):[];window.currentProductVariants=vars;
   let firstVar=vars.find(v=>v.status==='available');
   let base=firstVar?+firstVar.price||0:+p.price||0;
-  let h=`<div class="row"><div><h2 style="margin:0">${esc(p.name)}</h2>${hasVariants(p)?'<span class="price selectedVariantPrice">Escolha o tamanho</span>':`<span class="price">${brl(p.price)}</span>`}</div><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div><p>${esc(p.desc||'')}</p>${p.detailedDesc?`<p class="hint">${esc(p.detailedDesc)}</p>`:''}`;
+  window.currentProductOfferProductV13566=p;
+  let h=`<div class="row"><div><h2 style="margin:0">${esc(p.name)}</h2>${hasVariants(p)?'<span class="price selectedVariantPrice">Escolha o tamanho</span>':productPromoPriceMarkupV13566(p,+p.price||0)}</div><button class="ghost" data-pedevia-event="click" data-pedevia-call="closeModal">✕</button></div><p>${esc(p.desc||'')}</p>${p.detailedDesc?`<p class="hint">${esc(p.detailedDesc)}</p>`:''}`;
   if(hasVariants(p))h+=`<div class="group variantGroup"><div class="groupTitle">Escolha o tamanho</div>${vars.map(v=>variantChoiceHTML(v)).join('')}</div>`;
   (p.groups||[]).forEach(gid=>{let g=cfg.groups.find(x=>x.id===gid);if(!g)return;let os=(g.options||[]).filter(o=>o.status==='available');if(!os.length)return;let r=effectiveGroupRules(g),maxAttr=Number.isFinite(r.max)?r.max:'inf';h+=`<div class="group choiceGroup" data-gid="${g.id}" data-mode="${r.mode}" data-min="${r.min}" data-max="${maxAttr}"><div class="groupTitle">${esc(g.name)} ${r.required?'<span class="tinyTag">Obrigatório</span>':'<span class="tinyTag">Opcional</span>'}</div><div class="hint">${clientRuleText(g)}</div>`;h+=orderedGroupOptionsV13549(g,r);h+='</div>'});
   h+=`<label>Observação</label><textarea id="itemObs" class="field" placeholder="Ex.: sem granola"></textarea><div class="productFooter"><div class="productQty"><button onclick="qty(-1)">−</button><b id="qty">1</b><button onclick="qty(1)">+</button></div><button class="btn addPriceBtn" data-base="${base}" onclick="addCart('${p.id}')">Adicionar • <span class="liveTotal">${brl(base)}</span></button></div>`;
@@ -1202,6 +1204,13 @@ window.clientServiceMode='delivery';
 // ===== OFERTAS CONECTADAS AO CARDÁPIO + MAPA REAL =====
 (function(){let st=document.createElement('style');st.textContent=`
 .offerClientArea{display:grid;gap:10px;margin:12px 0 18px}.offerBanner{border:1px solid #e4d8e8;background:linear-gradient(135deg,#fff,#f7eef9);border-radius:18px;padding:14px 15px;display:flex;gap:12px;align-items:center}.offerBanner .offerIcon{width:44px;height:44px;border-radius:14px;background:#79258e;color:white;display:grid;place-items:center;font-size:21px;font-weight:900;flex:0 0 auto}.offerBanner b{display:block;font-size:16px}.offerBanner small{display:block;color:var(--muted);line-height:1.35;margin-top:2px}.offerAdminCard{background:#f5f1f6;border-radius:18px;padding:14px;margin:10px 0}.offerAdminCard .row{align-items:flex-start}.offerType{display:inline-block;border-radius:999px;padding:4px 8px;background:#eadcf0;color:#6d247c;font-size:11px;font-weight:850}.discountLine{color:#178a56}.mapReal{width:100%;height:300px;border:0;border-radius:18px;background:#eee}.mapActions{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 14px}.mapActions>*{flex:1}.offerScopeHint{font-size:12px;color:var(--muted);margin-top:-4px;margin-bottom:10px}
+.productPromoPrice{display:inline-flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+.productPromoPrice .priceWas{font-size:12px;font-weight:650;color:#8a818c;text-decoration:line-through}
+.productPromoPrice .pricePromoNow{font-size:20px;font-weight:900;color:#178a56!important}
+.productPromoBadge{display:inline-flex;align-items:center;border-radius:999px;padding:4px 7px;background:#dcf5e8;color:#176d45;font-size:10px;font-weight:900;white-space:nowrap}
+.productPromoMin{flex-basis:100%;font-size:10px;line-height:1.25;color:var(--muted)}
+.productPromoVariant{display:inline-flex;align-items:center;gap:6px;margin-top:5px}
+
 `;document.head.appendChild(st)})();
 
 function normalizeOffers(){
@@ -1215,6 +1224,44 @@ function offerScopeText(o){
  if(o.scope==='section'){let s=cfg.sections?.find(x=>x.id===o.targetId);return 'Seção: '+(s?.title||'não definida')}
  if(o.scope==='product'){let p=cfg.products?.find(x=>x.id===o.targetId);return 'Produto: '+(p?.name||'não definido')}
  return 'Todo o cardápio';
+}
+
+function offerAppliesToProductV13566(o,p){
+ if(!o||!p)return false;
+ if(o.scope==='product')return String(p.id)===String(o.targetId);
+ if(o.scope==='section')return String(p.category)===String(o.targetId);
+ return !o.scope||o.scope==='all';
+}
+function productDisplayOfferV13566(p){
+ return activePercentOffers()
+  .filter(o=>offerAppliesToProductV13566(o,p))
+  .sort((a,b)=>(+b.percent||0)-(+a.percent||0)||(+a.minValue||0)-(+b.minValue||0))[0]||null;
+}
+function productPromoPriceMarkupV13566(p,price){
+ const o=productDisplayOfferV13566(p);
+ const base=Math.max(0,+price||0);
+ if(!o)return `<span class="price">${brl(base)}</span>`;
+ const percent=Math.max(0,Math.min(100,+o.percent||0));
+ const badge=`<span class="productPromoBadge">${String(percent).replace('.',',')}% OFF</span>`;
+ if(+o.minValue>0)return `<span class="productPromoPrice"><span class="price">${brl(base)}</span>${badge}<small class="productPromoMin">Desconto no carrinho em pedidos a partir de ${brl(+o.minValue)}</small></span>`;
+ const discounted=Math.round((base*(100-percent)+Number.EPSILON))/100;
+ return `<span class="productPromoPrice"><span class="priceWas">${brl(base)}</span><span class="price pricePromoNow">${brl(discounted)}</span>${badge}</span>`;
+}
+function productPromoBadgeMarkupV13566(p){
+ const o=productDisplayOfferV13566(p);
+ if(!o)return '';
+ const percent=Math.max(0,Math.min(100,+o.percent||0));
+ const min=+o.minValue>0?`<small class="productPromoMin">No carrinho a partir de ${brl(+o.minValue)}</small>`:'';
+ return `<span class="productPromoVariant"><span class="productPromoBadge">${String(percent).replace('.',',')}% OFF</span>${min}</span>`;
+}
+function uniqueOffersByIdV13566(list){
+ const seen=new Set();
+ return (Array.isArray(list)?list:[]).filter(o=>{
+  const id=String(o?.id||'').trim();
+  if(!id)return true;
+  if(seen.has(id))return false;
+  seen.add(id);return true;
+ });
 }
 function activePercentOffers(){normalizeOffers();return cfg.offers.filter(o=>o.active&&o.type==='percentage'&&(+o.percent||0)>0)}
 function eligibleValueForOffer(o){
@@ -1232,7 +1279,7 @@ function activeOfferDiscount(){
 function renderClientOffers(){
  let host=document.getElementById('clientOffers');
  if(!host){host=document.createElement('div');host.id='clientOffers';let hero=document.querySelector('#shopView .hero');hero?.insertAdjacentElement('afterend',host)}
- let active=cfg.offers.filter(o=>o.active);
+ let active=uniqueOffersByIdV13566(cfg.offers.filter(o=>o.active));
  host.className='offerClientArea';host.innerHTML=active.map(o=>o.type==='percentage'?`<div class="offerBanner"><div class="offerIcon">${Math.round(+o.percent||0)}%</div><div><b>${esc(o.title||'Oferta')}</b><small>${esc(o.description||('Ganhe '+(+o.percent||0)+'% de desconto'))}${+o.minValue?` · Pedido mínimo ${brl(+o.minValue)}`:''} · ${esc(offerScopeText(o))}</small></div></div>`:`<div class="offerBanner"><div class="offerIcon">★</div><div><b>${esc(o.title||'Fidelidade')}</b><small>${esc(o.description||`A cada ${o.requiredOrders||10} pedidos, ganhe ${o.rewardPercent||10}% de desconto.`)}</small></div></div>`).join('');
 }
 
@@ -1243,10 +1290,22 @@ function updateCart(){let d=activeOfferDiscount();let total=Math.max(0,sum()-d.a
 
 function adminOffers(){
  normalizeOffers();
- let list=cfg.offers.map(o=>`<div class="offerAdminCard"><div class="row"><div><span class="offerType">${o.type==='percentage'?'DESCONTO':'FIDELIDADE'}</span><h3 style="margin:5px 0 3px">${esc(o.title)}</h3><div class="hint">${o.type==='percentage'?`${+o.percent||0}% · ${esc(offerScopeText(o))}${+o.minValue?' · mínimo '+brl(+o.minValue):''}`:`${o.requiredOrders||10} pedidos → ${o.rewardPercent||10}% de benefício`}</div></div><span class="badge ${o.active?'available':'hidden'}">${o.active?'Ativa':'Inativa'}</span></div><div class="miniBtns" style="margin-top:10px"><button class="ghost" onclick="editOffer('${o.id}')">Editar</button><button class="ghost" onclick="toggleOffer('${o.id}')">${o.active?'Desativar':'Ativar'}</button><button class="dangerBtn" onclick="deleteOffer('${o.id}')">Excluir</button></div></div>`).join('')||'<div class="emptySection">Nenhuma oferta criada ainda.</div>';
- $('#adminContent').innerHTML=`<div class="panel"><div class="menuBuilderHead"><div><h3 style="margin:0">Ofertas</h3><div class="hint">Crie promoções que aparecem no cardápio e podem alterar o total do pedido.</div></div></div><div class="two"><button class="btn" onclick="newOffer('percentage')">＋ Desconto</button><button class="ghost" onclick="newOffer('loyalty')">★ Fidelidade</button></div>${list}<div class="notice">Descontos percentuais ativos são aplicados automaticamente no carrinho. Se houver mais de um válido, o sistema usa o que dá o maior desconto.</div></div>`;
+ let list=uniqueOffersByIdV13566(cfg.offers).map(o=>`<div class="offerAdminCard"><div class="row"><div><span class="offerType">${o.type==='percentage'?'DESCONTO':'FIDELIDADE'}</span><h3 style="margin:5px 0 3px">${esc(o.title)}</h3><div class="hint">${o.type==='percentage'?`${+o.percent||0}% · ${esc(offerScopeText(o))}${+o.minValue?' · mínimo '+brl(+o.minValue):''}`:`${o.requiredOrders||10} pedidos → ${o.rewardPercent||10}% de benefício`}</div></div><span class="badge ${o.active?'available':'hidden'}">${o.active?'Ativa':'Inativa'}</span></div><div class="miniBtns" style="margin-top:10px"><button class="ghost" onclick="editOffer('${o.id}')">Editar</button><button class="ghost" onclick="toggleOffer('${o.id}')">${o.active?'Desativar':'Ativar'}</button><button class="dangerBtn" onclick="deleteOffer('${o.id}')">Excluir</button></div></div>`).join('')||'<div class="emptySection">Nenhuma oferta criada ainda.</div>';
+ $('#adminContent').innerHTML=`<div class="panel"><div class="menuBuilderHead"><div><h3 style="margin:0">Ofertas</h3><div class="hint">Crie promoções que aparecem no cardápio e podem alterar o total do pedido.</div></div></div><div class="two"><button class="btn" onclick="newOffer('percentage')">＋ Desconto</button><button class="ghost" onclick="newOffer('loyalty')">★ Fidelidade</button></div>${list}${cfg.offers.filter(o=>o.type==='loyalty').length>1?`<div class="notice">Atenção: existem ${cfg.offers.filter(o=>o.type==='loyalty').length} registros do Clube de Fidelidade. Nenhum dado foi apagado; confira os cartões antes de excluir algum.</div>`:''}<div class="notice">Descontos percentuais ativos são aplicados automaticamente no carrinho. Se houver mais de um válido, o sistema usa o que dá o maior desconto.</div></div>`;
 }
-function newOffer(type){let o={id:'of'+Date.now(),type,title:type==='percentage'?'10% OFF':'Clube Fidelidade',description:'',active:true,percent:10,minValue:0,scope:'all',targetId:'',autoApply:true,requiredOrders:10,rewardPercent:10};cfg.offers.push(o);save();editOffer(o.id)}
+let lastOfferCreateAtV13566=0;
+function newOffer(type){
+ const now=Date.now();
+ if(now-lastOfferCreateAtV13566<700)return;
+ lastOfferCreateAtV13566=now;
+ if(type==='loyalty'&&cfg.offers.some(o=>o.type==='loyalty')){
+  alert('O Clube de Fidelidade já está cadastrado. Edite o clube existente para evitar duplicação.');
+  adminOffers();return;
+ }
+ const id='of'+now+'-'+Math.random().toString(36).slice(2,9);
+ let o={id,type:type==='loyalty'?'loyalty':'percentage',title:type==='percentage'?'10% OFF':'Clube Fidelidade',description:'',active:true,percent:10,minValue:0,scope:'all',targetId:'',autoApply:true,requiredOrders:10,rewardPercent:10};
+ cfg.offers.push(o);save();editOffer(o.id)
+}
 function toggleOffer(id){let o=cfg.offers.find(x=>x.id===id);if(!o)return;o.active=!o.active;save();adminOffers();renderShop()}
 function deleteOffer(id){if(!confirm('Excluir esta oferta?'))return;cfg.offers=cfg.offers.filter(x=>x.id!==id);save();adminOffers();renderShop()}
 function offerTargetOptions(scope,current){
